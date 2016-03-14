@@ -12,3 +12,4 @@
 - shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/web_api_configuration.json /data-act/web-api/dataactbroker/config/web_api_configuration.json"
 
 - shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/nginxApi.conf /etc/nginx/nginx.conf"
+  sudo: true
