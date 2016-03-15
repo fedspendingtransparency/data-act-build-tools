@@ -1,5 +1,5 @@
 ---
-- hosts: data_validator_dev
+- hosts: data_broker_staging
   user: ec2-user
   roles:
   - yum-installs
