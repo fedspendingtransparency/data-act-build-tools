@@ -1,0 +1,13 @@
+---
+ - name: Install broker-core
+   sudo: true
+   pip: name=git+https://git@github.com/fedspendingtransparency/data-act-core.git@development#egg=dataactcore-0.0.1 extra_args="--target=/data-act/core --upgrade" editable=false
+ - name: assign ownership of broker to ec2-user
+   sudo: true
+   file: path=/tmp/src/dataactbroker owner=ec2-user recurse=yes
+ - name: assign ownership of core to ec2-user
+   sudo: true
+   file: path=/tmp/src/dataactcore owner=ec2-user recurse=yes
+ - name: assign ownership of data-act directory to ec2-user
+   sudo: true
+   file: path=/data-act owner=ec2-user recurse=yes

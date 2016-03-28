@@ -1,9 +1,9 @@
 ---
-- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/dbCred.json /data-act/core/dataactcore/credentials/dbCred.json"
+- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/dbCred.json /tmp/src/dataactcore/dataactcore/credentials/dbCred.json"
 
-- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/s3bucket.json /data-act/core/dataactcore/aws/s3bucket.json"
+- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/s3bucket.json /tmp/src/dataactcore/dataactcore/aws/s3bucket.json"
 
-- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/logging.json /data-act/core/dataactcore/utils/logging.json"
+- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/logging.json /tmp/src/dataactcore/dataactcore/utils/logging.json"
 
 - shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/credentials.json /data-act/web-api/dataactbroker/credentials.json"
 

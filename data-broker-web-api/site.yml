@@ -5,5 +5,7 @@
   - yum-installs
   - pull-repo
   - pip-install
+  - install-core
   - copy-files
+
   - start-server

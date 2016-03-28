@@ -1,0 +1,5 @@
+---
+- shell: alembic upgrade head
+  sudo: true
+  args:
+    chdir: /tmp/src/dataactcore/dataactcore/
