@@ -5,4 +5,13 @@
 
 - shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/logging.json /data-act/core/dataactcore/utils/logging.json"
 
-  
+- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/validator_configuration.json /data-act/validator/dataactvalidator/validator_configuration.json"
+
+- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/credentials.json /data-act/validator/dataactbroker/credentials.json"
+
+- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/manager.json /data-act/validator/dataactvalidator/config/manager.json"
+
+- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/web_api_configuration.json /data-act/validator/dataactvalidator/config/web_api_configuration.json"
+
+- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/nginxVal.conf /etc/nginx/nginx.conf"
+  sudo: true

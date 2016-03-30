@@ -9,42 +9,4 @@ exec 2> /tmp/rc.local.log
 exec 1>&2
 set -x
 
-#Start the initial playbook to pull the repo
-/usr/local/bin/ansible-playbook -i  "localhost," -c local /startup/start.yml
-
-#export the path of host file
-export ANSIBLE_HOSTS=/startup/hosts
-
-
-#This section selects which playbook to use
-
-SERVER_TYPE="NONE"
-
-if [ "$SERVER_TYPE" == "WEB_API" ]; then
-
-      /usr/local/bin/ansible-playbook -i /startup/hosts -c local /data-act/install/data-broker-web-api/site.yml
-
-elif [ "$SERVER_TYPE" == "WEB" ]; then
-
-        /usr/local/bin/ansible-playbook -i /startup/hosts -c local /data-act/install/data-broker-web-app/site.yml
-
-elif [ "$SERVER_TYPE" == "MANAGER" ]; then
-
-        echo "TODO"
-
-elif [ "$SERVER_TYPE" == "VALIDATOR" ]; then
-
-        /usr/local/bin/ansible-playbook -i /startup/hosts -c local /data-act/install/data-broker-validation/site.yml
-
-elif [ "$SERVER_TYPE" == "API" ]; then
-
-        echo "TODO"
-else
-
-  echo "SERVER SETUP FAILED"
-
-fi
-
-# Exit
-
-exit 0
+su - ec2-user -c /etc/data-act-launch

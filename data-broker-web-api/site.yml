@@ -1,11 +1,10 @@
 ---
-- hosts: data_validator_dev
+- hosts: data_broker_staging
   user: ec2-user
-  sudo: true
-  sudo_user: 
   roles:
   - yum-installs
   - pull-repo
   - pip-install
   - copy-files
-  - run-app
+  - update-schema
+  - start-server
