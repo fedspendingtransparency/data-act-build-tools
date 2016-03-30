@@ -1,6 +1,8 @@
 ---
 - shell: setsebool -P httpd_can_network_connect=1
   sudo: true
+- shell: pkill supervisord
+  sudo: true
 - shell: supervisord -c /data-act/validator/dataactvalidator/config/supervisord.conf &
   sudo: true
   environment:

@@ -1,6 +1,8 @@
 ---
 - shell: setsebool -P httpd_can_network_connect=1
   sudo: true
+- shell: pkill supervisord
+  sudo: true
 - shell: supervisord -c /data-act/web-api/dataactbroker/config/supervisord.conf &
   sudo: true
   environment:
