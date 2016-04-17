@@ -1,8 +1,6 @@
 ---
 - shell: setsebool -P httpd_can_network_connect=1
   sudo: true
-- shell: semodule -i /config/nginxCert.pp
-  sudo: true
 - shell: pkill supervisord
   sudo: true
   ignore_errors: yes
