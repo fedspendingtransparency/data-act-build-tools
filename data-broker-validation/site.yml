@@ -1,5 +1,5 @@
 ---
-- hosts: data_validator_govcloud_dev
+- hosts: data_validator_govcloud_prod
   user: ec2-user
   roles:
   - yum-installs
