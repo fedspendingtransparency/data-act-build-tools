@@ -20,7 +20,7 @@
   yum: name=python-devel.x86_64
 - name: install the epel repo from a remote repo
   sudo: true
-  yum: name=http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm state=present
+  yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=present
 - name: install nginx
   sudo: true
   yum: name=nginx
