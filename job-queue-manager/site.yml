@@ -1,11 +1,9 @@
 ---
-- hosts: data_validator_govcloud_dev
+- hosts: data_job_manager_govcloud_dev
   user: ec2-user
   roles:
   - yum-installs
   - pull-repo
   - pip-install
   - copy-files
-  - update-schema
-  - start-server
-  - new-relic
+  - run-app

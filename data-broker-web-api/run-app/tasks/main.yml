@@ -3,4 +3,4 @@
   environment:
     PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/data-act/backend"
   args:
-    chdir: /data-act/backend/dataactvalidator/
+    chdir: /data-act/backend/dataactbroker
