@@ -1,0 +1,25 @@
+---
+- name: install git
+  sudo: true
+  yum: name=git
+- name: install erlang
+  sudo: true
+  yum: name=http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+- name: install rabbitmq
+  sudo: true
+  yum: name=http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.1/rabbitmq-server-3.6.1-1.noarch.rpm
+- name: install python
+  sudo: true
+  yum: name=python-devel
+- name: install pip
+  sudo: true
+  yum: name=python-pip
+- name: install wheel
+  sudo: true
+  yum: name=python-wheel
+- name: install postgres
+  sudo: true
+  yum: name=postgresql-devel
+- name: install gcc
+  sudo: true
+  yum: name=gcc

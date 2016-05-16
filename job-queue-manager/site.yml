@@ -1,0 +1,9 @@
+---
+- hosts: job-queue-server
+  user: ec2-user
+  roles:
+  - yum-installs
+  - pull-repo
+  - pip-install
+  - copy-files
+  - run-app

@@ -1,0 +1,16 @@
+---
+- service: name=rabbitmq-server state=started
+  sudo: true
+- rabbitmq_user: user={{ rmqUser }}
+                 password={{ rmqPass }}
+                 vhost=/
+                 configure_priv=.*
+                 read_priv=.*
+                 write_priv=.*
+                 state=present
+  sudo: true
+- shell: celery -A jobQueue worker --loglevel=info --logfile=/tmp/job-queue.log --concurrency=1 --detach
+  environment:
+    PYTHONPATH: "/data-act/core"
+  args:
+    chdir: /data-act/core/dataactcore/utils/
