@@ -3,3 +3,9 @@
 
 [dev_servers]
 127.0.0.1            ansible_connection=local
+
+[data_validator_govcloud_dev]
+127.0.0.1            ansible_connection=local
+
+[data_broker_govcloud_dev]
+127.0.0.1            ansible_connection=local

@@ -1,0 +1,6 @@
+---
+- name: Checkout core from git
+  sudo: true
+  git: repo=https://github.com/fedspendingtransparency/data-act-core.git version=development dest=/data-act/core accept_hostkey=true force=yes
+- file: path=/data-act owner=ec2-user recurse=yes
+  sudo: true
