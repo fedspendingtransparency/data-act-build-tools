@@ -1,0 +1,7 @@
+---
+- shell: alembic upgrade head
+  sudo: true
+  environment:
+    PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/data-act/core:/data-act/web-api"
+  args:
+    chdir: /data-act/core/dataactcore

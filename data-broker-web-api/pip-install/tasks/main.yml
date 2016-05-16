@@ -1,4 +1,7 @@
 ---
- - name: Install packages based on requirements.txt.
+ - name: Install core packages based on requirements.txt.
+   sudo: true
+   pip: chdir=/data-act/core requirements="requirements.txt"
+ - name: Install API packages based on requirements.txt.
    sudo: true
    pip: chdir=/data-act/web-api requirements="requirements.txt"
