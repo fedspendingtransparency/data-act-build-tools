@@ -1,0 +1,5 @@
+---
+
+  - name: Remove require tty
+    lineinfile: regexp="Defaults    requiretty" dest=/etc/sudoers state=present line="#Defaults requiretty"
+    sudo: true

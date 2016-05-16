@@ -1,0 +1,5 @@
+---
+- hosts: govcloud_app_base_image
+  user: ec2-user
+  roles:
+  - app-base-image-installs

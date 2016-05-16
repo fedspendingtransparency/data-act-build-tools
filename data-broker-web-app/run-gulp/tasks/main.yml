@@ -1,7 +1,0 @@
----
- - name: Run production gulp command
-   command: gulp
-   args:
-     chdir: /public
-
-

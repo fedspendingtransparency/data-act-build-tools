@@ -1,5 +1,0 @@
----
-- name: Checkout validator from git
-  git: repo=https://github.com/fedspendingtransparency/data-act-validator.git version={{ VAL_BRANCH }}  dest=/data-act/validator accept_hostkey=true
-- name: Checkout core from git
-  git: repo=https://github.com/fedspendingtransparency/data-act-core.git version={{ CORE_BRANCH }} dest=/data-act/core accept_hostkey=true

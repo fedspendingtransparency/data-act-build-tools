@@ -1,4 +1,0 @@
----
- - name: Install packages based on requirements.txt.
-   sudo: true
-   pip: chdir=/data-act/web-api requirements="requirements.txt"

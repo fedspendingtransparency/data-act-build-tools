@@ -1,9 +1,0 @@
----
-- hosts: data_validator_dev
-  user: ec2-user
-  roles:
-  - yum-installs
-  - pull-repo
-  - pip-install
-  - copy-files
-  - start-server

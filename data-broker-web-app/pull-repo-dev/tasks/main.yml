@@ -1,3 +1,0 @@
----
-- name: Checkout from git
-  git: repo=https://github.com/fedspendingtransparency/data-act-broker-web-app.git version={{branch}} dest=/public accept_hostkey=true

@@ -1,4 +1,0 @@
----
-- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/config.yml /data-act/core/dataactcore/config.yml"
-
-- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/nginxVal.conf /etc/nginx/nginx.conf"

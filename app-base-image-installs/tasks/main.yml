@@ -1,0 +1,31 @@
+---
+
+- name: install postgres libraries
+  sudo: true
+  yum: name=postgresql-devel.x86_64
+- name: install gcc
+  sudo: true
+  yum: name=gcc
+- name: install emacs
+  sudo: true
+  yum: name=emacs
+- name: install libffi-devel
+  sudo: true
+  yum: name=libffi-devel
+- name: install nginx
+  sudo: true
+  yum: name=nginx
+- name: install PCRE for uwsgi
+  sudo: true
+  yum: name=pcre.x86_64
+- name: install PCRE development library
+  sudo: true
+  yum: name=pcre-devel.x86_64
+- name: Copy New Relic package
+  shell: rpm -Uvh https://download.newrelic.com/pub/newrelic/el5/i386/newrelic-repo-5-3.noarch.rpm --replacefiles --replacepkgs
+  sudo: true
+- name: Install New Relic Sysmond
+  yum:
+    name: newrelic-sysmond
+    state: latest
+  sudo: true
