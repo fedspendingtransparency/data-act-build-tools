@@ -4,9 +4,9 @@
 - shell: pkill supervisord
   sudo: true
   ignore_errors: yes
-- shell: supervisord -c /data-act/web-api/dataactbroker/config/supervisord.conf &
+- shell: supervisord -c /data-act/backend/dataactbroker/config/supervisord.conf &
   sudo: true
   environment:
-    PYTHONPATH: "/data-act/core:/data-act/web-api"
+    PYTHONPATH: "/data-act/backend"
   args:
-    chdir: /data-act/web-api/dataactbroker/
+    chdir: /data-act/backend/dataactbroker/

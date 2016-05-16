@@ -1,2 +1,2 @@
 ---
-- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/jobManagerConfig.yml /data-act/core/dataactcore/config.yml --region us-gov-west-1"
+- shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/jobManagerConfig.yml /data-act/backend/dataactcore/config.yml --region us-gov-west-1"

@@ -3,13 +3,13 @@
   shell: alembic upgrade head
   sudo: true
   environment:
-    PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/data-act/core:/data-act/validator"
+    PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/data-act/backend"
   args:
-    chdir: /data-act/core/dataactcore
+    chdir: /data-act/backend/dataactcore
 - name: validator schema update 
   shell: alembic upgrade head
   sudo: true
   environment:
-    PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/data-act/core:/data-act/validator"
+    PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/data-act/backend"
   args:
-    chdir: /data-act/validator/dataactvalidator/
+    chdir: /data-act/backend/dataactvalidator/
