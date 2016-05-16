@@ -1,5 +1,5 @@
 ---
-- hosts: data_job_manager_govcloud_dev
+- hosts: data_job_manager_govcloud_staging
   user: ec2-user
   roles:
   - yum-installs
