@@ -1,4 +1,5 @@
 ---
+- shell: /opt/logstash/bin/logstash -f /data-act/data-act-logging.conf &
 - service: name=rabbitmq-server state=started
   sudo: true
 - rabbitmq_user: user={{ rmqUser }}
@@ -14,9 +15,9 @@
 - shell: rm celeryd.pid
   ignore_errors: yes
   args:
-    chdir: /data-act/core/dataactcore/utils/
+    chdir: /data-act/backend/dataactcore/utils/
 - shell: celery -A jobQueue worker --loglevel=info --logfile=/tmp/job-queue.log --concurrency=10 --detach
   environment:
-    PYTHONPATH: "/data-act/core"
+    PYTHONPATH: "/data-act/backend"
   args:
-    chdir: /data-act/core/dataactcore/utils/
+    chdir: /data-act/backend/dataactcore/utils/

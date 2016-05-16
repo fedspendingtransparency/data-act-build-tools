@@ -18,7 +18,7 @@ export ANSIBLE_HOSTS=/startup/hosts
 #This section selects which playbook to use and whether to run as dev or prod
 
 SERVER_TYPE="WEB_API"
-ENV="ENV=dev API_BRANCH=dev CORE_BRANCH=development"
+ENV="ENV=dev BRANCH=development"
 
 if [ "$SERVER_TYPE" == "WEB_API" ]; then
 
