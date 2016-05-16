@@ -1,7 +1,7 @@
 ---
-- shell: alembic upgrade head
+- shell: python /data-act/backend/dataactcore/scripts/setupAllDB.py
   sudo: true
   environment:
-    PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/data-act/core:/data-act/web-api"
+    PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/data-act/backend"
   args:
-    chdir: /data-act/core/dataactcore
+    chdir: /data-act/backend/dataactcore

@@ -1,4 +1,4 @@
 ---
  - name: Install packages based on requirements.txt.
    sudo: true
-   pip: chdir=/data-act/core requirements="requirements.txt"
+   pip: chdir=/data-act/backend requirements="requirements.txt"

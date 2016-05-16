@@ -1,7 +1,4 @@
 ---
- - name: Install validator packages based on requirements.txt.
+ - name: Install backend packages based on requirements.txt.
    sudo: true
-   pip: chdir=/data-act/validator requirements="requirements.txt"
- - name: Install core packages based on requirements.txt.
-   sudo: true
-   pip: chdir=/data-act/core requirements="requirements.txt"
+   pip: chdir=/data-act/backend requirements="requirements.txt"

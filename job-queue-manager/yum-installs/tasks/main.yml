@@ -23,3 +23,9 @@
 - name: install gcc
   sudo: true
   yum: name=gcc
+- name: copy logstash repo info
+  shell: "rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch"
+  shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/logstash.repo /etc/yum.repos.d/logstash.repo --region us-gov-west-1"
+  sudo: true
+- name: install repo
+  yum: name=logstash
