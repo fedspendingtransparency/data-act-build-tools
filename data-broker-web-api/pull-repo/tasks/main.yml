@@ -1,10 +1,7 @@
 ---
-- name: Checkout validator from git
+- name: Checkout backend from git
   sudo: true
-  git: repo=https://github.com/fedspendingtransparency/data-act-broker.git version={{ API_BRANCH }}  dest=/data-act/web-api accept_hostkey=true force=yes
-- name: Checkout core from git
-  sudo: true
-  git: repo=https://github.com/fedspendingtransparency/data-act-core.git version={{ CORE_BRANCH}} dest=/data-act/core accept_hostkey=true force=yes
+  git: repo=https://github.com/fedspendingtransparency/data-act-broker-backend.git version={{ BRANCH }}  dest=/data-act/backend accept_hostkey=true force=yes
 - name: assign ownership of api to ec2-user
   sudo: true
   file: path=/data-act owner=ec2-user recurse=yes

@@ -8,6 +8,9 @@
 - name: install rabbitmq
   sudo: true
   yum: name=http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.1/rabbitmq-server-3.6.1-1.noarch.rpm
+- name: install libffi-devel
+  sudo: true
+  yum: name=libffi-devel
 - name: install python
   sudo: true
   yum: name=python-devel
@@ -23,3 +26,10 @@
 - name: install gcc
   sudo: true
   yum: name=gcc
+- name: copy logstash repo info
+  shell: "rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch"
+  shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/logstash.repo /etc/yum.repos.d/logstash.repo --region us-gov-west-1"
+  sudo: true
+- name: install repo
+  yum: name=logstash
+  sudo: true
