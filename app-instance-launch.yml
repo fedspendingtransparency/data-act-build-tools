@@ -1,0 +1,8 @@
+---
+- hosts: govcloud_instance_launch
+  user: ec2-user
+  roles:
+  - copy-files
+  - update-schema
+  - start-server
+  - start-new-relic

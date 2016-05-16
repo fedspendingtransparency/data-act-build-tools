@@ -1,0 +1,36 @@
+---
+
+- name: install git
+  sudo: true
+  yum: name=git
+- name: install python development libraries
+  sudo: true
+  yum: name=python-devel.x86_64
+- name: install the epel repo from a remote repo
+  sudo: true
+  yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=present
+- name: install pip
+  sudo: true
+  yum: name=python-pip
+- name: install java
+  sudo: true
+  yum: name=java-1.7.0-openjdk
+- name: install aws cli
+  pip: name=awscli
+  sudo: true
+- name: copy logstash repo info
+  shell: "rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch"
+  shell: "aws s3 cp s3://{{ ENV }}-data-act-submission/config/logstash.repo /etc/yum.repos.d/logstash.repo --region us-gov-west-1"
+  sudo: true
+- name: install logstash repo
+  yum: name=logstash
+  sudo: true
+- name: install wget
+  yum: name=wget
+  sudo: true
+- name: install unzip
+  yum: name=unzip
+  sudo: true
+- name: install ansible
+  yum: name=ansible
+  sudo: true

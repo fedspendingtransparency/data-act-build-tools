@@ -1,5 +1,0 @@
----
- - name: Install packages based on package.json.
-   npm: path=/public
- - name: Install gulp globally
-   npm: name=gulp global=yes

@@ -1,0 +1,14 @@
+---
+- shell: /opt/logstash/bin/logstash -f /data-act/data-act-logging.conf &
+  sudo: true
+- shell: setsebool -P httpd_can_network_connect=1
+  sudo: true
+- shell: pkill supervisord
+  sudo: true
+  ignore_errors: yes
+- shell: supervisord -c /data-act/backend/dataact{{ APP }}/config/supervisord.conf &
+  sudo: true
+  environment:
+    PYTHONPATH: "/data-act/backend"
+  args:
+    chdir: /data-act/backend/dataact{{ APP }}/

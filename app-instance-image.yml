@@ -1,0 +1,7 @@
+---
+- hosts: govcloud_instance_image
+  user: ec2-user
+  roles:
+  - pull-repo
+  - pip-install
+  - add-hostfile
