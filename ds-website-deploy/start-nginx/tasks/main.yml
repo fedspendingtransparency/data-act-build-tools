@@ -1,0 +1,8 @@
+---
+- name: stop nginx service
+  shell: service nginx stop
+  ignore_errors: yes
+  sudo: true
+- name: start nginx service
+  shell: service nginx start &
+  sudo: true

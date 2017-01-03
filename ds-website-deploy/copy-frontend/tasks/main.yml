@@ -1,0 +1,18 @@
+---
+- name: remove old frontend backed up files
+  shell: "rm -rf /var/www-old"
+  sudo: true
+  ignore_errors: yes
+- name: backup old frontend served files
+  shell: "mv /var/www /var/www-old"
+  sudo: true
+  ignore_errors: yes
+- name: Copy frontend files
+  shell: "aws s3 cp s3://ds-website-assets/{{ ENV }}/ /var/www --region us-gov-west-1 --recursive"
+  sudo: true
+- name: Checkout config from git
+  git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git dest=/data-act/config accept_hostkey=true force=yes key_file="/home/ec2-user/.ssh/id_rsa"
+  sudo: true
+- name: Copy ENV config
+  shell: cp /data-act/config/nginx/nginx_ds_website.conf /etc/nginx/nginx.conf
+  sudo: true

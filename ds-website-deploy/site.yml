@@ -1,0 +1,6 @@
+---
+- hosts: ds_website_{{ ENV }}
+  user: ec2-user
+  roles:
+  - copy-frontend
+  - start-nginx
