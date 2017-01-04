@@ -8,7 +8,7 @@
   sudo: true
   ignore_errors: yes
 - name: Copy frontend files
-  shell: "aws s3 cp s3://ds-website-assets/{{ ENV }}/public/ /var/www --region us-gov-west-1 --recursive"
+  shell: "aws s3 cp s3://ds-website-assets/{{ ENV }}/{{ BUILD_ID }}/public/ /var/www --region us-gov-west-1 --recursive"
   sudo: true
 - name: Checkout config from git
   git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git dest=/data-act/config accept_hostkey=true force=yes key_file="/home/ec2-user/.ssh/id_rsa"
