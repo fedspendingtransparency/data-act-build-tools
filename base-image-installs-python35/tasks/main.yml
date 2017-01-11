@@ -41,7 +41,7 @@
   sudo: true
 - name: pull data act build tools repo
   git: repo=https://github.com/fedspendingtransparency/data-act-build-tools.git
-       version=add-logstash-repo
+       version=master
        dest=/home/ec2-user/data-act-build-tools
 - name: copy logstash repo info
   shell: "rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch"
