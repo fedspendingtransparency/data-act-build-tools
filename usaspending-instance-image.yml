@@ -15,6 +15,10 @@
   - pull-repo
   - add-hostfile
   tasks:
+  
+    - name: run migrations
+      shell: cd /data-act/backend/usaspending_api/; ls; pwd
+      
     - name: update pip
       sudo: true
       shell: pip3.5 install --upgrade pip 
@@ -74,9 +78,6 @@
         dest: "{{ SETTINGS_PY }}"
         regexp: '\s*ALLOWED_HOSTS =.*'
         line: "ALLOWED_HOSTS = ['{{ DOMAIN }}']"
-        
-    - name: run migrations
-      shell: cd /data-act/backend/usaspending_api/; python3.5 manage.py migrate
 
     - name: stop supervisord
       shell: pkill supervisord
