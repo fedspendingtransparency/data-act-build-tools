@@ -17,8 +17,9 @@
   tasks:
   
     - name: run migrations
-      sudo: true
-      shell: python3.5 /data-act/backend/usaspending_api/manage.py migrate
+      shell: python3.5 manage.py migrate
+      args:
+        chdir: "{{ CODE_HOME }}"
       
     - name: update pip
       sudo: true
