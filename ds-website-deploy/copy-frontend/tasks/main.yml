@@ -15,12 +15,14 @@
   sudo: true
 - name: turn basic auth off in production
   when: ENV == 'prod'
+  sudo: true
   lineinfile:
     dest: /data-act/config/nginx/nginx_ds_website.conf
     regexp: '\s*auth_basic .*'
     state: absent
 - name: turn basic auth off in production
   when: ENV == 'prod'
+  sudo: true
   lineinfile:
     dest: /data-act/config/nginx/nginx_ds_website.conf
     regexp: '\s*auth_basic_user_file .*'
