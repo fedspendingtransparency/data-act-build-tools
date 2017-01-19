@@ -19,12 +19,12 @@
 - name: turn basic auth off in production
   when: ENV == 'prod'
   lineinfile:
-    path: /etc/nginx/nginx.conf
+    dest: /etc/nginx/nginx.conf
     regexp: '\s*auth_basic .*'
     state: absent
 - name: turn basic auth off in production
   when: ENV == 'prod'
   lineinfile:
-    path: /etc/nginx/nginx.conf
+    dest: /etc/nginx/nginx.conf
     regexp: '\s*auth_basic_user_file .*'
     state: absent
