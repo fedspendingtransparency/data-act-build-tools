@@ -78,7 +78,7 @@
     - name: run migrations
       shell: python3.5 manage.py migrate
       args:
-        chdir: "{{ CODE_HOME }}/usaspending_api"
+        chdir: "{{ CODE_HOME }}/usaspending_api/"
 
     - name: stop supervisord
       shell: pkill supervisord
