@@ -74,6 +74,11 @@
         dest: "{{ SETTINGS_PY }}"
         regexp: '\s*ALLOWED_HOSTS =.*'
         line: "ALLOWED_HOSTS = ['{{ DOMAIN }}']"
+        
+    - name: run migrations
+      shell: python3.5 manage.py migrate
+      args:
+        chdir: "{{ CODE_HOME }}/usaspending_api"
 
     - name: stop supervisord
       shell: pkill supervisord
