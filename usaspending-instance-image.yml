@@ -17,7 +17,7 @@
   tasks:
   
     - name: run migrations
-      shell: cd /data-act/backend/usaspending_api/; ls; pwd
+      shell: python3.5 /data-act/backend/usaspending_api/manage.py migrate
       
     - name: update pip
       sudo: true
