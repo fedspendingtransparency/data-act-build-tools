@@ -13,18 +13,18 @@
 - name: Checkout config from git
   git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git dest=/data-act/config accept_hostkey=true force=yes key_file="/home/ec2-user/.ssh/id_rsa"
   sudo: true
-- name: Copy ENV config
-  shell: cp /data-act/config/nginx/nginx_ds_website.conf /etc/nginx/nginx.conf
-  sudo: true
 - name: turn basic auth off in production
   when: ENV == 'prod'
   lineinfile:
-    dest: /etc/nginx/nginx.conf
+    dest: /data-act/config/nginx/nginx_ds_website.conf
     regexp: '\s*auth_basic .*'
     state: absent
 - name: turn basic auth off in production
   when: ENV == 'prod'
   lineinfile:
-    dest: /etc/nginx/nginx.conf
+    dest: /data-act/config/nginx/nginx_ds_website.conf
     regexp: '\s*auth_basic_user_file .*'
     state: absent
+- name: Copy ENV config
+  shell: cp /data-act/config/nginx/nginx_ds_website.conf /etc/nginx/nginx.conf
+  sudo: true
