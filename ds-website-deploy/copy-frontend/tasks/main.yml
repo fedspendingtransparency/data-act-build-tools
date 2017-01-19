@@ -16,3 +16,15 @@
 - name: Copy ENV config
   shell: cp /data-act/config/nginx/nginx_ds_website.conf /etc/nginx/nginx.conf
   sudo: true
+- name: turn basic auth off in production
+      when: ENV == 'prod'
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: '\s*auth_basic .*'
+        state: absent
+- name: turn basic auth off in production
+      when: ENV == 'prod'
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: '\s*auth_basic_user_file .*'
+        state: absent
