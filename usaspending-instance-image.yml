@@ -65,7 +65,7 @@
       lineinfile:
         dest: "{{ SETTINGS_PY }}"
         regexp: '\s*STATIC_URL =.*'
-        line: "STATIC_URL = 'http://ds-api-assets.s3-website-us-gov-west-1.amazonaws.com/'"
+        line: "STATIC_URL = 'https://ds-api-assets.s3-us-gov-west-1.amazonaws.com/'"
 
     - name: turn debug off in production or staging
       when: BRANCH == 'master' or BRANCH == 'stg'
