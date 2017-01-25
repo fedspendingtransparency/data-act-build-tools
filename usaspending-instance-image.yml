@@ -16,10 +16,10 @@
   - add-hostfile
   tasks:
   
-    - name: run migrations
-      shell: python3.5 manage.py migrate
-      args:
-        chdir: "{{ CODE_HOME }}"
+   ## - name: run migrations
+   ##   shell: python3.5 manage.py migrate
+   ##   args:
+   ##     chdir: "{{ CODE_HOME }}"
       
     - name: update pip
       sudo: true
