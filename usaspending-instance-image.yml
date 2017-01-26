@@ -1,95 +1,148 @@
 ---
 - hosts: "{{ HOST }}"
 
-# If BRANCH = master or stg, you MUST provide a DOMAIN_NAME for ALLOWED_HOSTS
+# You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL
 
   vars:
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN_NAME }}"
     CODE_HOME: /data-act/backend
-    SETTINGS_PY: "{{ CODE_HOME }}/usaspending_api/settings.py"
+    CONFIG_HOME: /data-act/config
+    STATIC_ASSETS_URL: https://ds-api-assets.s3-us-gov-west-1.amazonaws.com/
+
+  become_method: sudo  
 
   user: ec2-user
   roles:
   - pull-repo
   - add-hostfile
   tasks:
-  
+
    ## - name: run migrations
    ##   shell: python3.5 manage.py migrate
    ##   args:
    ##     chdir: "{{ CODE_HOME }}"
-      
+
     - name: update pip
-      sudo: true
+      become: true 
       shell: pip3.5 install --upgrade pip 
+
+    - name: copy requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ CODE_HOME }}/requirements.txt"
+        dest: "{{ CODE_HOME }}/requirements_copy.txt"
+        remote_src: true
+      register: requirements_txt
     - name: install python packages based on requirements.txt
-      sudo: true
-      pip: chdir=/data-act/backend requirements="requirements.txt" executable=pip3.5
+      become: true 
+      when: requirements_txt.changed
+      pip: chdir="{{ CODE_HOME }}" requirements="requirements.txt" executable=pip3.5
+
+    - name: copy server_requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ CODE_HOME }}/server_requirements.txt"
+        dest: "{{ CODE_HOME }}/server_requirements_copy.txt"
+        remote_src: true
+      register: server_requirements_txt
     - name: install python packages based on server_requirements.txt
-      sudo: true
-      pip: chdir=/data-act/backend requirements="server_requirements.txt" executable=pip3.5
+      become: true
+      when: server_requirements_txt.changed
+      pip: chdir="{{ CODE_HOME }}" requirements="server_requirements.txt" executable=pip3.5
+
+    - name: copy legacy_requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ CODE_HOME }}/legacy_requirements.txt"
+        dest: "{{ CODE_HOME }}/legacy_requirements_copy.txt"
+        remote_src: true
+      register: legacy_requirements_txt
     - name: install python packages based on legacy_requirements.txt
-      sudo: true
-      pip: chdir=/data-act/backend requirements="legacy_requirements.txt" executable=pip2
-    - name: (Remove Later) ensure nginx running as ec2-user
+      become: true
+      when: legacy_requirements_txt.changed
+      pip: chdir="{{ CODE_HOME }}" requirements="legacy_requirements.txt" executable=pip2
+
+    - name: set nginx configuration path
+      set_fact:
+        nginx_path: "{{ CONFIG_HOME }}/nginx/nginx_ds_api.conf"  
+
+    - name: set nginx configuration path to SSL if dev/stg
+      set_fact:
+         nginx_path: "{{ CONFIG_HOME }}/nginx/nginx_ds_api_ssl.conf"
+      when: BRANCH == 'dev' or BRANCH == 'stg'
+
+    - name: (remove later) run nginx as ec2-user
       lineinfile:
-        dest: /data-act/config/nginx/nginx_ds_api.conf
+        dest: "{{ nginx_path }}"
         regexp: '\s*user.*;'
         line: 'user ec2-user;'
+
+    - name: check whether nginx config has SSL enabled
+      command: "awk '/server_name/' {{ nginx_path }}"
+      register: check_ssl
+
+    - name: add server name to nginx config (if SSL enabled)
+      when: check_ssl.stdout != ""
+      lineinfile:
+        dest: "{{ nginx_path }}"
+        regexp: '\s*server_name.*;'
+        line: "\tserver_name {{ DOMAIN }};"
+
     - name: copy nginx config
-      sudo: true
-      shell: cp /data-act/config/nginx/nginx_ds_api.conf /etc/nginx/nginx.conf
+      become: true
+      shell: "cp {{ nginx_path }} /etc/nginx/nginx.conf"
     
     - name: ensure the correct directory structure for tmp nginx files
+      become: true
       file: 
         path: /var/lib/nginx/tmp
         state: directory
         owner: ec2-user
         mode: "u+wrx"
         recurse: yes
-      become: true
 
     - name: duplicate config file to uwsgi_db.ini
-      sudo: true
-      shell: cp /data-act/backend/config/uwsgi.ini /data-act/backend/config/uwsgi_db.ini
+      become: true
+      shell: "cp {{ CODE_HOME }}/config/uwsgi.ini {{ CODE_HOME }}/config/uwsgi_db.ini"
+
     - name: copy user-level environment variable to temp text file...
-      sudo: false
-      shell: echo env=DATABASE_URL=$DATABASE_URL > /data-act/backend/config/temp.txt
+      shell: "echo env=DATABASE_URL=$DATABASE_URL > {{ CODE_HOME }}/config/temp.txt"
+      
     - name: concatenate the duplicate config and the env var
-      sudo: true
-      shell: cat /data-act/backend/config/temp.txt >> /data-act/backend/config/uwsgi_db.ini
+      become: true
+      shell: "cat {{ CODE_HOME }}/config/temp.txt >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
     - name: add static url from s3
       lineinfile:
-        dest: "{{ SETTINGS_PY }}"
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*STATIC_URL =.*'
-        line: "STATIC_URL = 'https://ds-api-assets.s3-us-gov-west-1.amazonaws.com/'"
+        line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'"
 
     - name: turn debug off in production or staging
       when: BRANCH == 'master' or BRANCH == 'stg'
       lineinfile:
-        dest: "{{ SETTINGS_PY }}"
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*DEBUG =.*'
         line: "DEBUG = False"
 
     - name: add host to ALLOWED_HOSTS
       when: BRANCH == 'master' or BRANCH == 'stg'
       lineinfile:
-        dest: "{{ SETTINGS_PY }}"
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*ALLOWED_HOSTS =.*'
         line: "ALLOWED_HOSTS = ['{{ DOMAIN }}']"
 
     - name: stop supervisord
+      become: true
       shell: pkill supervisord
-      sudo: true
       ignore_errors: yes    
+
     - name: start supervisord
-      shell: supervisord -c /data-act/backend/config/supervisord.conf &
-      sudo: true  
+      become: true
+      shell: "supervisord -c {{ CODE_HOME }}/config/supervisord.conf &"
       environment:
-        PYTHONPATH: "/data-act/backend"
+        PYTHONPATH: "{{ CODE_HOME }}"
       args:
-        chdir: /data-act/backend/usaspending_api/  
-  
+        chdir: "{{ CODE_HOME }}/usaspending_api/"
