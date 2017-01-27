@@ -133,7 +133,7 @@
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*ALLOWED_HOSTS =.*'
-        line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS }}']"
+        line: "ALLOWED_HOSTS = [{{ ALLOWED_HOSTS }}]"
 
     - name: stop supervisord
       become: true
