@@ -10,6 +10,12 @@
   sudo: true
 - shell: setsebool -P httpd_can_network_connect=1
   sudo: true
+- name: create app log if it doesn't exist
+  shell: touch /data-act/app.json-log
+  ignore_errors: yes
+- name: set owner of app log to ec2-user
+  shell: chown ec2-user /data-act/app.json-log
+  sudo: true
 - shell: pkill supervisord
   sudo: true
   ignore_errors: yes
