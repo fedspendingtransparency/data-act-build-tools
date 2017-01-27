@@ -7,6 +7,7 @@
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN_NAME }}"
+    ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
     CODE_HOME: /data-act/backend
     CONFIG_HOME: /data-act/config
     STATIC_ASSETS_URL: https://ds-api-assets.s3-us-gov-west-1.amazonaws.com/
@@ -132,7 +133,7 @@
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*ALLOWED_HOSTS =.*'
-        line: "ALLOWED_HOSTS = ['{{ DOMAIN }}']"
+        line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS }}']"
 
     - name: stop supervisord
       become: true
