@@ -64,16 +64,20 @@
 #        nginx_path: "{{ CONFIG_HOME }}/nginx/nginx_ds_api.conf"
 
     - name: collect django static assets
+      register: collect-assets
       shell: python3.5 manage.py collectstatic --clear --no-input
       args:
         chdir: "{{ CODE_HOME }}"
+      ignore_errors: true
 
     - name: upload django static assets
+      when: collect-assets | succeeded
       shell: "aws s3 cp --recursive usaspending_api/static s3://ds-api-assets/{{ BRANCH }}/ --region us-gov-west-1"
       args:
         chdir: "{{ CODE_HOME }}"
 
     - name: set static assets path
+      when: collect-assets | succeeded
       set_fact:
         STATIC_ASSETS_URL: "{{ STATIC_ASSETS_URL }}{{ BRANCH }}/"      
 
