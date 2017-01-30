@@ -22,7 +22,7 @@
 
     - name: collect django static assets
       when: BRANCH == 'dev'
-      shell: python3.5 manage.py collectstatic
+      shell: python3.5 manage.py collectstatic --clear --no-input
       args:
         chdir: "{{ CODE_HOME }}"
 
