@@ -21,19 +21,16 @@
   tasks:
 
     - name: collect django static assets
-      when: BRANCH == 'dev'
       shell: python3.5 manage.py collectstatic --clear --no-input
       args:
         chdir: "{{ CODE_HOME }}"
 
     - name: upload django static assets
-      when: BRANCH == 'dev'
       shell: "aws s3 cp --recursive usaspending_api/static s3://ds-api-assets/{{ BRANCH }}/ --region us-gov-west-1"
       args:
         chdir: "{{ CODE_HOME }}"
 
     - name: set static assets path
-      when: BRANCH == 'dev'
       set_fact:
         STATIC_ASSETS_URL: "{{ STATIC_ASSETS_URL }}{{ BRANCH }}/"      
 
