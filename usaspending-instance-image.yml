@@ -19,26 +19,6 @@
   - pull-repo
   - add-hostfile
   tasks:
-
-    - name: collect django static assets
-      shell: python3.5 manage.py collectstatic --clear --no-input
-      args:
-        chdir: "{{ CODE_HOME }}"
-
-    - name: upload django static assets
-      shell: "aws s3 cp --recursive usaspending_api/static s3://ds-api-assets/{{ BRANCH }}/ --region us-gov-west-1"
-      args:
-        chdir: "{{ CODE_HOME }}"
-
-    - name: set static assets path
-      set_fact:
-        STATIC_ASSETS_URL: "{{ STATIC_ASSETS_URL }}{{ BRANCH }}/"      
-
-    - name: run migrations
-      shell: python3.5 manage.py migrate
-      args:
-        chdir: "{{ CODE_HOME }}"
-
     - name: update pip
       become: true 
       shell: pip3.5 install --upgrade pip 
@@ -81,7 +61,26 @@
 
 #    - name: set nginx configuration path
 #      set_fact:
-#        nginx_path: "{{ CONFIG_HOME }}/nginx/nginx_ds_api.conf"  
+#        nginx_path: "{{ CONFIG_HOME }}/nginx/nginx_ds_api.conf"
+
+    - name: collect django static assets
+      shell: python3.5 manage.py collectstatic --clear --no-input
+      args:
+        chdir: "{{ CODE_HOME }}"
+
+    - name: upload django static assets
+      shell: "aws s3 cp --recursive usaspending_api/static s3://ds-api-assets/{{ BRANCH }}/ --region us-gov-west-1"
+      args:
+        chdir: "{{ CODE_HOME }}"
+
+    - name: set static assets path
+      set_fact:
+        STATIC_ASSETS_URL: "{{ STATIC_ASSETS_URL }}{{ BRANCH }}/"      
+
+    - name: run migrations
+      shell: python3.5 manage.py migrate
+      args:
+        chdir: "{{ CODE_HOME }}"
 
     - name: set nginx configuration path to SSL
       set_fact:
