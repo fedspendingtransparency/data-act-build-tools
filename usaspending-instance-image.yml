@@ -71,13 +71,13 @@
       ignore_errors: true
 
     - name: upload django static assets
-      when: collect-assets | succeeded
+      when: collect-assets | success
       shell: "aws s3 cp --recursive usaspending_api/static s3://ds-api-assets/{{ BRANCH }}/ --region us-gov-west-1"
       args:
         chdir: "{{ CODE_HOME }}"
 
     - name: set static assets path
-      when: collect-assets | succeeded
+      when: collect-assets | success
       set_fact:
         STATIC_ASSETS_URL: "{{ STATIC_ASSETS_URL }}{{ BRANCH }}/"      
 
