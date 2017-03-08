@@ -1,0 +1,25 @@
+{
+    "builders": [
+        {
+            "ami_name": "USASpending-API-Image {{timestamp}}",
+            "instance_type": "m3.medium",
+            "region": "us-gov-west-1",
+            "source_ami": "ami-a5209ac4",
+            "ssh_username": "ec2-user",
+            "tags": {
+                "base": "False",
+                "current": "True",
+                "environment": "staging",
+                "type": "USASpending-API"
+            },
+            "type": "amazon-ebs"
+        }
+    ],
+    "provisioners": [
+        {
+            "extra_arguments": "--extra-vars 'BRANCH=staging'",
+            "playbook_file": "usaspending-instance-image.yml",
+            "type": "ansible-local"
+        }
+    ]
+}
