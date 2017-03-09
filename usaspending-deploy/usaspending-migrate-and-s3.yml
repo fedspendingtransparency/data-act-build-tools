@@ -1,0 +1,36 @@
+---
+- hosts: "{{ HOST }}"
+
+# This is stuff that affects other parts of the app
+
+  vars:
+    BRANCH: "{{ BRANCH }}"
+    CODE_HOME: /data-act/backend
+
+  become_method: sudo
+
+  user: ec2-user
+
+  tasks:
+
+    - name: collect django static assets
+      register: collectassets
+      shell: python3.5 manage.py collectstatic --clear --no-input
+      args:
+        chdir: "{{ CODE_HOME }}"
+      ignore_errors: true
+
+    - name: upload django static assets
+      when: collectassets | success
+      shell: "aws s3 cp --recursive usaspending_api/static s3://ds-api-assets/{{ BRANCH }}/ --region us-gov-west-1"
+      args:
+        chdir: "{{ CODE_HOME }}"
+
+# DB Environment Variable / Migrations (takes awhile)
+
+    - name: run migrations
+      shell: |
+        export DATABASE_URL=`cat /etc/db_{BRANCH}`
+        python3.5 manage.py migrate
+      args:
+        chdir: "{{ CODE_HOME }}"
