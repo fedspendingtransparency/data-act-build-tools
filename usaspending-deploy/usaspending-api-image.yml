@@ -1,0 +1,92 @@
+---
+- hosts: "{{ HOST }}"
+
+  vars:
+    BRANCH: "{{ BRANCH }}"
+
+    REPO: https://github.com/fedspendingtransparency/usaspending-api.git   
+    CODE_HOME: /data-act/backend
+
+  become_method: sudo
+
+  user: ec2-user
+
+  tasks:
+
+# Git Checkout
+
+    - name: Checkout backend from git
+      become: true
+      git: repo={{ REPO }}
+           version={{ BRANCH }}  
+           dest=/data-act/backend 
+           accept_hostkey=true 
+           force=yes
+
+    - name: Checkout config from git
+      become: true
+      git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
+           dest=/data-act/config 
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa"
+
+    - name: assign ownership of api to ec2-user
+      become: true
+      file: path=/data-act owner=ec2-user recurse=yes
+
+    - name: assign ownership of tmp to ec2-user
+      become: true
+      file: path=/tmp owner=ec2-user recurse=yes
+  
+# Install Packages  
+
+    - name: update pip
+      become: true 
+      shell: pip3.5 install --upgrade pip 
+
+    - name: copy requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ CODE_HOME }}/requirements.txt"
+        dest: "{{ CODE_HOME }}/requirements_copy.txt"
+        remote_src: true
+      register: requirements_txt
+    - name: install python packages based on requirements.txt
+      become: true 
+      when: requirements_txt.changed
+      pip: chdir="{{ CODE_HOME }}" requirements="requirements.txt" executable=pip3.5
+
+    - name: copy server_requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ CODE_HOME }}/server_requirements.txt"
+        dest: "{{ CODE_HOME }}/server_requirements_copy.txt"
+        remote_src: true
+      register: server_requirements_txt
+    - name: install python packages based on server_requirements.txt
+      become: true
+      when: server_requirements_txt.changed
+      pip: chdir="{{ CODE_HOME }}" requirements="server_requirements.txt" executable=pip3.5
+
+    - name: copy legacy_requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ CODE_HOME }}/legacy_requirements.txt"
+        dest: "{{ CODE_HOME }}/legacy_requirements_copy.txt"
+        remote_src: true
+      register: legacy_requirements_txt
+    - name: install python packages based on legacy_requirements.txt
+      become: true
+      when: legacy_requirements_txt.changed
+      pip: chdir="{{ CODE_HOME }}" requirements="legacy_requirements.txt" executable=pip2
+
+    - name: ensure the correct directory structure for tmp nginx files
+      become: true
+      file: 
+        path: /var/lib/nginx/tmp
+        state: directory
+        owner: ec2-user
+        mode: "u+wrx"
+        recurse: yes
+
