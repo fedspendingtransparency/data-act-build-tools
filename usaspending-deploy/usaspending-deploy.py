@@ -79,6 +79,7 @@ def deploy():
         new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
         print('Done. New AMI created: ' + new_instance_ami)
 
+
     # Set current=False tag for old AMI
         print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
         update_ami_tags(old_instance_amis)
@@ -133,7 +134,7 @@ def run_tf(tf_exec_path, tf_dir):
 
 
 def packer_build(packer_file='packer.json', packer_exec_path='packer'):
-    return real_time_command([packer_exec_path, 'build', packer_file])
+    return real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
 
 
 def real_time_command(command_to_run):
@@ -144,6 +145,9 @@ def real_time_command(command_to_run):
         if output == '' and process.poll() is not None:
             break
         if output:
+            # Pretty print output
+            if '-machine-readable' in command_to_run:
+                output = output[output.rfind(',') + 1:]
             print(output.strip())
             total_output += output
     rc = process.poll()
