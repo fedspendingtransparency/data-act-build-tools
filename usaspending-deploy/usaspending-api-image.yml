@@ -1,0 +1,165 @@
+---
+- hosts: "{{ HOST }}"
+
+  vars:
+    REPO: https://github.com/fedspendingtransparency/usaspending-api.git
+    BRANCH: "{{ BRANCH }}"
+    DOMAIN_STG: "{{ DOMAIN_STG }}"
+    DOMAIN_PROD: "{{ DOMAIN_PROD }}"
+    ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
+    CODE_HOME: /data-act/backend
+    CONFIG_HOME: /data-act/config
+    STATIC_ASSETS_URL: https://ds-api-assets.s3-us-gov-west-1.amazonaws.com/
+
+  become_method: sudo
+
+  user: ec2-user
+
+  tasks:
+
+# Git Checkout
+
+    - name: Checkout backend from git
+      become: true
+      git: repo={{ REPO }}
+           version={{ BRANCH }}  
+           dest=/data-act/backend 
+           accept_hostkey=true 
+           force=yes
+
+    - name: Checkout config from git
+      become: true
+      git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
+           dest=/data-act/config 
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa"
+
+    - name: assign ownership of api to ec2-user
+      become: true
+      file: path=/data-act owner=ec2-user recurse=yes
+
+    - name: assign ownership of tmp to ec2-user
+      become: true
+      file: path=/tmp owner=ec2-user recurse=yes
+  
+# Install Packages  
+
+    - name: update pip
+      become: true 
+      shell: pip3.5 install --upgrade pip 
+
+    - name: copy requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ CODE_HOME }}/requirements.txt"
+        dest: "{{ CODE_HOME }}/requirements_copy.txt"
+        remote_src: true
+      register: requirements_txt
+    - name: install python packages based on requirements.txt
+      become: true 
+      when: requirements_txt.changed
+      pip: chdir="{{ CODE_HOME }}" requirements="requirements.txt" executable=pip3.5
+
+    - name: copy server_requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ CODE_HOME }}/server_requirements.txt"
+        dest: "{{ CODE_HOME }}/server_requirements_copy.txt"
+        remote_src: true
+      register: server_requirements_txt
+    - name: install python packages based on server_requirements.txt
+      become: true
+      when: server_requirements_txt.changed
+      pip: chdir="{{ CODE_HOME }}" requirements="server_requirements.txt" executable=pip3.5
+
+    - name: copy legacy_requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ CODE_HOME }}/legacy_requirements.txt"
+        dest: "{{ CODE_HOME }}/legacy_requirements_copy.txt"
+        remote_src: true
+      register: legacy_requirements_txt
+    - name: install python packages based on legacy_requirements.txt
+      become: true
+      when: legacy_requirements_txt.changed
+      pip: chdir="{{ CODE_HOME }}" requirements="legacy_requirements.txt" executable=pip2
+
+    - name: ensure the correct directory structure for tmp nginx files
+      become: true
+      file: 
+        path: /var/lib/nginx/tmp
+        state: directory
+        owner: ec2-user
+        mode: "u+wrx"
+        recurse: yes
+
+# /etc/nginx/nginx.conf
+
+    - name: set nginx configuration path to SSL
+      set_fact:
+         nginx_path: "{{ CONFIG_HOME }}/nginx/nginx_ds_api.conf"
+
+    - name: (remove later) run nginx as ec2-user
+      lineinfile:
+        dest: "{{ nginx_path }}"
+        regexp: '\s*user.*;'
+        line: 'user ec2-user;'
+
+    - name: add server name to nginx config (staging)
+      when: BRANCH == 'stg'
+      lineinfile:
+        dest: "{{ nginx_path }}"
+        regexp: '\s*server_name.*;'
+        line: "\tserver_name {{ DOMAIN_STG }};"
+
+    - name: add server name to nginx config (master)
+      when: BRANCH == 'master'
+      lineinfile:
+        dest: "{{ nginx_path }}"
+        regexp: '\s*server_name.*;'
+        line: "\tserver_name {{ DOMAIN_PROD }};"    
+
+    - name: copy nginx config
+      become: true
+      shell: "cp {{ nginx_path }} /etc/nginx/nginx.conf"
+
+# config/uwsgi.ini
+
+    - name: duplicate config file to uwsgi_db.ini
+      become: true
+      shell: "cp {{ CODE_HOME }}/config/uwsgi.ini {{ CODE_HOME }}/config/uwsgi_db.ini"
+           
+    - name: concatenate the db credentials to uwsgi
+      become: true
+      shell: "cat /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+
+# usaspending_api/settings.py
+
+    - name: set static assets path
+      set_fact:
+        STATIC_ASSETS_URL: "{{ STATIC_ASSETS_URL }}{{ BRANCH }}/"
+
+    - name: add static url from s3
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*STATIC_URL =.*'
+        line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'"
+
+    - name: turn debug off in production or staging
+      when: BRANCH == 'master' or BRANCH == 'stg'
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*DEBUG =.*'
+        line: "DEBUG = False"
+
+# SSL Certificates
+
+    - name: copy cert.pem
+      become: true
+      shell: "cp /etc/cert_{{ BRANCH }}.pem /etc/cert.pem"
+
+    - name: copy cert.key
+      become: true
+      shell: "cp /etc/cert_{{ BRANCH }}.key /etc/cert.key"
+

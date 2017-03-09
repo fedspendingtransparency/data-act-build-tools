@@ -4,7 +4,7 @@
             "ami_name": "USASpending-API-Image {{timestamp}}",
             "instance_type": "m3.medium",
             "region": "us-gov-west-1",
-            "source_ami": "ami-a5209ac4",
+            "source_ami": "ami-90c346f1",
             "ssh_username": "ec2-user",
             "tags": {
                 "base": "False",
@@ -17,9 +17,12 @@
     ],
     "provisioners": [
         {
-            "extra_arguments": "--extra-vars 'BRANCH=staging'",
+            "type": "ansible-local",
             "playbook_file": "usaspending-instance-image.yml",
-            "type": "ansible-local"
+            "playbook_dir": "./",
+            "extra_arguments": "--extra-vars 'BRANCH=stg HOST=local DOMAIN_STG=spending-api-staging.us DOMAIN_PROD=spending-api.us'",
+            "staging_directory": "/tmp/ansible-dir",
+            "inventory_groups": "local"
         }
     ]
 }

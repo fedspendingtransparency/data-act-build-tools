@@ -1,0 +1,33 @@
+---
+- hosts: "{{ HOST }}"
+
+# You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL
+
+  vars:
+    ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
+    CODE_HOME: /data-act/backend
+
+  become_method: sudo
+
+  user: ec2-user
+
+  tasks:
+
+    - name: add host to ALLOWED_HOSTS
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*ALLOWED_HOSTS =.*'
+        line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS }}']"
+
+    - name: stop supervisord
+      become: true
+      shell: pkill supervisord
+      ignore_errors: yes    
+
+    - name: start supervisord
+      become: true
+      shell: "supervisord -c {{ CODE_HOME }}/config/supervisord.conf &"
+      environment:
+        PYTHONPATH: "{{ CODE_HOME }}"
+      args:
+        chdir: "{{ CODE_HOME }}/usaspending_api/"

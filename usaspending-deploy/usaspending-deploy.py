@@ -21,10 +21,10 @@ def deploy():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-stg", "--staging", 
+    parser.add_argument("--staging", 
         action="store_true", 
         help="Runs deploy for staging")
-    parser.add_argument("-prod", "--prod", 
+    parser.add_argument("--prod", 
         action="store_true", 
         help="Runs deploy for prod")
     args = parser.parse_args()
