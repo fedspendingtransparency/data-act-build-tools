@@ -7,6 +7,8 @@
     BRANCH: "{{ BRANCH }}"
     CODE_HOME: /data-act/backend
 
+    STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
+
   become_method: sudo
 
   user: ec2-user
@@ -22,11 +24,11 @@
 
     - name: upload django static assets
       when: collectassets | success
-      shell: "aws s3 cp --recursive usaspending_api/static s3://ds-api-assets/{{ BRANCH }}/ --region us-gov-west-1"
+      shell: "aws s3 cp --recursive usaspending_api/static {{ STATIC_ASSETS_URL }}{{ BRANCH }}/ --region us-gov-west-1"
       args:
         chdir: "{{ CODE_HOME }}"
 
-# DB Environment Variable / Migrations (takes awhile)
+# DB Environment Variable / Migrations
 
     - name: run migrations
       shell: |
