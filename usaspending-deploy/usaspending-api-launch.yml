@@ -10,7 +10,8 @@
 
     CODE_HOME: /data-act/backend
     CONFIG_HOME: /data-act/config
-    STATIC_ASSETS_URL: https://ds-api-assets.s3-us-gov-west-1.amazonaws.com/
+
+    STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
 
   become_method: sudo
 
