@@ -49,48 +49,48 @@ def deploy():
     if optionsDict["staging"]:
         deploy_env = 'staging'
 
-  #   # Get Base AMI, Update Packer file
-  #       print('Retrieving base AMI...')
-  #       base_ami = conn.get_all_images(filters={
-  #           "tag:current" : "True", 
-  #           "tag:base"    : "True", 
-  #           "tag:type"    : "USASpending-API"
-  #           })[0].id
-  #       print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
-  #       update_packer_spec(packer_file, base_ami)
-  #       print('Done.')
+    # Get Base AMI, Update Packer file
+        print('Retrieving base AMI...')
+        base_ami = conn.get_all_images(filters={
+            "tag:current" : "True", 
+            "tag:base"    : "True", 
+            "tag:type"    : "USASpending-API"
+            })[0].id
+        print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
+        update_packer_spec(packer_file, base_ami)
+        print('Done.')
 
-  #   # Get Old AMIs, for setting current=False after new one is craeted
-  #       old_instance_amis = conn.get_all_images(filters={ 
-  #           "tag:current" : "True", 
-  #           "tag:base"    : "False", 
-  #           "tag:type"    : "USASpending-API", 
-  #           "tag:environment" : "staging"
-  #           })
+    # Get Old AMIs, for setting current=False after new one is craeted
+        old_instance_amis = conn.get_all_images(filters={ 
+            "tag:current" : "True", 
+            "tag:base"    : "False", 
+            "tag:type"    : "USASpending-API", 
+            "tag:environment" : "staging"
+            })
 
-  #   # Build New AMI
-  #       print('**************************************************************************')
-  #       print(' Building new AMI via Packer. This can take a while...')
-  #       packer_output = packer_build(packer_file, packer_exec_path)
-  #       ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
-  #       new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
-  #       print('Done. New AMI created: ' + new_instance_ami)
+    # Build New AMI
+        print('**************************************************************************')
+        print(' Building new AMI via Packer. This can take a while...')
+        packer_output = packer_build(packer_file, packer_exec_path)
+        ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
+        new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
+        print('Done. New AMI created: ' + new_instance_ami)
 
 
-  #   # Set current=False tag for old AMI
-  #       print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
-  #       update_ami_tags(old_instance_amis)
-  #       print('Done.')
+    # Set current=False tag for old AMI
+        print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
+        update_ami_tags(old_instance_amis)
+        print('Done.')
 
-  # ###########################
-  # #   TF Build - Staging    #
-  # ###########################    
+  ###########################
+  #   TF Build - Staging    #
+  ###########################    
 
-  #       # Add new AMI to Terraform variables
-  #       update_tf_ami(new_instance_ami, tfvar_file)
+        # Add new AMI to Terraform variables
+        update_tf_ami(new_instance_ami, tfvar_file)
 
-  #       # Update Terraform User Data
-  #       update_terraform_user_data('staging')    
+        # Update Terraform User Data
+        update_terraform_user_data('staging')    
 
         # Run Terraform
         run_tf(tf_exec_path)
