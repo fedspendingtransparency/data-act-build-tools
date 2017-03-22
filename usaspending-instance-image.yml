@@ -182,21 +182,21 @@
         line: "CACHE_ENVIRONMENT = 'elasticache'"
     
     - name: replace ELASTICACHE-CONNECTION-STRING
-      lineinfile:
+      replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'ELASTICACHE-CONNECTION-STRING'
         replace: "{{ ELASTICACHE_URL }}"
 
     - name: replace TIMEOUT-IN-SECONDS ( NONPROD )
       when: BRANCH == 'sandbox' or BRANCH == 'dev'
-      lineinfile:
+      replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ NONPROD_CACHE_TIMEOUT }}"      
   
     - name: replace TIMEOUT-IN-SECONDS ( PROD )
       when: BRANCH == 'master' or BRANCH == 'stg'
-      lineinfile:
+      replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
