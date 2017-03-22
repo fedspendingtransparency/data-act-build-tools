@@ -67,7 +67,7 @@
     - name: install python packages based on server_requirements.txt
       become: true
       when: server_requirements_txt.changed
-      pip: chdir="{{{ REQ_DIR }}" requirements="server_requirements.txt" executable=pip3.5
+      pip: chdir="{{ REQ_DIR }}" requirements="server_requirements.txt" executable=pip3.5
 
     - name: copy legacy_requirements.txt (to check for changes)
       become: true 
