@@ -49,7 +49,7 @@
            
     - name: concatenate the db credentials to uwsgi
       become: true
-      shell: "echo -n env=DATABASE_URL= | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      shell: "cat /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
  # usaspending_api/settings.py
 
