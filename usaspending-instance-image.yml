@@ -8,6 +8,12 @@
 
     ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
+    envs:
+      master: {env_long: prod, env_short: prod}
+      staging: {env_long: staging, env_short: stg}
+      dev: {env_long: dev, env_short: dev}
+      sandbox: {env_long: sandbox, env_short: sbx}
+
 
     DOMAIN: "{{ DOMAIN_NAME }}"
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
@@ -200,6 +206,27 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
+
+# start filebeat
+    - name: copy filebeat config
+      copy:
+        src:  "{{ CONFIG_HOME }}/filebeat/filebeat-usaspending.yml"
+        dest: "/etc/filebeat/filebeat.yml"
+        remote_src: true
+      become: true
+    - name: update filebeat config to set correct index
+      replace:
+        dest: "/etc/filebeat/filebeat.yml"
+        regexp: 'index: filebeat'
+        replace: "index: {{ vars['envs'][BRANCH]['env_short'] }}-filebeat"
+      become: true
+    - name: stop filebeat
+      shell: systemctl stop filebeat
+      become: true
+      ignore_errors: true
+    - name: start filebeat
+      shell: systemctl start filebeat
+      become: true
 
 # start service
 
