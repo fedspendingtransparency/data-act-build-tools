@@ -17,7 +17,6 @@
       dev: {env_long: dev, env_short: dev}
       sandbox: {env_long: sandbox, env_short: sbx}
 
-
     DOMAIN: "{{ DOMAIN_NAME }}"
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
     CODE_HOME: /data-act/backend
