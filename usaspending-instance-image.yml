@@ -9,6 +9,15 @@
     ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
 
+    ## Used only for filebeat: 'envs' is used to translate 
+    ## BRANCH options above into filebeat.yml index
+    envs:
+      master: {env_long: prod, env_short: prod}
+      staging: {env_long: staging, env_short: stg}
+      dev: {env_long: dev, env_short: dev}
+      sandbox: {env_long: sandbox, env_short: sbx}
+
+
     DOMAIN: "{{ DOMAIN_NAME }}"
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
     CODE_HOME: /data-act/backend
@@ -81,10 +90,6 @@
       when: legacy_requirements_txt.changed
       pip: chdir="{{ REQ_DIR }}" requirements="legacy_requirements.txt" executable=pip2
 
-#    - name: set nginx configuration path
-#      set_fact:
-#        nginx_path: "{{ CONFIG_HOME }}/nginx/nginx_ds_api.conf"
-
     - name: collect django static assets
       register: collectassets
       shell: python3.5 manage.py collectstatic --clear --no-input
@@ -131,7 +136,10 @@
 
     - name: copy nginx config
       become: true
-      shell: "cp {{ nginx_path }} /etc/nginx/nginx.conf"
+      copy:
+        src:  "{{ nginx_path }}"
+        dest: "/etc/nginx/nginx.conf"
+        remote_src: true
     
     - name: ensure the correct directory structure for tmp nginx files
       become: true
@@ -140,11 +148,14 @@
         state: directory
         owner: ec2-user
         mode: "u+wrx"
-        recurse: yes
+        recurse: true
 
-    - name: duplicate config file to uwsgi_db.ini
+    - name: copy config file to uwsgi_db.ini
       become: true
-      shell: "cp {{ CODE_HOME }}/config/uwsgi.ini {{ CODE_HOME }}/config/uwsgi_db.ini"
+      copy:
+        src:  "{{ CODE_HOME }}/config/uwsgi.ini"
+        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
+        remote_src: true
 
     - name: copy user-level environment variable to temp text file...
       shell: "echo env=DATABASE_URL=$DATABASE_URL > {{ CODE_HOME }}/config/temp.txt"
@@ -153,7 +164,7 @@
       become: true
       shell: "cat {{ CODE_HOME }}/config/temp.txt >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
-# settings.py
+# usaspending_api/settings.py
 
     - name: add static url from s3
       lineinfile:
@@ -201,12 +212,36 @@
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
 
-# start service
+# config/filebeat/filebeat.yml
+
+    - name: copy filebeat config
+      become: true
+      copy:
+        src:  "{{ CONFIG_HOME }}/filebeat/filebeat-usaspending.yml"
+        dest: "/etc/filebeat/filebeat.yml"
+        remote_src: true
+    - name: update filebeat config to set correct index
+      become: true
+      replace:
+        dest: "/etc/filebeat/filebeat.yml"
+        regexp: 'index: filebeat'
+        replace: "index: {{ vars['envs'][BRANCH]['env_short'] }}-filebeat"
+
+# Start/Stop Services  
+
+    - name: stop filebeat
+      become: true
+      shell: systemctl stop filebeat
+      ignore_errors: true
+
+    - name: start filebeat
+      become: true
+      shell: systemctl start filebeat  
 
     - name: stop supervisord
       become: true
       shell: pkill supervisord
-      ignore_errors: yes    
+      ignore_errors: true    
 
     - name: start supervisord
       become: true
