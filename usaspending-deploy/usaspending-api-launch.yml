@@ -5,8 +5,18 @@
 
   vars:
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
+
+    ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
+
+    ## Used only for filebeat: 'envs' is used to translate 
+    ## BRANCH options above into filebeat.yml index
+    envs:
+      master: {env_long: prod, env_short: prod}
+      staging: {env_long: staging, env_short: stg}
+      dev: {env_long: dev, env_short: dev}
+      sandbox: {env_long: sandbox, env_short: sbx}
 
     CODE_HOME: /data-act/backend
     CONFIG_HOME: /data-act/config
@@ -39,13 +49,19 @@
 
     - name: copy nginx config
       become: true
-      shell: "cp {{ nginx_path }} /etc/nginx/nginx.conf"
+      copy:
+        src:  "{{ nginx_path }}"
+        dest: "/etc/nginx/nginx.conf"
+        remote_src: true
 
   # config/uwsgi.ini
 
     - name: duplicate config file to uwsgi_db.ini
       become: true
-      shell: "cp {{ CODE_HOME }}/config/uwsgi.ini {{ CODE_HOME }}/config/uwsgi_db.ini"
+      copy:
+        src:  "{{ CODE_HOME }}/config/uwsgi.ini"
+        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
+        remote_src: true
            
     - name: concatenate the db credentials to uwsgi
       become: true
@@ -76,13 +92,43 @@
 
     - name: copy cert.pem
       become: true
-      shell: "cp /etc/cert_{{ BRANCH }}.pem /etc/cert.pem"
+      copy:
+        src:  "/etc/cert_{{ BRANCH }}.pem"
+        dest: "/etc/cert.pem"
+        remote_src: true
 
     - name: copy cert.key
       become: true
-      shell: "cp /etc/cert_{{ BRANCH }}.key /etc/cert.key"
+      copy:
+        src:  "/etc/cert_{{ BRANCH }}.key"
+        dest: "/etc/cert.key"
+        remote_src: true
+
+  # config/filebeat/filebeat.yml
+
+    - name: copy filebeat config
+      become: true
+      copy:
+        src:  "{{ CONFIG_HOME }}/filebeat/filebeat-usaspending.yml"
+        dest: "/etc/filebeat/filebeat.yml"
+        remote_src: true
+    - name: update filebeat config to set correct index
+      become: true
+      replace:
+        dest: "/etc/filebeat/filebeat.yml"
+        regexp: 'index: filebeat'
+        replace: "index: {{ vars['envs'][BRANCH]['env_short'] }}-filebeat"
 
  # Start/Stop Services     
+
+    - name: stop filebeat
+      become: true
+      shell: systemctl stop filebeat
+      ignore_errors: true
+
+    - name: start filebeat
+      become: true
+      shell: systemctl start filebeat  
 
     - name: stop supervisord
       become: true
