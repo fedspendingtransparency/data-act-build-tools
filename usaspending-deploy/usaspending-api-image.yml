@@ -46,13 +46,14 @@
       become: true 
       shell: pip3.5 install --upgrade pip 
 
-   - name: copy requirements.txt (to check for changes)
+    - name: copy requirements.txt (to check for changes)
       become: true 
       copy:
         src:  "{{ REQ_DIR }}/requirements.txt"
         dest: "{{ REQ_DIR }}/requirements_copy.txt"
         remote_src: true
       register: requirements_txt
+      
     - name: install python packages based on requirements.txt
       become: true 
       when: requirements_txt.changed
