@@ -6,6 +6,7 @@
 
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git   
     CODE_HOME: /data-act/backend
+    REQ_DIR: "{{ CODE_HOME }}/requirements"
 
   become_method: sudo
 
@@ -45,41 +46,53 @@
       become: true 
       shell: pip3.5 install --upgrade pip 
 
-    - name: copy requirements.txt (to check for changes)
+   - name: copy requirements.txt (to check for changes)
       become: true 
       copy:
-        src:  "{{ CODE_HOME }}/requirements.txt"
-        dest: "{{ CODE_HOME }}/requirements_copy.txt"
+        src:  "{{ REQ_DIR }}/requirements.txt"
+        dest: "{{ REQ_DIR }}/requirements_copy.txt"
         remote_src: true
       register: requirements_txt
     - name: install python packages based on requirements.txt
       become: true 
       when: requirements_txt.changed
-      pip: chdir="{{ CODE_HOME }}" requirements="requirements.txt" executable=pip3.5
+      pip: chdir="{{ REQ_DIR }}" requirements="requirements.txt" executable=pip3.5
+
+    - name: copy caching_requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ REQ_DIR }}/caching_requirements.txt"
+        dest: "{{ REQ_DIR }}/caching_requirements_copy.txt"
+        remote_src: true
+      register: caching_requirements_txt
+    - name: install python packages based on caching_requirements.txt
+      become: true 
+      when: caching_requirements_txt.changed
+      pip: chdir="{{ REQ_DIR }}" requirements="caching_requirements.txt" executable=pip3.5
 
     - name: copy server_requirements.txt (to check for changes)
       become: true 
       copy:
-        src:  "{{ CODE_HOME }}/server_requirements.txt"
-        dest: "{{ CODE_HOME }}/server_requirements_copy.txt"
+        src:  "{{ REQ_DIR }}/server_requirements.txt"
+        dest: "{{ REQ_DIR }}/server_requirements_copy.txt"
         remote_src: true
       register: server_requirements_txt
     - name: install python packages based on server_requirements.txt
       become: true
       when: server_requirements_txt.changed
-      pip: chdir="{{ CODE_HOME }}" requirements="server_requirements.txt" executable=pip3.5
+      pip: chdir="{{ REQ_DIR }}" requirements="server_requirements.txt" executable=pip3.5
 
     - name: copy legacy_requirements.txt (to check for changes)
       become: true 
       copy:
-        src:  "{{ CODE_HOME }}/legacy_requirements.txt"
-        dest: "{{ CODE_HOME }}/legacy_requirements_copy.txt"
+        src:  "{{ REQ_DIR }}/legacy_requirements.txt"
+        dest: "{{ REQ_DIR }}/legacy_requirements_copy.txt"
         remote_src: true
       register: legacy_requirements_txt
     - name: install python packages based on legacy_requirements.txt
       become: true
       when: legacy_requirements_txt.changed
-      pip: chdir="{{ CODE_HOME }}" requirements="legacy_requirements.txt" executable=pip2
+      pip: chdir="{{ REQ_DIR }}" requirements="legacy_requirements.txt" executable=pip2
 
     - name: ensure the correct directory structure for tmp nginx files
       become: true

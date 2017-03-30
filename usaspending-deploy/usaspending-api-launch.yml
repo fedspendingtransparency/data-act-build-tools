@@ -22,6 +22,10 @@
     CONFIG_HOME: /data-act/config
 
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
+    ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
+
+    PROD_CACHE_TIMEOUT: 60000
+    NONPROD_CACHE_TIMEOUT: 600
 
   become_method: sudo
 
@@ -87,6 +91,32 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*ALLOWED_HOSTS =.*'
         line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS }}']"
+
+     - name: enable elasticache
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
+        line: "CACHE_ENVIRONMENT = 'elasticache'"
+    
+    - name: replace ELASTICACHE-CONNECTION-STRING
+      replace:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: 'ELASTICACHE-CONNECTION-STRING'
+        replace: "{{ ELASTICACHE_URL }}"
+
+    - name: replace TIMEOUT-IN-SECONDS ( NONPROD )
+      when: BRANCH == 'sandbox' or BRANCH == 'dev'
+      replace:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: 'TIMEOUT-IN-SECONDS'
+        replace: "{{ NONPROD_CACHE_TIMEOUT }}"      
+  
+    - name: replace TIMEOUT-IN-SECONDS ( PROD )
+      when: BRANCH == 'master' or BRANCH == 'stg'
+      replace:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: 'TIMEOUT-IN-SECONDS'
+        replace: "{{ PROD_CACHE_TIMEOUT }}"   
 
  # SSL Certificates
 
