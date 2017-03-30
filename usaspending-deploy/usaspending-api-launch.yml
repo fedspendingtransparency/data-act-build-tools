@@ -92,7 +92,7 @@
         regexp: '\s*ALLOWED_HOSTS =.*'
         line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS }}']"
 
-     - name: enable elasticache
+    - name: enable elasticache
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
