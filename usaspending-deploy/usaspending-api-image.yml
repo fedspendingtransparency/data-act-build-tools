@@ -90,3 +90,11 @@
         mode: "u+wrx"
         recurse: yes
 
+    - name: set starting directory to CODE_HOME
+      become: true
+      lineinfile: 
+        dest: /home/ec2-user/.bashrc
+        line: "cd {{ CODE_HOME }}"
+        insertafter: EOF 
+
+
