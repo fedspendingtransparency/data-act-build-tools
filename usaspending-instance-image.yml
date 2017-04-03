@@ -108,7 +108,7 @@
         STATIC_ASSETS_URL: "{{ STATIC_ASSETS_URL }}{{ BRANCH }}/"      
 
     - name: run migrations
-      shell: python3.5 manage.py migrate
+      shell: yes "yes" | python3.5 manage.py migrate
       args:
         chdir: "{{ CODE_HOME }}"
 
@@ -148,6 +148,13 @@
         owner: ec2-user
         mode: "u+wrx"
         recurse: true
+
+    - name: set starting directory to CODE_HOME
+      become: true
+      lineinfile: 
+        dest: /home/ec2-user/.bashrc
+        line: "cd {{ CODE_HOME }}"
+        insertafter: EOF 
 
     - name: copy config file to uwsgi_db.ini
       become: true
