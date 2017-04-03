@@ -218,6 +218,11 @@
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
 
+    - name: flush elasticache
+      shell: python3.5 manage.py clear_usaspending_cache
+      args:
+        chdir: "{{ CODE_HOME }}"
+
 # config/filebeat/filebeat.yml
 
     - name: copy filebeat config
