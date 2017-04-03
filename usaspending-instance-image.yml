@@ -149,6 +149,13 @@
         mode: "u+wrx"
         recurse: true
 
+    - name: set starting directory to CODE_HOME
+      become: true
+      lineinfile: 
+        dest: /home/ec2-user/.bashrc
+        line: "cd {{ CODE_HOME }}"
+        insertafter: EOF 
+
     - name: copy config file to uwsgi_db.ini
       become: true
       copy:
