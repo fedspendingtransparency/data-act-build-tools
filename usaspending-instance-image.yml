@@ -108,7 +108,7 @@
         STATIC_ASSETS_URL: "{{ STATIC_ASSETS_URL }}{{ BRANCH }}/"      
 
     - name: run migrations
-      shell: python3.5 manage.py migrate
+      shell: yes "yes" | python3.5 manage.py migrate
       args:
         chdir: "{{ CODE_HOME }}"
 
