@@ -103,3 +103,57 @@ resource "aws_launch_configuration" "jobmgr-lc" {
     create_before_destroy = true
   }
 }
+
+resource "aws_autoscaling_policy" "val_scaling" {
+  name                   = "${var.val_name_prefix}_Autoscaling"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  policy_type            = "SimpleScaling"
+  autoscaling_group_name = "${aws_launch_configuration.val-lc.name}"
+}
+
+resource "aws_cloudwatch_metric_alarm" "val_alarm" {
+  alarm_name          = "${var.val_name_prefix}_HighCPU75"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "60"
+  statistic           = "Max"
+  threshold           = "75"
+
+  dimensions {
+    AutoScalingGroupName = "${aws_launch_configuration.val-lc.name}"
+  }
+
+  alarm_description = "High CPU on ${var.val_name_prefix}"
+  alarm_actions     = ["${aws_autoscaling_policy.val_scaling.arn}"]
+}
+
+resource "aws_autoscaling_policy" "api_scaling" {
+  name                   = "${var.api_name_prefix}_Autoscaling"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  policy_type            = "SimpleScaling"
+  autoscaling_group_name = "${aws_launch_configuration.api-lc.name}"
+}
+
+resource "aws_cloudwatch_metric_alarm" "api_alarm" {
+  alarm_name          = "${var.api_name_prefix}_HighCPU75"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "60"
+  statistic           = "Max"
+  threshold           = "75"
+
+  dimensions {
+    AutoScalingGroupName = "${aws_launch_configuration.api-lc.name}"
+  }
+
+  alarm_description = "High CPU on ${var.api_name_prefix}"
+  alarm_actions     = ["${aws_autoscaling_policy.api_scaling.arn}"]
+}
