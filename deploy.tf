@@ -110,7 +110,7 @@ resource "aws_autoscaling_policy" "val_scaling" {
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
   policy_type            = "SimpleScaling"
-  autoscaling_group_name = "${aws_launch_configuration.val-lc.name}"
+  autoscaling_group_name = "${aws_autoscaling_group.val-asg.name}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "val_alarm" {
@@ -124,7 +124,7 @@ resource "aws_cloudwatch_metric_alarm" "val_alarm" {
   threshold           = "75"
 
   dimensions {
-    AutoScalingGroupName = "${aws_launch_configuration.val-lc.name}"
+    AutoScalingGroupName = "${aws_autoscaling_group.val-asg.name}"
   }
 
   alarm_description = "High CPU on ${var.val_name_prefix}"
@@ -137,7 +137,7 @@ resource "aws_autoscaling_policy" "api_scaling" {
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
   policy_type            = "SimpleScaling"
-  autoscaling_group_name = "${aws_launch_configuration.api-lc.name}"
+  autoscaling_group_name = "${aws_autoscaling_group.api-asg.name}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "api_alarm" {
@@ -151,7 +151,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm" {
   threshold           = "75"
 
   dimensions {
-    AutoScalingGroupName = "${aws_launch_configuration.api-lc.name}"
+    AutoScalingGroupName = "${aws_autoscaling_group.api-asg.name}"
   }
 
   alarm_description = "High CPU on ${var.api_name_prefix}"
