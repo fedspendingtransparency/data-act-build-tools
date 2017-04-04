@@ -120,7 +120,7 @@ resource "aws_cloudwatch_metric_alarm" "val_alarm" {
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = "60"
-  statistic           = "Max"
+  statistic           = "Maximum"
   threshold           = "75"
 
   dimensions {
@@ -147,7 +147,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm" {
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = "60"
-  statistic           = "Max"
+  statistic           = "Maximum"
   threshold           = "75"
 
   dimensions {
