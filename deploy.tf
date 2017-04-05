@@ -139,7 +139,7 @@ resource "aws_autoscaling_policy" "val_scale_down" {
   name                   = "${var.val_name_prefix}_ScaleDown"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
+  cooldown               = 30
   policy_type            = "SimpleScaling"
   autoscaling_group_name = "${aws_autoscaling_group.val-asg.name}"
 }
@@ -193,7 +193,7 @@ resource "aws_autoscaling_policy" "api_scale_down" {
   name                   = "${var.api_name_prefix}_ScaleDown"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
+  cooldown               = 30
   policy_type            = "SimpleScaling"
   autoscaling_group_name = "${aws_autoscaling_group.api-asg.name}"
 }
