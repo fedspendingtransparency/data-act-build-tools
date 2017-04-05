@@ -11,6 +11,8 @@ resource "aws_autoscaling_group" "api-asg" {
   min_size = "${var.api_asg_min}"
   desired_capacity = "${var.api_asg_desired}"
   min_elb_capacity = "${var.api_asg_min}"
+  health_check_type = "ELB"
+  health_check_grace_period = 180
   launch_configuration = "${aws_launch_configuration.api-lc.name}"
   load_balancers = ["${var.api_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
@@ -30,6 +32,8 @@ resource "aws_autoscaling_group" "val-asg" {
   min_size = "${var.val_asg_min}"
   desired_capacity = "${var.val_asg_desired}"
   min_elb_capacity = "${var.val_asg_min}"
+  health_check_type = "ELB"
+  health_check_grace_period = 180
   launch_configuration = "${aws_launch_configuration.val-lc.name}"
   load_balancers = ["${var.val_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
@@ -104,8 +108,8 @@ resource "aws_launch_configuration" "jobmgr-lc" {
   }
 }
 
-resource "aws_autoscaling_policy" "val_scaling" {
-  name                   = "${var.val_name_prefix}_Autoscaling"
+resource "aws_autoscaling_policy" "val_scale_up" {
+  name                   = "${var.val_name_prefix}_ScaleUp"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -113,26 +117,53 @@ resource "aws_autoscaling_policy" "val_scaling" {
   autoscaling_group_name = "${aws_autoscaling_group.val-asg.name}"
 }
 
-resource "aws_cloudwatch_metric_alarm" "val_alarm" {
+resource "aws_cloudwatch_metric_alarm" "val_alarm_high_cpu" {
   alarm_name          = "${var.val_name_prefix}_HighCPU75"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = "60"
-  statistic           = "Maximum"
+  statistic           = "Average"
   threshold           = "75"
 
   dimensions {
     AutoScalingGroupName = "${aws_autoscaling_group.val-asg.name}"
   }
 
-  alarm_description = "High CPU on ${var.val_name_prefix}"
-  alarm_actions     = ["${aws_autoscaling_policy.val_scaling.arn}"]
+  alarm_description = "High CPU over 75% on ${var.val_name_prefix}"
+  alarm_actions     = ["${aws_autoscaling_policy.val_scale_up.arn}"]
 }
 
-resource "aws_autoscaling_policy" "api_scaling" {
-  name                   = "${var.api_name_prefix}_Autoscaling"
+resource "aws_autoscaling_policy" "val_scale_down" {
+  name                   = "${var.val_name_prefix}_ScaleDown"
+  scaling_adjustment     = -1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 30
+  policy_type            = "SimpleScaling"
+  autoscaling_group_name = "${aws_autoscaling_group.val-asg.name}"
+}
+
+resource "aws_cloudwatch_metric_alarm" "val_alarm_low_cpu" {
+  alarm_name          = "${var.val_name_prefix}_LowCPU5"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "60"
+  statistic           = "Maximum"
+  threshold           = "5"
+
+  dimensions {
+    AutoScalingGroupName = "${aws_autoscaling_group.val-asg.name}"
+  }
+
+  alarm_description = "All Instance CPU below 5% on ${var.val_name_prefix}"
+  alarm_actions     = ["${aws_autoscaling_policy.val_scale_down.arn}"]
+}
+
+resource "aws_autoscaling_policy" "api_scale_up" {
+  name                   = "${var.api_name_prefix}_ScaleUp"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -140,20 +171,47 @@ resource "aws_autoscaling_policy" "api_scaling" {
   autoscaling_group_name = "${aws_autoscaling_group.api-asg.name}"
 }
 
-resource "aws_cloudwatch_metric_alarm" "api_alarm" {
+resource "aws_cloudwatch_metric_alarm" "api_alarm_high_cpu" {
   alarm_name          = "${var.api_name_prefix}_HighCPU75"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = "60"
-  statistic           = "Maximum"
+  statistic           = "Average"
   threshold           = "75"
 
   dimensions {
     AutoScalingGroupName = "${aws_autoscaling_group.api-asg.name}"
   }
 
-  alarm_description = "High CPU on ${var.api_name_prefix}"
-  alarm_actions     = ["${aws_autoscaling_policy.api_scaling.arn}"]
+  alarm_description = "High CPU over 75% on ${var.api_name_prefix}"
+  alarm_actions     = ["${aws_autoscaling_policy.api_scale_up.arn}"]
+}
+
+resource "aws_autoscaling_policy" "api_scale_down" {
+  name                   = "${var.api_name_prefix}_ScaleDown"
+  scaling_adjustment     = -1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 30
+  policy_type            = "SimpleScaling"
+  autoscaling_group_name = "${aws_autoscaling_group.api-asg.name}"
+}
+
+resource "aws_cloudwatch_metric_alarm" "api_alarm_low_cpu" {
+  alarm_name          = "${var.api_name_prefix}_LowCPU5"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "60"
+  statistic           = "Maximum"
+  threshold           = "5"
+
+  dimensions {
+    AutoScalingGroupName = "${aws_autoscaling_group.api-asg.name}"
+  }
+
+  alarm_description = "All Instance CPU below 5% on ${var.api_name_prefix}"
+  alarm_actions     = ["${aws_autoscaling_policy.api_scale_down.arn}"]
 }
