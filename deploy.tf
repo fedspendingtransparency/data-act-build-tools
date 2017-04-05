@@ -11,6 +11,8 @@ resource "aws_autoscaling_group" "api-asg" {
   min_size = "${var.api_asg_min}"
   desired_capacity = "${var.api_asg_desired}"
   min_elb_capacity = "${var.api_asg_min}"
+  health_check_type = "ELB"
+  health_check_grace_period = 180
   launch_configuration = "${aws_launch_configuration.api-lc.name}"
   load_balancers = ["${var.api_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
@@ -30,6 +32,8 @@ resource "aws_autoscaling_group" "val-asg" {
   min_size = "${var.val_asg_min}"
   desired_capacity = "${var.val_asg_desired}"
   min_elb_capacity = "${var.val_asg_min}"
+  health_check_type = "ELB"
+  health_check_grace_period = 180
   launch_configuration = "${aws_launch_configuration.val-lc.name}"
   load_balancers = ["${var.val_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
