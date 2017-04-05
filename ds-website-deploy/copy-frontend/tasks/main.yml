@@ -14,12 +14,14 @@
   git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git dest=/data-act/config accept_hostkey=true force=yes key_file="/home/ec2-user/.ssh/id_rsa"
   sudo: true
 - name: remove basic auth from prod
+  sudo: true
   when: ENV == 'prod'
   lineinfile:
     dest: /data-act/config/nginx/nginx_ds_website.conf
     regexp: '\s*auth_basic "Basic Auth Check".*'
     state: absent
 - name: remove basic auth from prod
+  sudo: true
   when: ENV == 'prod'
   lineinfile:
     dest: /data-act/config/nginx/nginx_ds_website.conf
