@@ -151,16 +151,26 @@
         line: "cd {{ CODE_HOME }}"
         insertafter: EOF 
 
-    - name: copy config file to uwsgi_db.ini
+    - name: duplicate config file to uwsgi_db.ini
       become: true
       copy:
         src:  "{{ CODE_HOME }}/config/uwsgi.ini"
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
 
-    - name: add DATABASE_URL to uswgi ini
+    - name: add DATABASE_URL to uswgi ini (remove after read replica changes merged)
       become: true
       shell: "echo -n env=DATABASE_URL= | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+
+    - name: add DB_SOURCE to uswgi ini
+      become: true
+      shell: "echo -n env=DB_SOURCE=    | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      ignore_errors: true    
+
+    - name: add DB_R1 to uswgi ini
+      become: true
+      shell: "echo -n env=DB_R1=        | cat - /etc/db_{{ BRANCH }}_r1.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      ignore_errors: true    
 
 # usaspending_api/settings.py
 
