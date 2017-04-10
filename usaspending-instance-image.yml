@@ -107,11 +107,6 @@
       set_fact:
         STATIC_ASSETS_URL: "{{ STATIC_ASSETS_URL }}{{ BRANCH }}/"      
 
-    - name: run migrations
-      shell: yes "yes" | python3.5 manage.py migrate
-      args:
-        chdir: "{{ CODE_HOME }}"
-
     - name: set nginx configuration path to SSL
       set_fact:
          nginx_path: "{{ CONFIG_HOME }}/nginx/nginx_ds_api_ssl.conf"
@@ -230,6 +225,22 @@
       args:
         chdir: "{{ CODE_HOME }}"
 
+# SSL Certificates
+
+    - name: copy cert.pem
+      become: true
+      copy:
+        src:  "/etc/cert_{{ BRANCH }}.pem"
+        dest: "/etc/cert.pem"
+        remote_src: true
+
+    - name: copy cert.key
+      become: true
+      copy:
+        src:  "/etc/cert_{{ BRANCH }}.key"
+        dest: "/etc/cert.key"
+        remote_src: true
+
 # config/filebeat/filebeat.yml
 
     - name: copy filebeat config
@@ -244,6 +255,19 @@
         dest: "/etc/filebeat/filebeat.yml"
         regexp: 'index: filebeat'
         replace: "index: {{ vars['envs'][BRANCH]['env_short'] }}-filebeat"
+
+# Migrations       
+
+    - name: get DATABASE_URL env var
+      shell: cat /etc/db_{{ BRANCH }}.sh
+      register: temp_db_var
+
+    - name: run migrations (on source DB)
+      shell: yes "yes" | python3.5 manage.py migrate
+      environment: 
+        DATABASE_URL: "{{ temp_db_var.stdout }}"
+      args:
+        chdir: "{{ CODE_HOME }}"
 
 # Start/Stop Services  
 
