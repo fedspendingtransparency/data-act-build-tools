@@ -223,6 +223,22 @@
       args:
         chdir: "{{ CODE_HOME }}"
 
+# SSL Certificates
+
+    - name: copy cert.pem
+      become: true
+      copy:
+        src:  "/etc/cert_{{ BRANCH }}.pem"
+        dest: "/etc/cert.pem"
+        remote_src: true
+
+    - name: copy cert.key
+      become: true
+      copy:
+        src:  "/etc/cert_{{ BRANCH }}.key"
+        dest: "/etc/cert.key"
+        remote_src: true
+
 # config/filebeat/filebeat.yml
 
     - name: copy filebeat config
