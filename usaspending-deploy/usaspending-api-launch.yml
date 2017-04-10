@@ -67,9 +67,13 @@
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
            
-    - name: concatenate the db credentials to uwsgi
+    - name: add DB_SOURCE to uswgi ini
       become: true
-      shell: "echo -n env=DATABASE_URL= | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      shell: "echo -n env=DB_SOURCE= | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+
+    - name: add DB_R1 to uswgi ini
+      become: true
+      shell: "echo -n env=DB_R1=     | cat - /etc/db_{{ BRANCH }}_r1.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
  # usaspending_api/settings.py
 
