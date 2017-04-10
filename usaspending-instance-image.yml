@@ -163,12 +163,23 @@
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
 
-    - name: copy user-level environment variable to temp text file...
-      shell: "echo env=DATABASE_URL=$DATABASE_URL > {{ CODE_HOME }}/config/temp.txt"
-      
-    - name: concatenate the duplicate config and the env var
+    - name: add DATABASE_URL to uswgi ini (remove after read replica changes merged)
       become: true
-      shell: "cat {{ CODE_HOME }}/config/temp.txt >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      lineinfile:
+        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
+        line: "env=DATABASE_URL={{ lookup('file', '/etc/db_{{ BRANCH }}.sh') }}"
+
+    - name: add DB_SOURCE to uswgi ini
+      become: true
+      lineinfile:
+        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
+        line: "env=DB_SOURCE={{ lookup('file', '/etc/db_{{ BRANCH }}.sh') }}"
+
+    - name: add DB_R1 to uswgi ini
+      become: true
+      lineinfile:
+        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
+        line: "env=DB_R1={{ lookup('file', '/etc/db_{{ BRANCH }}_r1.sh') }}"
 
 # usaspending_api/settings.py
 
