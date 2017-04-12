@@ -36,19 +36,6 @@ resource "aws_launch_configuration" "api-lc" {
   }
 }
 
-resource "aws_launch_configuration" "api-lc" {
-  name = "${var.api_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
-  image_id = "${lookup(var.aws_amis, var.aws_region)}"
-  instance_type = "${var.api_instance_type}"
-  iam_instance_profile = "${var.api_iam_profile}"
-  security_groups = ["${split(",", var.api_sec_groups)}"]
-  user_data="${var.api_user_data}"
-  key_name = "${var.key_name}"
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 resource "aws_autoscaling_policy" "api_scale_up" {
   name                   = "${var.api_name_prefix}_ScaleUp"
   scaling_adjustment     = 1
