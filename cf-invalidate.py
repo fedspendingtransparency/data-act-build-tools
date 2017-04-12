@@ -17,7 +17,7 @@ client = session.client('cloudfront')
 # Get distribution Id
 response = client.list_distributions()
 distributions = response['DistributionList']['Items']
-dist_id = [x for x in distributions if x['Comment'] == ('broker-' + args.env)][0]['Id']
+dist_id = [x for x in distributions if x['Comment'] == ('broker.usaspending - ' + args.env)][0]['Id']
 
 # Create invalidation
 timestart = time.time()
