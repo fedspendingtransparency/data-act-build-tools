@@ -8,8 +8,11 @@
 - name: create app log if it doesn't exist
   shell: touch /data-act/app.json-log
   ignore_errors: yes
-- name: set owner of app log to ec2-user
-  shell: chown ec2-user /data-act/app.json-log
+- name: create app log if it doesn't exist
+  shell: touch /data-act/info.log
+  ignore_errors: yes
+- name: set owner of data-act folder to ec2-user
+  shell: chown -R ec2-user /data-act
   sudo: true
 - name: kill current app process if needed
   shell: pkill supervisord
