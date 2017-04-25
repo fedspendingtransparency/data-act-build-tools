@@ -188,7 +188,7 @@
         line: "DEBUG = False"
 
     - name: add host to ALLOWED_HOSTS
-      when: BRANCH == 'master' or BRANCH == 'stg'
+      when: BRANCH == 'dev' or BRANCH == 'sandbox'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*ALLOWED_HOSTS =.*'
