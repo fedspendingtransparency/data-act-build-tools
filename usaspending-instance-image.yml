@@ -186,8 +186,8 @@
     - name: add CSV SQS url
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*SQS_QUEUE_NAME =.*'
-        line: "SQS_QUEUE_NAME = '{{ CSV_SQS_URL }}'"
+        regexp: '\s*SQS_QUEUE_URL =.*'
+        line: "SQS_QUEUE_URL = '{{ CSV_SQS_URL }}'"
 
     - name: add static url from s3
       lineinfile:
