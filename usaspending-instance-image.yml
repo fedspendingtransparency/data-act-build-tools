@@ -183,7 +183,7 @@
         regexp: '\s*CSV_S3_BUCKET =.*'
         line: "CSV_S3_BUCKET = '{{ CSV_S3_URL }}'"
 
-     - name: add CSV SQS url
+    - name: add CSV SQS url
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*SQS_QUEUE_NAME =.*'
