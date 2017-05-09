@@ -27,6 +27,7 @@
 
     CSV_S3_URL: "{{ lookup('file', 'csv_s3_url') }}"
     CSV_SQS_URL: "{{ lookup('file', 'csv_sqs_url') }}"
+    CSV_SQS_REGION: "{{ lookup('file', 'csv_sqs_region') }}"
 
     REQ_DIR: "{{ CODE_HOME }}/requirements"
 
@@ -188,6 +189,12 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*SQS_QUEUE_URL =.*'
         line: "SQS_QUEUE_URL = '{{ CSV_SQS_URL }}'"
+        
+    - name: add CSV SQS region
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*SQS_REGION =.*'
+        line: "SQS_REGION = '{{ CSV_SQS_REGION }}'"
 
     - name: add static url from s3
       lineinfile:
