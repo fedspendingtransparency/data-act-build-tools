@@ -178,19 +178,19 @@
 
 # usaspending_api/settings.py
 
-    - name: add CSV s3 url
+    - name: add CSV S3 bucket name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET =.*'
         line: "CSV_S3_BUCKET = '{{ CSV_S3_BUCKET_NAME }}'"
 
-    - name: add CSV SQS url
+    - name: add CSV SQS name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*SQS_QUEUE_URL =.*'
         line: "SQS_QUEUE_URL = '{{ CSV_SQS_NAME }}'"
         
-    - name: add CSV SQS region
+    - name: add CSV AWS region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*SQS_REGION =.*'
