@@ -25,6 +25,10 @@
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
 
+    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_s3_bucket_name') }}"
+    CSV_SQS_NAME: "{{ lookup('file', 'csv_sqs_name') }}"
+    CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
+
     REQ_DIR: "{{ CODE_HOME }}/requirements"
 
     PROD_CACHE_TIMEOUT: 60000
@@ -173,6 +177,24 @@
       ignore_errors: true    
 
 # usaspending_api/settings.py
+
+    - name: add CSV S3 bucket name
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
+        line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
+
+    - name: add CSV SQS name
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
+        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME }}'"
+        
+    - name: add CSV AWS region
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_AWS_REGION =.*'
+        line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'"
 
     - name: add static url from s3
       lineinfile:
