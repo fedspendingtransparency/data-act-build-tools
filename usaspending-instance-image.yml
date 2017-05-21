@@ -25,8 +25,8 @@
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
 
-    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_s3_bucket_name') }}"
-    CSV_SQS_NAME: "{{ lookup('file', 'csv_sqs_name') }}"
+    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name') }}"
+    CSV_SQS_NAME: "{{ lookup('file', 'csv_name') }}"
     CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
 
     REQ_DIR: "{{ CODE_HOME }}/requirements"
