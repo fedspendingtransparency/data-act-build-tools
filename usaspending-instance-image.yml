@@ -25,8 +25,9 @@
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
 
-    CSV_S3_URL: "{{ lookup('file', 'csv_s3_url') }}"
-    CSV_SQS_URL: "{{ lookup('file', 'csv_sqs_url') }}"
+    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name') }}"
+    CSV_SQS_NAME: "{{ lookup('file', 'csv_name') }}"
+    CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
 
     REQ_DIR: "{{ CODE_HOME }}/requirements"
 
@@ -177,17 +178,23 @@
 
 # usaspending_api/settings.py
 
-    - name: add CSV s3 url
+    - name: add CSV S3 bucket name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_S3_BUCKET =.*'
-        line: "CSV_S3_BUCKET = '{{ CSV_S3_URL }}'"
+        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
+        line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
 
-    - name: add CSV SQS url
+    - name: add CSV SQS name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*SQS_QUEUE_NAME =.*'
-        line: "SQS_QUEUE_NAME = '{{ CSV_SQS_URL }}'"
+        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
+        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME }}'"
+        
+    - name: add CSV AWS region
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_AWS_REGION =.*'
+        line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'"
 
     - name: add static url from s3
       lineinfile:
@@ -215,8 +222,7 @@
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'elasticache'"
 
-    - name: disable elasticache (in dev and sandbox)
-      when: BRANCH == 'sandbox' or BRANCH == 'dev'
+    - name: disable elasticache (on sandbox and dev)
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
@@ -273,7 +279,7 @@
         regexp: 'index: filebeat'
         replace: "index: {{ vars['envs'][BRANCH]['env_short'] }}-filebeat"
 
-# Migrations       
+# Migrations / Management Commands
 
     - name: get DATABASE_URL env var
       shell: cat /etc/db_{{ BRANCH }}.sh
@@ -286,7 +292,7 @@
       args:
         chdir: "{{ CODE_HOME }}"
 
-    - name: clear request catalog
+    - name: flush elasticache
       shell: python3.5 manage.py clear_request_catalog
       environment: 
         DATABASE_URL: "{{ temp_db_var.stdout }}"
