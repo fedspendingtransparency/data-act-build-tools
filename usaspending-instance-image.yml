@@ -214,6 +214,13 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'elasticache'"
+
+    - name: disable elasticache (in dev and sandbox)
+      when: BRANCH == 'sandbox' or BRANCH == 'dev'
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
+        line: "CACHE_ENVIRONMENT = 'disabled'"
     
     - name: replace ELASTICACHE-CONNECTION-STRING
       replace:
@@ -235,8 +242,8 @@
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
 
-    - name: flush elasticache
-      shell: python3.5 manage.py clear_usaspending_cache
+    - name: clear request catalog
+      shell: python3.5 manage.py clear_request_catalog
       args:
         chdir: "{{ CODE_HOME }}"
 
