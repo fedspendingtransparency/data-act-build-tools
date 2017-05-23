@@ -25,9 +25,8 @@
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
 
-    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name') }}"
-    CSV_SQS_NAME: "{{ lookup('file', 'csv_name') }}"
-    CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
+    CSV_S3_URL: "{{ lookup('file', 'csv_s3_url') }}"
+    CSV_SQS_URL: "{{ lookup('file', 'csv_sqs_url') }}"
 
     REQ_DIR: "{{ CODE_HOME }}/requirements"
 
@@ -178,23 +177,17 @@
 
 # usaspending_api/settings.py
 
-    - name: add CSV S3 bucket name
+    - name: add CSV s3 url
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
-        line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
+        regexp: '\s*CSV_S3_BUCKET =.*'
+        line: "CSV_S3_BUCKET = '{{ CSV_S3_URL }}'"
 
-    - name: add CSV SQS name
+    - name: add CSV SQS url
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
-        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME }}'"
-        
-    - name: add CSV AWS region
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_AWS_REGION =.*'
-        line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'"
+        regexp: '\s*SQS_QUEUE_NAME =.*'
+        line: "SQS_QUEUE_NAME = '{{ CSV_SQS_URL }}'"
 
     - name: add static url from s3
       lineinfile:
@@ -249,11 +242,6 @@
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
 
-    - name: clear request catalog
-      shell: python3.5 manage.py clear_request_catalog
-      args:
-        chdir: "{{ CODE_HOME }}"
-
 # SSL Certificates
 
     - name: copy cert.pem
@@ -293,6 +281,13 @@
 
     - name: run migrations (on source DB)
       shell: yes "yes" | python3.5 manage.py migrate
+      environment: 
+        DATABASE_URL: "{{ temp_db_var.stdout }}"
+      args:
+        chdir: "{{ CODE_HOME }}"
+
+    - name: clear request catalog
+      shell: python3.5 manage.py clear_request_catalog
       environment: 
         DATABASE_URL: "{{ temp_db_var.stdout }}"
       args:
