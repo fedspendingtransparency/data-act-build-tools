@@ -292,7 +292,7 @@
       args:
         chdir: "{{ CODE_HOME }}"
 
-    - name: flush elasticache
+    - name: clear request catalog
       shell: python3.5 manage.py clear_request_catalog
       environment: 
         DATABASE_URL: "{{ temp_db_var.stdout }}"
