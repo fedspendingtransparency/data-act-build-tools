@@ -1,6 +1,55 @@
 ---
 - hosts: ds_website_{{ ENV }}
   user: ec2-user
-  roles:
-  - copy-frontend
-  - start-nginx
+  become_method: sudo
+  tasks:
+    - name: remove old frontend backed up files
+      become: true
+      shell: "rm -rf /var/www-old"
+      ignore_errors: yes
+
+    - name: backup old frontend served files
+      become: true
+      shell: "mv /var/www /var/www-old" 
+      ignore_errors: yes
+
+    - name: copy frontend files
+      become: true
+      shell: "aws s3 cp s3://ds-website-assets/{{ ENV }}/{{ BUILD_ID }}/public/ /var/www --region us-gov-west-1 --recursive"
+
+    - name: checkout config from git
+      become: true
+      git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
+           dest=/data-act/config 
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa"
+    
+    - name: remove basic auth from prod
+      become: true
+      when: ENV == 'prod'
+      lineinfile:
+        dest: /data-act/config/nginx/nginx_ds_website.conf
+        regexp: '\s*auth_basic "Basic Auth Check".*'
+        state: absent
+    
+    - name: remove basic auth from prod
+      become: true
+      when: ENV == 'prod'
+      lineinfile:
+        dest: /data-act/config/nginx/nginx_ds_website.conf
+        regexp: '\s*auth_basic_user_file /etc/nginx/.*'
+        state: absent
+    
+    - name: copy ENV config
+      become: true
+      shell: cp /data-act/config/nginx/nginx_ds_website.conf /etc/nginx/nginx.conf
+
+    - name: stop nginx service
+      become: true
+      shell: service nginx stop
+      ignore_errors: yes
+
+    - name: start nginx service
+      become: true
+      shell: service nginx start &
