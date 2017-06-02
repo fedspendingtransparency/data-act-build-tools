@@ -93,7 +93,7 @@
     - name: add CSV S3 bucket name (if prod)
       when: BRANCH == 'master'
       vars:
-        CSV_S3_BUCKET_PROD = "{{ lookup('file', 'csv_name_prod') }}"
+        CSV_S3_BUCKET_PROD: "{{ lookup('file', 'csv_name_prod') }}"
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
@@ -108,7 +108,7 @@
     - name: add CSV SQS name (if prod)
       when: BRANCH == 'master'
       vars:
-        CSV_SQS_NAME_PROD = "{{ lookup('file', 'csv_name_prod') }}"
+        CSV_SQS_NAME_PROD: "{{ lookup('file', 'csv_name_prod') }}"
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
@@ -119,7 +119,7 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_AWS_REGION =.*'
         line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'"
-    
+
     - name: add static url from s3
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
