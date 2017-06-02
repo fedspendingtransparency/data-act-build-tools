@@ -10,7 +10,7 @@
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
 
-    ## Used only for filebeat: 'envs' is used to translate 
+    ## Used only for filebeat: 'envs' is used to translate
     ## BRANCH options above into filebeat.yml index
     envs:
       master: {env_long: prod, env_short: prod}
@@ -20,9 +20,12 @@
 
     CODE_HOME: /data-act/backend
     CONFIG_HOME: /data-act/config
-    
-    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name') }}"
-    CSV_SQS_NAME: "{{ lookup('file', 'csv_name') }}"
+
+    # Default to staging
+    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name_staging') }}"
+    CSV_SQS_NAME: "{{ lookup('file', 'csv_name_staging') }}"
+
+    # Same across all envs
     CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
 
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
@@ -53,7 +56,7 @@
       lineinfile:
         dest: "{{ nginx_path }}"
         regexp: '\s*server_name.*;'
-        line: "\tserver_name {{ DOMAIN }};"    
+        line: "\tserver_name {{ DOMAIN }};"
 
     - name: copy nginx config
       become: true
@@ -70,7 +73,7 @@
         src:  "{{ CODE_HOME }}/config/uwsgi.ini"
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
-           
+
     - name: add DB_SOURCE to uswgi ini
       become: true
       shell: "echo -n env=DB_SOURCE= | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
@@ -87,12 +90,30 @@
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
         line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
 
+    - name: add CSV S3 bucket name (if prod)
+      when: BRANCH == 'master'
+      vars:
+        CSV_S3_BUCKET_PROD = "{{ lookup('file', 'csv_name_prod') }}"
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
+        line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_PROD }}'"
+
     - name: add CSV SQS name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
         line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME }}'"
-        
+
+    - name: add CSV SQS name (if prod)
+      when: BRANCH == 'master'
+      vars:
+        CSV_SQS_NAME_PROD = "{{ lookup('file', 'csv_name_prod') }}"
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
+        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME_PROD }}'"
+
     - name: add CSV AWS region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
@@ -110,7 +131,7 @@
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*DEBUG =.*'
-        line: "DEBUG = False" 
+        line: "DEBUG = False"
 
     - name: add host to ALLOWED_HOSTS
       lineinfile:
@@ -123,7 +144,7 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'elasticache'"
-    
+
     - name: replace ELASTICACHE-CONNECTION-STRING
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
@@ -135,14 +156,14 @@
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
-        replace: "{{ NONPROD_CACHE_TIMEOUT }}"      
-  
+        replace: "{{ NONPROD_CACHE_TIMEOUT }}"
+
     - name: replace TIMEOUT-IN-SECONDS ( PROD )
       when: BRANCH == 'master' or BRANCH == 'stg'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
-        replace: "{{ PROD_CACHE_TIMEOUT }}"   
+        replace: "{{ PROD_CACHE_TIMEOUT }}"
 
  # SSL Certificates
 
@@ -160,12 +181,12 @@
         dest: "/etc/cert.key"
         remote_src: true
 
- # Start/Stop Services     
+ # Start/Stop Services
 
     - name: stop supervisord
       become: true
       shell: pkill supervisord
-      ignore_errors: yes    
+      ignore_errors: yes
 
     - name: start supervisord
       become: true
@@ -173,4 +194,4 @@
       environment:
         PYTHONPATH: "{{ CODE_HOME }}"
       args:
-        chdir: "{{ CODE_HOME }}/usaspending_api/"      
+        chdir: "{{ CODE_HOME }}/usaspending_api/"
