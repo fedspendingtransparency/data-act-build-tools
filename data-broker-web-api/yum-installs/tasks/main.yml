@@ -21,6 +21,9 @@
 - name: install python development libraries
   sudo: true
   yum: name=python-devel.x86_64
+- name: install open-ssl development libraries
+  sudo: true
+  yum: name=openssl-devel
 - name: install the epel repo from a remote repo
   sudo: true
   yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=present
