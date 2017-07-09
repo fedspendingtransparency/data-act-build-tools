@@ -78,9 +78,16 @@
       become: true
       shell: "echo -n env=DB_SOURCE= | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
-    - name: add DB_R1 to uswgi ini
+    - name: add DB_R1 to uswgi ini (same as source, no replicas in anything but prod)
+      when: BRANCH == 'stg'
       become: true
-      shell: "echo -n env=DB_R1=     | cat - /etc/db_{{ BRANCH }}_r1.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      shell: "echo -n env=DB_R1=     | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      
+    - name: add DB_R1 to uswgi ini (same as source, no replicas in anything but prod)
+      when: BRANCH == 'master'
+      become: true
+      shell: "echo -n env=DB_R1=        | cat - /etc/db_{{ BRANCH }}_r1.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      ignore_errors: true    
 
  # usaspending_api/settings.py
 
