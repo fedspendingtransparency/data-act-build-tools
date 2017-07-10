@@ -178,7 +178,7 @@
       ignore_errors: true    
       
     - name: add DB_R1 to uswgi ini (same as source, no replicas in anything but prod)
-      when: BRANCH == 'sandbox' or BRANCH == 'dev' or BRANCH == 'stg
+      when: BRANCH == 'sandbox' or BRANCH == 'dev' or BRANCH == 'stg'
       become: true
       shell: "echo -n env=DB_R1=        | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
       ignore_errors: true    
