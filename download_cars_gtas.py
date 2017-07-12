@@ -22,7 +22,9 @@ try:
     todays_cars = [x for x in todays_files if re.search('CARS', x['Key'])][0]
     no_cars = False
     os.makedirs('files', exist_ok=True)
+    print('Downloading '+todays_cars['Key']+' as cars_tas.csv')
     s3.download_file('gtas-sf133-frb',todays_cars['Key'],os.path.join(os.getcwd(),'files','cars_tas.csv'))
+    print('Download successful')
 except:
     print('No CARS file posted in the last 24 hours')
     no_cars = True
@@ -35,7 +37,9 @@ try:
     gtas_period = todays_gtas['Key'].split('GTAS')[1][8:10]
     gtas_filename = '_'.join(('sf','133',gtas_year,gtas_period))+'.csv'
     os.makedirs('files', exist_ok=True)
+    print('Downloading '+todays_gtas['Key']+' as '+gtas_filename)
     s3.download_file(args.bucket,todays_gtas['Key'],os.path.join(os.getcwd(),'files',gtas_filename))
+    print('Download successful')
 except:
     print('No GTAS file posted in the last 24 hours')
     no_gtas = True
