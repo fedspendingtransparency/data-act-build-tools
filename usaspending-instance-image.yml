@@ -229,11 +229,11 @@
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'elasticache'"
 
-    - name: disable elasticache (on sandbox and dev)
+    - name: enable local cache (on sandbox and dev)
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
-        line: "CACHE_ENVIRONMENT = 'disabled'"
+        line: "CACHE_ENVIRONMENT = 'local'"
     
     - name: replace ELASTICACHE-CONNECTION-STRING
       replace:
