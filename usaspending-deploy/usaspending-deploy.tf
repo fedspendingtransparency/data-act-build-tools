@@ -27,6 +27,7 @@ resource "aws_launch_configuration" "api-lc" {
   name = "${var.api_name_prefix}_LC_${lookup(var.aws_amis, var.aws_region)}"
   image_id = "${lookup(var.aws_amis, var.aws_region)}"
   instance_type = "${var.api_instance_type}"
+  ebs_optimized = true
   iam_instance_profile = "${var.api_iam_profile}"
   security_groups = ["${split(",", var.api_sec_groups)}"]
   user_data = "${file("usaspending-start-staging.sh")}"
