@@ -31,7 +31,7 @@
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
 
-    PROD_CACHE_TIMEOUT: 60000
+    PROD_CACHE_TIMEOUT: None
     NONPROD_CACHE_TIMEOUT: 600
 
   become_method: sudo
