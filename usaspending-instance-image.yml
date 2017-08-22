@@ -230,7 +230,7 @@
         line: "CACHE_ENVIRONMENT = 'elasticache'"
 
     - name: enable local cache (on sandbox and dev)
-      when: BRANCH == 'dev'
+      when: BRANCH == 'sandbox' or BRANCH == 'dev'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
