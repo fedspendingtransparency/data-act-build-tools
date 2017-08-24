@@ -229,12 +229,19 @@
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'elasticache'"
 
-    - name: enable local cache (on sandbox and dev)
-      when: BRANCH == 'sandbox' or BRANCH == 'dev'
+    - name: enable local cache (on dev)
+      when: BRANCH == 'dev'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'local'"
+        
+    - name: disable cache (sbx)
+      when: BRANCH == 'sandbox'
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
+        line: "CACHE_ENVIRONMENT = 'disabled'"
     
     - name: replace ELASTICACHE-CONNECTION-STRING
       replace:
