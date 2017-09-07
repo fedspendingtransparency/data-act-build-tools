@@ -25,7 +25,7 @@ def deploy():
     parser.add_argument("-dev", "--dev", action="store_true", help="Runs deploy for dev")
     parser.add_argument("-stg", "--staging", action="store_true", help="Runs deploy for staging")
     parser.add_argument("-prod", "--prod", action="store_true", help="Runs deploy for prod")
-    parser.add_argument("-fabs", "--fabs_staging", action="store_true", help="Runs deploy for fabs-staging")
+    parser.add_argument("-fabs", "--fabs_staging", action="store_true", help="Runs deploy for fabs_staging")
     args = parser.parse_args()
     optionsDict = vars(args)
     noArgs = True
@@ -35,7 +35,7 @@ def deploy():
             noArgs = False
 
     if noArgs:
-        print ("No environment specified. Please include an argument: --dev, --staging, --prod ,or --fabs")
+        print ("No environment specified. Please include an argument: --dev, --staging, --prod ,or --fabs_staging")
         sys.exit(1)
 
     if optionsDict["dev"]:
