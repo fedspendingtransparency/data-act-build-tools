@@ -17,19 +17,23 @@
   shell: "cp /{{ PATH }}/cert_{{ ENV }}.pem /{{ PATH }}/cert.pem"
   sudo: true
   when: APP == "broker"
+  ignore_errors: yes
 - name: copy cert.key
   shell: "cp /{{ PATH }}/cert_{{ ENV }}.key /{{ PATH }}/cert.key"
   sudo: true
   when: APP == "broker"
+  ignore_errors: yes
 
 - name: assign ownership of cert.pem to ec2-user
   sudo: true
   file: path=/{{ PATH }}/cert.pem owner=ec2-user
   when: APP == "broker"
+  ignore_errors: yes
 - name: assign ownership of cert.key to ec2-user
   sudo: true
   file: path=/{{ PATH }}/cert.key owner=ec2-user
   when: APP == "broker"
+  ignore_errors: yes
 
 - name: assign ownership of api to ec2-user
   sudo: true
