@@ -27,6 +27,7 @@
 
     # Same across all envs
     CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
+    DOWNLOAD_TO_S3: True
 
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
