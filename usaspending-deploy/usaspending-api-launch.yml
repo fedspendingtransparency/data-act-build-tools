@@ -27,7 +27,6 @@
 
     # Same across all envs
     CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
-    DOWNLOAD_TO_S3: True
 
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
@@ -91,6 +90,12 @@
       ignore_errors: true    
 
  # usaspending_api/settings.py
+ 
+    - name: add CSV download option
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*IS_LOCAL =.*'
+        line: "IS_LOCAL = True"
 
     - name: add CSV S3 bucket name
       lineinfile:
