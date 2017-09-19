@@ -189,7 +189,7 @@
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*IS_LOCAL =.*'
-        line: "IS_LOCAL = True"
+        line: "IS_LOCAL = False"
 
     - name: add CSV S3 bucket name
       lineinfile:
