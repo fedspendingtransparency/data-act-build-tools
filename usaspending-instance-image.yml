@@ -185,6 +185,12 @@
 
 # usaspending_api/settings.py
 
+    - name: add CSV download option
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*IS_LOCAL =.*'
+        line: "IS_LOCAL = True"
+
     - name: add CSV S3 bucket name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
