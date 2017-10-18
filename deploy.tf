@@ -47,25 +47,6 @@ resource "aws_autoscaling_group" "val-asg" {
   }
 }
 
-resource "aws_autoscaling_group" "jobmgr-asg" {
-  name = "${aws_launch_configuration.jobmgr-lc.name}"
-  max_size = "${var.jobmgr_asg_max}"
-  min_size = "${var.jobmgr_asg_min}"
-  desired_capacity = "${var.jobmgr_asg_desired}"
-  min_elb_capacity = "${var.jobmgr_asg_min}"
-  launch_configuration = "${aws_launch_configuration.jobmgr-lc.name}"
-  load_balancers = ["${var.jobmgr_elb}"]
-  vpc_zone_identifier = ["${split(",", var.subnets)}"]
-  tag {
-    key = "Name"
-    value = "${var.jobmgr_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
-    propagate_at_launch = "true"
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 resource "aws_launch_configuration" "api-lc" {
   name = "${var.api_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
   image_id = "${lookup(var.aws_amis, var.aws_region)}"
@@ -88,20 +69,6 @@ resource "aws_launch_configuration" "val-lc" {
   # Security group
   security_groups = ["${split(",", var.val_sec_groups)}"]
   user_data="${var.val_user_data}"
-  key_name = "${var.key_name}"
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_launch_configuration" "jobmgr-lc" {
-  name = "${var.jobmgr_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
-  image_id = "${lookup(var.aws_amis, var.aws_region)}"
-  instance_type = "${var.jobmgr_instance_type}"
-  iam_instance_profile = "${var.jobmgr_iam_profile}"
-  # Security group
-  security_groups = ["${split(",", var.jobmgr_sec_groups)}"]
-  user_data="${var.jobmgr_user_data}"
   key_name = "${var.key_name}"
   lifecycle {
     create_before_destroy = true
