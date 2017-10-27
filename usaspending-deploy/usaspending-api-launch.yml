@@ -97,7 +97,7 @@
         regexp: '\s*IS_LOCAL =.*'
         line: "IS_LOCAL = False"
 
-    - name: add CSV S3 bucket name
+    - name: add CSV S3 bucket name (if staging)
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
@@ -111,21 +111,6 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
         line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_PROD }}'"
-
-    - name: add CSV SQS name
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
-        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME }}'"
-
-    - name: add CSV SQS name (if prod)
-      when: BRANCH == 'master'
-      vars:
-        CSV_SQS_NAME_PROD: "{{ lookup('file', 'csv_name_prod') }}"
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
-        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME_PROD }}'"
 
     - name: add CSV AWS region
       lineinfile:
