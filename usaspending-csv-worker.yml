@@ -66,20 +66,20 @@
     - name: add CSV S3 name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
-        line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
+        regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
+        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
 
     - name: add CSV SQS url
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
-        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'"
+        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
+        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'"
 
     - name: add CSV AWS region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_AWS_REGION =.*'
-        line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'"
+        regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
+        line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'"
 
     - name: get DATABASE_URL env var
       shell: cat /etc/db_{{ BRANCH }}.sh
@@ -92,8 +92,8 @@
       shell: "nohup python3.5 -u manage.py generate_bulk_zip >> worker-out.txt 2>&1 &"
       environment:
         DATABASE_URL: "{{ DATABASE_URL_VAR.stdout }}"
-        BULK_DOWNLOAD_S3_BUCKET_NAME: "{{ CSV_S3_BUCKET_NAME }}"
-        BULK_DOWNLOAD_SQS_QUEUE_NAME: "{{ CSV_SQS_QUEUE_NAME }}"
-        BULK_DOWNLOAD_AWS_REGION: "{{ CSV_AWS_REGION }}"
+        CSV_S3_BUCKET_NAME: "{{ CSV_S3_BUCKET_NAME }}"
+        CSV_SQS_QUEUE_NAME: "{{ CSV_SQS_QUEUE_NAME }}"
+        CSV_AWS_REGION: "{{ CSV_AWS_REGION }}"
       args:
         chdir: "{{ CONFIG_HOME }}/usaspending-csv"
