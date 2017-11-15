@@ -87,14 +87,9 @@
 
 # Start Worker 
 
-    - name: stop csv_worker.py (if running)
-      become: true
-      shell: "pkill -f csv_worker.py"
-      ignore_errors: true
-
     - name: start csv_worker.py
       become: true
-      shell: "nohup python3.5 -u csv_worker.py >> worker-out.txt 2>&1 &"
+      shell: "nohup python3.5 -u manage.py generate_bulk_zip >> worker-out.txt 2>&1 &"
       environment:
         DATABASE_URL: "{{ DATABASE_URL_VAR.stdout }}"
         CSV_S3_BUCKET_NAME: "{{ CSV_S3_BUCKET_NAME }}"
