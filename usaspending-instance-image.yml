@@ -194,19 +194,19 @@
     - name: add bulk S3 bucket name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
+        regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
         line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
 
     - name: add CSV SQS name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
+        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
         line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME }}'"
         
     - name: add CSV AWS region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_AWS_REGION =.*'
+        regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'"
 
     - name: add static url from s3
