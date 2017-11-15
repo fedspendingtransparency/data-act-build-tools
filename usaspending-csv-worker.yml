@@ -92,8 +92,8 @@
       shell: "nohup python3.5 -u manage.py generate_bulk_zip >> worker-out.txt 2>&1 &"
       environment:
         DATABASE_URL: "{{ DATABASE_URL_VAR.stdout }}"
-        CSV_S3_BUCKET_NAME: "{{ CSV_S3_BUCKET_NAME }}"
-        CSV_SQS_QUEUE_NAME: "{{ CSV_SQS_QUEUE_NAME }}"
-        CSV_AWS_REGION: "{{ CSV_AWS_REGION }}"
+        BULK_DOWNLOAD_S3_BUCKET_NAME: "{{ CSV_S3_BUCKET_NAME }}"
+        BULK_DOWNLOAD_SQS_QUEUE_NAME: "{{ CSV_SQS_QUEUE_NAME }}"
+        BULK_DOWNLOAD_AWS_REGION: "{{ CSV_AWS_REGION }}"
       args:
         chdir: "{{ CONFIG_HOME }}/usaspending-csv"
