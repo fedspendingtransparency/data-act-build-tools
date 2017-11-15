@@ -25,9 +25,12 @@
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
 
-    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name') }}"
-    CSV_SQS_NAME: "{{ lookup('file', 'csv_name') }}"
+    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name_{{ BRANCH }}') }}"
+    CSV_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_name_{{ BRANCH }}') }}"
     CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
+    BULK_DOWNLOAD_S3_BUCKET_NAME: "{{ lookup('file', 'csv_bulk_{{ BRANCH }}') }}"
+    BULK_DOWNLOAD_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_bulk_{{ BRANCH }}') }}"
+    BULK_DOWNLOAD_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
 
     REQ_DIR: "{{ CODE_HOME }}/requirements"
 
@@ -191,23 +194,41 @@
         regexp: '\s*IS_LOCAL =.*'
         line: "IS_LOCAL = False"
 
-    - name: add bulk S3 bucket name
+    - name: add bulk SQS name
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
+        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'"
+
+    - name: add bulk S3 name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
-        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
+        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'"
 
     - name: add CSV SQS name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
-        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME }}'"
+        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
+        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'"
+
+    - name: add CSV S3 name
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
+        line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
         
     - name: add CSV AWS region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_AWS_REGION =.*'
+        line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'"
+
+    - name: add Bulk AWS region
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
-        line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'"
+        line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
 
     - name: add static url from s3
       lineinfile:
