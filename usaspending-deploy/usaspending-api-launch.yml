@@ -125,7 +125,7 @@
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
-        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'"
+        line: "CSV_SQS_QUEUE_NAME = '{{ BABY_SQS_PROD }}'"
        
 
     - name: add bulk bucket name (if staging)
