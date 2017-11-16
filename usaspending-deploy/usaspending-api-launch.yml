@@ -27,7 +27,6 @@
     CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
     BULK_DOWNLOAD_S3_BUCKET_NAME: "{{ lookup('file', 'csv_bulk_staging') }}"
     BULK_DOWNLOAD_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_bulk_staging') }}"
-    BULK_DOWNLOAD_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
 
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
@@ -97,36 +96,67 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*IS_LOCAL =.*'
         line: "IS_LOCAL = False"
-
-    - name: add CSV S3 bucket name (if staging)
+        
+    - name: add baby bucket name (if staging)
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
+        line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
+
+    - name: add baby bucket name (if prod)
+      when: BRANCH == 'master'
+      vars:
+        BABY_BUCKET_PROD: "{{ lookup('file', 'csv_name_prod') }}"
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
+        line: "CSV_S3_BUCKET_NAME = '{{ BABY_BUCKET_PROD }}'"
+        
+    - name: add baby sqs name (if staging)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
+        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'"
+
+    - name: add baby sqs name (if prod)
+      when: BRANCH == 'master'
+      vars:
+        BABY_SQS_PROD: "{{ lookup('file', 'csv_name_prod') }}"
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
+        line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'"
+       
+
+    - name: add bulk bucket name (if staging)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
         line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'"
 
-    - name: add CSV S3 bucket name (if prod)
+    - name: add bulk bucket name (if prod)
       when: BRANCH == 'master'
       vars:
-        CSV_S3_BULK_BUCKET_PROD: "{{ lookup('file', 'csv_name_prod') }}"
+        BULK_DOWNLOAD_S3_BUCKET_NAME_PROD: "{{ lookup('file', 'csv_name_prod') }}"
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
-        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ CSV_S3_BULK_BUCKET_PROD }}'"
+        regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
+        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME_PROD }}'"
         
-    - name: add CSV SQS name (if staging)
+    - name: add bulk sqs name (if staging)
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
+        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
         line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'"
 
-    - name: add CSV SQS bucket name (if prod)
+    - name: add bulk sqs name (if prod)
       when: BRANCH == 'master'
       vars:
-        CSV_SQS_BULK_NAME_PROD: "{{ lookup('file', 'csv_name_prod') }}"
+        BULK_DOWNLOAD_SQS_QUEUE_NAME_PROD: "{{ lookup('file', 'csv_bulk_prod') }}"
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
-        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ CSV_SQS_BULK_NAME_PROD }}'"
+        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
+        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME_PROD }}'"
 
     - name: add CSV AWS region
       lineinfile:
@@ -138,7 +168,7 @@
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
-        line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
+        line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'"
 
     - name: add static url from s3
       lineinfile:
