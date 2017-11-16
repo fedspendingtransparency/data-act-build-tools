@@ -23,10 +23,11 @@
 
     # Default to staging
     CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name_staging') }}"
-    CSV_SQS_NAME: "{{ lookup('file', 'csv_name_staging') }}"
-
-    # Same across all envs
+    CSV_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_name_staging') }}"
     CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
+    BULK_DOWNLOAD_S3_BUCKET_NAME: "{{ lookup('file', 'csv_bulk_staging') }}"
+    BULK_DOWNLOAD_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_bulk_staging') }}"
+    BULK_DOWNLOAD_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
 
     STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
     ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
@@ -101,37 +102,43 @@
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
-        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
+        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'"
 
     - name: add CSV S3 bucket name (if prod)
       when: BRANCH == 'master'
       vars:
-        CSV_S3_BUCKET_PROD: "{{ lookup('file', 'csv_name_prod') }}"
+        CSV_S3_BULK_BUCKET_PROD: "{{ lookup('file', 'csv_name_prod') }}"
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
-        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_PROD }}'"
+        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ CSV_S3_BULK_BUCKET_PROD }}'"
         
     - name: add CSV SQS name (if staging)
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
-        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME }}'"
+        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'"
 
     - name: add CSV SQS bucket name (if prod)
       when: BRANCH == 'master'
       vars:
-        CSV_SQS_NAME_PROD: "{{ lookup('file', 'csv_name_prod') }}"
+        CSV_SQS_BULK_NAME_PROD: "{{ lookup('file', 'csv_name_prod') }}"
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
-        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ CSV_SQS_NAME_PROD }}'"
+        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ CSV_SQS_BULK_NAME_PROD }}'"
 
     - name: add CSV AWS region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_AWS_REGION =.*'
         line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'"
+
+    - name: add Bulk AWS region
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
+        line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
 
     - name: add static url from s3
       lineinfile:
