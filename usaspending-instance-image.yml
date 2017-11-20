@@ -5,8 +5,6 @@
 
   vars:
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
-    
-    NR_KEY: "{{ lookup('file', '/etc/nr_key') }}"
 
     ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
@@ -190,11 +188,15 @@
       
 # newrelic settings
 
+    - name: get contents of nr_key file
+      command: cat /etc/nr_key
+      register: NR_KEY
+
     - name: add newrelic license key
       lineinfile:
         dest: "{{ CODE_HOME }}/config/newrelic.ini"
         regexp: '\s*license_key =.*'
-        line: "license_key = {{ NR_KEY }}"
+        line: "license_key = {{ NR_KEY.stdout }}"
         
     - name: add newrelic label (app_name)
       lineinfile:
