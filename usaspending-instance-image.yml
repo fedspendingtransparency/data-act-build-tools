@@ -5,6 +5,8 @@
 
   vars:
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
+    
+    NR_KEY: "{{ lookup('file', '/etc/nr_key') }}"
 
     ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
@@ -185,6 +187,20 @@
       become: true
       shell: "echo -n env=DB_R1=        | cat - /etc/db_{{ BRANCH }}.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
       ignore_errors: true    
+      
+# newrelic settings
+
+    - name: add newrelic license key
+      lineinfile:
+        dest: "{{ CODE_HOME }}/config/newrelic.ini"
+        regexp: '\s*license_key =.*'
+        line: "license_key = '{{ NR_KEY }}'"
+        
+    - name: add newrelic label (app_name)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/config/newrelic.ini"
+        regexp: '\s*app_name =.*'
+        line: "app_name = 'DA-Website-API-{{ BRANCH }}'"
 
 # usaspending_api/settings.py
 
