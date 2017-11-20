@@ -201,6 +201,24 @@
         dest: "{{ CODE_HOME }}/config/newrelic.ini"
         regexp: '\s*app_name =.*'
         line: "app_name = 'DA-Website-API-{{ BRANCH }}'"
+        
+    - name: add single-interpreter to uwsgi.ini
+      lineinfile:
+        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
+        regexp: '\s*single-interpreter = .*'
+        line: "single-interpreter = true"
+        
+    - name: modify supervisord configuration (start command)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/config/supervisord.conf"
+        regexp: '\s*command=.*'
+        line: "command=newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini"
+        
+    - name: modify supervisord configuration (environment)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/config/supervisord.conf"
+        regexp: '\s*environment=.*'
+        line: "environment=PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE={{ CODE_HOME }}/config/newrelic.ini"
 
 # usaspending_api/settings.py
 
