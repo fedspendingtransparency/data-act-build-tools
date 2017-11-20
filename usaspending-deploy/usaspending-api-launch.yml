@@ -89,44 +89,7 @@
       shell: "echo -n env=DB_R1=        | cat - /etc/db_{{ BRANCH }}_r1.sh >> {{ CODE_HOME }}/config/uwsgi_db.ini"
       ignore_errors: true    
      
-# newrelic settings
 
-    - name: get contents of nr_key file
-      command: cat /etc/nr_key
-      register: NR_KEY
-
-    - name: add newrelic license key
-      lineinfile:
-        dest: "{{ CODE_HOME }}/config/newrelic.ini"
-        regexp: '\s*license_key =.*'
-        line: "license_key = {{ NR_KEY.stdout }}"
-        
-    - name: add newrelic label (app_name)
-      lineinfile:
-        dest: "{{ CODE_HOME }}/config/newrelic.ini"
-        regexp: '\s*app_name =.*'
-        line: "app_name = DA-Website-API-{{ BRANCH }}"
-        
-    - name: add single-interpreter to uwsgi_db.ini
-      ini_file:
-        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
-        section: "uwsgi"
-        option: single-interpreter
-        value: true
-        
-    - name: modify supervisord configuration (start command)
-      ini_file:
-        dest: "{{ CODE_HOME }}/config/supervisord.conf"
-        section: "program:uwsgi"
-        option: command
-        value: "newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini"
-        
-    - name: modify supervisord configuration (environment)
-      ini_file:
-        dest: "{{ CODE_HOME }}/config/supervisord.conf"
-        section: "program:uwsgi"
-        option: environment
-        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE={{ CODE_HOME }}/config/newrelic.ini"
 
  # usaspending_api/settings.py
  
