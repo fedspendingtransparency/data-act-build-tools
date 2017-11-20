@@ -191,6 +191,7 @@
 # newrelic settings
 
     - name: add newrelic license key
+      become: true 
       lineinfile:
         dest: "{{ CODE_HOME }}/config/newrelic.ini"
         regexp: '\s*license_key =.*'
