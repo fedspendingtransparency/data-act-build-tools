@@ -4,9 +4,6 @@
 ---
 - hosts: "{{ HOST }}"
 
-  vars:
-    NR_KEY: "{{ lookup('file', '/etc/nr_key') }}"
-
   become_method: sudo
 
   user: ec2-user
@@ -62,12 +59,6 @@
     - name: install newrelic
       become: true
       pip: name=newrelic executable=pip3.5
-      
-    - name: add newrelic license key
-      lineinfile:
-        dest: "{{ CODE_HOME }}/config/newrelic.ini"
-        regexp: '\s*license_key =.*'
-        line: "license_key = '{{ NR_KEY }}'"
 
     - name: pull data act build tools repo
       git: repo=https://github.com/fedspendingtransparency/data-act-build-tools.git
