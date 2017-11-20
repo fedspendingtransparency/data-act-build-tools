@@ -6,7 +6,7 @@
   vars:
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     
-    NR_KEY: "{{ lookup('file', '/etc/nr_key') }}"
+    NR_KEY: "{{ lookup('file', '/etc/nr_key.sh') }}"
 
     ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
