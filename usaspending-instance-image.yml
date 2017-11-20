@@ -212,8 +212,8 @@
         
     - name: modify supervisord configuration (start command)
       ini_file:
-        path: "{{ CODE_HOME }}/config/supervisord.conf"
-        section: program:uwsgi
+        path: {{ CODE_HOME }}/config/supervisord.conf
+        section: "program:uwsgi"
         option: command
         value: "newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini"
         
