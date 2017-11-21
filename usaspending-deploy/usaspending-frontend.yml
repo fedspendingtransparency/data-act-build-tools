@@ -41,6 +41,14 @@
         regexp: '\s*auth_basic_user_file /etc/nginx/.*'
         state: absent
     
+    - name: remove caching from non-prod environments
+      become: true
+      when: ENV != 'prod'
+      lineinfile:
+        dest: /data-act/config/nginx/nginx_ds_website.conf
+        regexp: '\s*add_header Cache-Control.*'
+        state: absent
+    
     - name: copy ENV config
       become: true
       shell: cp /data-act/config/nginx/nginx_ds_website.conf /etc/nginx/nginx.conf
