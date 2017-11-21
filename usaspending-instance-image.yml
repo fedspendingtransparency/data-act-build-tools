@@ -360,6 +360,7 @@
       register: temp_db_var
 
     - name: run migrations (on source DB)
+      when: BRANCH != 'sandbox'
       shell: yes "yes" | python3.5 manage.py migrate
       environment: 
         DATABASE_URL: "{{ temp_db_var.stdout }}"
