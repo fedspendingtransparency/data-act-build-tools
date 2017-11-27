@@ -119,7 +119,7 @@
         dest: "{{ CODE_HOME }}/config/supervisord.conf"
         section: "program:uwsgi"
         option: command
-        value: "newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini"
+        value: "newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
         
     - name: modify supervisord configuration (environment)
       ini_file:
