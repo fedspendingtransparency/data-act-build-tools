@@ -270,6 +270,21 @@
         dest: "/etc/cert.key"
         remote_src: true
 
+# config/filebeat/filebeat.yml
+
+    - name: copy filebeat config
+      become: true
+      copy:
+        src:  "{{ CONFIG_HOME }}/filebeat/filebeat-usaspending.yml"
+        dest: "/etc/filebeat/filebeat.yml"
+        remote_src: true
+    - name: update filebeat config to set correct index
+      become: true
+      replace:
+        dest: "/etc/filebeat/filebeat.yml"
+        regexp: 'index: filebeat'
+        replace: "index: {{ vars['envs'][BRANCH]['env_short'] }}-filebeat"
+
  # Start/Stop Services
 
     - name: stop supervisord
@@ -284,3 +299,12 @@
         PYTHONPATH: "{{ CODE_HOME }}"
       args:
         chdir: "{{ CODE_HOME }}/usaspending_api/"
+
+    - name: stop filebeat
+      become: true
+      shell: systemctl stop filebeat
+      ignore_errors: true
+
+    - name: start filebeat
+      become: true
+      shell: systemctl start filebeat
