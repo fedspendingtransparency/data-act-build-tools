@@ -176,7 +176,7 @@
     - name: add bulk bucket name (if prod)
       when: BRANCH == 'master'
       vars:
-        BULK_DOWNLOAD_S3_BUCKET_NAME_PROD: "{{ lookup('file', 'csv_name_prod') }}"
+        BULK_DOWNLOAD_S3_BUCKET_NAME_PROD: "{{ lookup('file', 'csv_bulk_prod') }}"
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
