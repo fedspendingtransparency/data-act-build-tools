@@ -46,6 +46,9 @@
         - unzip
         - wget
         - zlib-devel
+        - locate
+        - vim
+        - telnet
 
     - name: install libmemcached-devel (from CentOS repo)
       become: true
