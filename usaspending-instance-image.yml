@@ -224,7 +224,7 @@
         section: "program:uwsgi"
         option: environment
         value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE={{ CODE_HOME }}/config/newrelic.ini"
-https://github.com/fedspendingtransparency/data-act-build-tools/pulls
+
 # usaspending_api/settings.py
 
     - name: add bulk download option
