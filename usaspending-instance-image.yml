@@ -224,7 +224,7 @@
         section: "program:uwsgi"
         option: environment
         value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE={{ CODE_HOME }}/config/newrelic.ini"
-
+https://github.com/fedspendingtransparency/data-act-build-tools/pulls
 # usaspending_api/settings.py
 
     - name: add bulk download option
@@ -362,13 +362,6 @@
     - name: run migrations (on source DB)
       when: BRANCH != 'sandbox'
       shell: yes "yes" | python3.5 manage.py migrate
-      environment: 
-        DATABASE_URL: "{{ temp_db_var.stdout }}"
-      args:
-        chdir: "{{ CODE_HOME }}"
-
-    - name: clear request catalog
-      shell: python3.5 manage.py clear_request_catalog
       environment: 
         DATABASE_URL: "{{ temp_db_var.stdout }}"
       args:
