@@ -56,3 +56,12 @@
 - name: install ansible
   yum: name=ansible
   sudo: true
+- name: install locate
+  yum: name=mlocate
+  sudo: true
+- name: install vim
+  yum: name=vim
+  sudo: true
+- name: install telnet
+  yum: name=telnet
+  sudo: true
