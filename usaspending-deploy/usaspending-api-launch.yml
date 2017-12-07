@@ -269,6 +269,21 @@
         src:  "/etc/cert_{{ BRANCH }}.key"
         dest: "/etc/cert.key"
         remote_src: true
+        
+ # config/filebeat/filebeat.yml
+
+    - name: copy filebeat config
+      become: true
+      copy:
+        src:  "{{ CONFIG_HOME }}/filebeat/filebeat-usaspending.yml"
+        dest: "/etc/filebeat/filebeat.yml"
+        remote_src: true
+    - name: update filebeat config to set correct index
+      become: true
+      replace:
+        dest: "/etc/filebeat/filebeat.yml"
+        regexp: 'index: filebeat'
+        replace: "index: usaspending-api-{{ vars['envs'][BRANCH]['env_short'] }}"
 
  # Start/Stop Services
 
