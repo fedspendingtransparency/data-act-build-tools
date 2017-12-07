@@ -14,7 +14,7 @@
     ## BRANCH options above into filebeat.yml index
     envs:
       master: {env_long: prod, env_short: prod}
-      staging: {env_long: staging, env_short: stg}
+      stg: {env_long: staging, env_short: stg}
       dev: {env_long: dev, env_short: dev}
       sandbox: {env_long: sandbox, env_short: sbx}
 
