@@ -37,7 +37,7 @@
     - name: Checkout backend from git
       become: true
       git: repo={{ REPO }}
-           version={{ BRANCH }}  
+           version={{ ENV_SHORT }}  
            dest={{ CODE_HOME }}
            accept_hostkey=true 
            force=yes
