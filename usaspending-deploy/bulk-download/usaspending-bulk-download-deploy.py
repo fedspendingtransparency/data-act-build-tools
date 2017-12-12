@@ -96,7 +96,7 @@ def deploy():
         update_tf_ami(staging_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data('staging')    
+        # update_terraform_user_data('staging')    
 
         # Run Terraform
         run_tf(tf_exec_path)
@@ -120,7 +120,7 @@ def deploy():
         update_tf_ami(staging_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data('prod')  
+        # update_terraform_user_data('prod')  
 
         # Run Terraform
         run_tf(tf_exec_path)
