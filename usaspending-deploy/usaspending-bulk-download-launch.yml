@@ -167,7 +167,7 @@
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
 
     - name: get DATABASE_URL env var
-      shell: cat /etc/db_{{ BRANCH }}.sh
+      shell: cat /etc/db_{{ SHORT_ENV }}.sh
       register: DATABASE_URL_VAR
 
 # Start Worker
