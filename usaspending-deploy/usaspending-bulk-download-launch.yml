@@ -1,0 +1,194 @@
+---
+- hosts: temp-bulkdownload
+
+# Required: {{ BRANCH }}
+
+  vars:
+    REPO: https://github.com/fedspendingtransparency/usaspending-api.git
+
+    ## Branch options: sandbox, dev, stg, master
+    BRANCH: "{{ BRANCH }}"
+    CONFIG_HOME: '/data-act/config'
+
+  become_method: sudo  
+
+  user: ec2-user
+  tasks:
+    - name: Checkout config from git
+      git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
+           dest=/data-act/config 
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa"
+      become: true    
+
+    - name: Checkout config from git
+      become: true
+      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git
+           version="bulk-download-deploy"
+           dest={{ CONFIG_HOME }}
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
+
+    - name: Load variables from config repo
+      include_vars: '/{{ CONFIG_HOME }}/deploy/{{ BRANCH }}-bulk-download-vars-ansible.yml'
+
+    - name: Checkout backend from git
+      become: true
+      git: repo={{ REPO }}
+           version={{ BRANCH }}  
+           dest={{ CODE_HOME }}
+           accept_hostkey=true 
+           force=yes
+
+
+    - name: update pip
+      become: true 
+      shell: pip3.5 install --upgrade pip 
+
+    - name: copy requirements.txt (to check for changes)
+      become: true 
+      copy:
+        src:  "{{ REQ_DIR }}/requirements.txt"
+        dest: "{{ REQ_DIR }}/requirements_copy.txt"
+        remote_src: true
+      register: requirements_txt
+    - name: install python packages based on requirements.txt
+      become: true 
+      when: requirements_txt.changed
+      pip: chdir="{{ REQ_DIR }}" requirements="requirements.txt" executable=pip3.5
+
+    - name: copy legacy_requirements.txt (to check for changes)
+      become: true
+      copy:
+        src:  "{{ REQ_DIR }}/legacy_requirements.txt"
+        dest: "{{ REQ_DIR }}/legacy_requirements_copy.txt"
+        remote_src: true
+      register: legacy_requirements_txt
+    - name: install python packages based on legacy_requirements.txt
+      become: true
+      when: legacy_requirements_txt.changed
+      pip: chdir="{{ REQ_DIR }}" requirements="legacy_requirements.txt" executable=pip2
+
+    - name: Copy New Relic package
+      become: true
+      shell: rpm -Uvh https://download.newrelic.com/pub/newrelic/el5/i386/newrelic-repo-5-3.noarch.rpm --replacefiles --replacepkgs
+    - name: Install New Relic Sysmond
+      become: true
+      yum:
+        name: newrelic-sysmond
+        state: latest
+
+
+    - name: set starting directory to CODE_HOME
+      become: true
+      lineinfile: 
+        dest: /home/ec2-user/.bashrc
+        line: "cd {{ CODE_HOME }}"
+        insertafter: EOF
+
+# newrelic settings
+
+    - name: get contents of nr_key file
+      command: cat /etc/nr_key
+      register: NR_KEY
+
+    - name: Set New Relic License Key
+      become: true
+      shell: nrsysmond-config --set license_key={{ NR_KEY.stdout }}
+
+# Commenting out for now
+#    - name: add newrelic license key
+#      lineinfile:
+#        dest: "{{ CODE_HOME }}/config/newrelic.ini"
+#        regexp: '\s*license_key =.*'
+#        line: "license_key = {{ NR_KEY.stdout }}"
+#      sudo: true
+#
+#    - name: add newrelic label (app_name)
+#      lineinfile:
+#        dest: "{{ CODE_HOME }}/config/newrelic.ini"
+#        regexp: '\s*app_name =.*'
+#        line: "app_name = DA-Website-API-CSV-{{ BRANCH }}"
+#      sudo: true
+#
+#    - name: add single-interpreter to uwsgi_db.ini
+#      ini_file:
+#        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
+#        section: "uwsgi"
+#        option: single-interpreter
+#        value: true
+#      sudo: true
+#
+#    - name: modify supervisord configuration (start command)
+#      ini_file:
+#        dest: "{{ CODE_HOME }}/config/supervisord.conf"
+#        section: "program:uwsgi"
+#        option: command
+#        value: "newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
+#      sudo: true
+#
+#    - name: modify supervisord configuration (environment)
+#      ini_file:
+#        dest: "{{ CODE_HOME }}/config/supervisord.conf"
+#        section: "program:uwsgi"
+#        option: environment
+#        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE={{ CODE_HOME }}/config/newrelic.ini"
+#      sudo: true
+
+# usaspending_api/settings.py (for running the actual generate download command)
+
+    - name: make ec2-user own everything
+      become: true
+      file: 
+        path: /data-act
+        state: directory
+        owner: ec2-user
+        mode: "u+wrx"
+        recurse: true
+
+    - name: add Bulk Download S3 name
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
+        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'"
+
+    - name: add Bulk Download SQS url
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
+        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'"
+
+    - name: add bulk AWS region
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
+        line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
+
+    - name: get DATABASE_URL env var
+      shell: cat /etc/db_{{ BRANCH }}.sh
+      register: DATABASE_URL_VAR
+
+# Start Worker
+
+    - name: Run New Relic
+      become: true
+      shell: /etc/init.d/newrelic-sysmond start
+
+    - name: stop supervisord
+      become: true
+      shell: pkill supervisord
+      ignore_errors: true
+
+    - name: start supervisord
+      become: true
+      shell: "supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf &"
+      environment:
+        PYTHONPATH: "{{ CODE_HOME }}"
+        BULK_DOWNLOAD_S3_BUCKET_NAME: "{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}"
+        BULK_DOWNLOAD_SQS_QUEUE_NAME: "{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}"
+        NUM_PROCS: "{{ NUM_PROCS }}"
+        DATABASE_URL_VAR: "{{ DATABASE_URL_VAR.stdout }}"
+      args:
+        chdir: "{{ CODE_HOME }}/usaspending_api/"
