@@ -81,12 +81,12 @@ def deploy():
     #     print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
     #     update_ami_tags(old_instance_amis)
     #     print('Done.')
-    staging_ami = conn.get_all_images(filters={
-        "tag:current"     : "True", 
-        "tag:base"        : "False", 
-        "tag:type"        : "USASpending-API", 
-        "tag:environment" : "staging"
-        })[0].id
+        staging_ami = conn.get_all_images(filters={
+            "tag:current"     : "True", 
+            "tag:base"        : "False", 
+            "tag:type"        : "USASpending-API", 
+            "tag:environment" : "staging"
+            })[0].id
 
   ###########################
   #   TF Build - Staging    #
