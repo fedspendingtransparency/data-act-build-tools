@@ -1,5 +1,5 @@
 ---
-- hosts: temp-bulkdownload
+- hosts: "{{ HOST }}"
 
 # Required: {{ BRANCH }}
 
@@ -147,6 +147,13 @@
         owner: ec2-user
         mode: "u+wrx"
         recurse: true
+
+    - name: add bulk download option
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*IS_LOCAL =.*'
+        line: "IS_LOCAL = False"
+
 
     - name: add Bulk Download S3 name
       lineinfile:
