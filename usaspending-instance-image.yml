@@ -31,6 +31,7 @@
     BULK_DOWNLOAD_S3_BUCKET_NAME: "{{ lookup('file', 'csv_bulk_{{ BRANCH }}') }}"
     BULK_DOWNLOAD_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_bulk_{{ BRANCH }}') }}"
     BULK_DOWNLOAD_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
+    MONTHLY_DOWNLOAD_S3_BUCKET_NAME: "{{ lookup('file', 'monthly_download') }}"
 
     REQ_DIR: "{{ CODE_HOME }}/requirements"
 
@@ -268,6 +269,12 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
+
+  - name: add monthly download s3 name
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*'
+        line: "MONTHLY_DOWNLOAD_S3_BUCKET_NAME = '{{ MONTHLY_DOWNLOAD_S3_BUCKET_NAME }}'"
 
     - name: add static url from s3
       lineinfile:
