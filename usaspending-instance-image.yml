@@ -270,7 +270,7 @@
         regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
 
-  - name: add monthly download s3 name
+    - name: add monthly download s3 name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*'
