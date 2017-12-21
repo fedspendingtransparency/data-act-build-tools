@@ -1,6 +1,9 @@
 # Base Ansible to run on a fresh RHEL7 install.
 # Installs USASpending API dependencies that are mutal across environments.
 
+# TODO: This does not include newrelic infrastructure setup
+# This does not include the necessary certs and RDS keys to run the API
+
 ---
 - hosts: "{{ HOST }}"
 
