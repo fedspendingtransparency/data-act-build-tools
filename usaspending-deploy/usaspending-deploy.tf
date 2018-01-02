@@ -34,11 +34,6 @@ resource "aws_autoscaling_group" "api-asg" {
       value = "${var.api_env_tag}"
       propagate_at_launch = "true"
   }
-  tag = {
-      key = "DeployTime"
-      value = "${timestamp()}"
-      propagate_at_launch = "true"
-  }
     
   lifecycle {
     create_before_destroy = true
