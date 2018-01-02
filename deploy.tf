@@ -16,11 +16,33 @@ resource "aws_autoscaling_group" "api-asg" {
   launch_configuration = "${aws_launch_configuration.api-lc.name}"
   load_balancers = ["${var.api_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
-  tag {
-    key = "Name"
-    value = "${var.api_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
-    propagate_at_launch = "true"
-  }
+  tags = [
+    {
+      key = "Name"
+      value = "${var.api_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
+      propagate_at_launch = "true"
+    },
+    {
+      key = "Application"
+      value = "Broker"
+      propagate_at_launch = "true"
+    },
+    {
+      key = "Component"
+      value = "API"
+      propagate_at_launch = "true"
+    },
+    {
+      key = "Environment"
+      value = "${var.env_tag}"
+      propagate_at_launch = "true"
+    },
+    {
+      key = "DeployTime"
+      value = "${timestamp()}"
+      propagate_at_launch = "true"
+    }
+  ]
   lifecycle {
     create_before_destroy = true
   }
@@ -37,11 +59,33 @@ resource "aws_autoscaling_group" "val-asg" {
   launch_configuration = "${aws_launch_configuration.val-lc.name}"
   load_balancers = ["${var.val_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
-  tag {
-    key = "Name"
-    value = "${var.val_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
-    propagate_at_launch = "true"
-  }
+  tags = [
+    {
+      key = "Name"
+      value = "${var.val_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
+      propagate_at_launch = "true"
+    },
+    {
+      key = "Application"
+      value = "Broker"
+      propagate_at_launch = "true"
+    },
+    {
+      key = "Component"
+      value = "Validator"
+      propagate_at_launch = "true"
+    },
+    {
+      key = "Environment"
+      value = "${var.env_tag}"
+      propagate_at_launch = "true"
+    },
+    {
+      key = "DeployTime"
+      value = "${timestamp()}"
+      propagate_at_launch = "true"
+    }
+  ]
   lifecycle {
     create_before_destroy = true
   }
