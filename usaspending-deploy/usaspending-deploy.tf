@@ -13,33 +13,11 @@ resource "aws_autoscaling_group" "api-asg" {
   launch_configuration = "${aws_launch_configuration.api-lc.name}"
   load_balancers = ["${var.api_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
-  tags = [
-    {
+  tag = {
       key = "Name"
       value = "${var.api_name_prefix}_ASG"
       propagate_at_launch = "true"
-    },
-    {
-      key = "Application"
-      value = "USAspending"
-      propagate_at_launch = "true"
-    },
-    {
-      key = "Component"
-      value = "API"
-      propagate_at_launch = "true"
-    },
-    {
-      key = "Environment"
-      value = "${var.api_env_tag}"
-      propagate_at_launch = "true"
-    },
-    {
-      key = "DeployTime"
-      value = "${timestamp()}"
-      propagate_at_launch = "true"
-    }
-  ]
+  }
   lifecycle {
     create_before_destroy = true
   }
