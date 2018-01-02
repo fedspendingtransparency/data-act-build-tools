@@ -108,6 +108,7 @@
         line: "app_name = DA-Website-API-{{ BRANCH }}"
         
     - name: add single-interpreter to uwsgi_db.ini
+      become: true
       ini_file:
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         section: "uwsgi"
