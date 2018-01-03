@@ -13,33 +13,28 @@ resource "aws_autoscaling_group" "bd-asg" {
   launch_configuration = "${aws_launch_configuration.bd-lc.name}"
   load_balancers = ["${var.bd_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
-  tags = [
-    {
+
+  tag = {
       key = "Name"
       value = "${var.bd_name_prefix}_ASG"
       propagate_at_launch = "true"
-    },
-    {
+  }
+  tag = {
       key = "Application"
       value = "USAspending"
       propagate_at_launch = "true"
-    },
-    {
+  }
+  tag = {
       key = "Component"
       value = "BulkDownload"
       propagate_at_launch = "true"
-    },
-    {
+  }
+  tag = {
       key = "Environment"
       value = "${var.bd_env_tag}"
       propagate_at_launch = "true"
-    },
-    {
-      key = "DeployTime"
-      value = "${timestamp()}"
-      propagate_at_launch = "true"
-    }
-  ]
+  }
+
   lifecycle {
     create_before_destroy = true
   }
