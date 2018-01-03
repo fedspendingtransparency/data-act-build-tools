@@ -8,8 +8,8 @@ from subprocess import Popen, PIPE
 
 def deploy():
 
+    # This file gets copied over from either prod-bulk-download-vars.tf.json or staging-bulk-download-vars.tf.json
     tfvar_file = 'usaspending-bulk-download-vars.tf.json'
-
     tf_exec_path = '/terraform/terraform'
 
     # Set connection
@@ -33,6 +33,7 @@ def deploy():
         if(optionsDict[arg]):
             noArgs = False
 
+    # TODO Can add arguments with this and combine with create-and-start-csv.py
     if noArgs:
         print ("No environment specified. Please include an argument: --staging, or --prod")
         sys.exit(1)
@@ -45,18 +46,8 @@ def deploy():
         "tag:environment": "staging"
     })[0].id
 
-    if optionsDict["staging"]:
-        deploy_env = 'staging'
-
-        # Add new AMI to Terraform variables
-        update_tf_ami(staging_ami, tfvar_file)
-
-        # Run Terraform
-        run_tf(tf_exec_path)
-
-    elif optionsDict["prod"]:
-        deploy_env = 'prod'
-
+    # Staging and prod do the same thing with different tfvar_files
+    if optionsDict["staging"] or optionsDict["prod"]:
         # Add new AMI to Terraform variables
         update_tf_ami(staging_ami, tfvar_file)
 
