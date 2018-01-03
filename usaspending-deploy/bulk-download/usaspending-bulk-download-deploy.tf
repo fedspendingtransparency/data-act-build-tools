@@ -7,11 +7,9 @@ resource "aws_autoscaling_group" "bd-asg" {
   max_size = "${var.bd_asg_max}"
   min_size = "${var.bd_asg_min}"
   desired_capacity = "${var.bd_asg_desired}"
-  min_elb_capacity = "${var.bd_asg_min}"
-  health_check_type = "ELB"
-  health_check_grace_period = 180
+  health_check_type = "EC2"
+  health_check_grace_period = 120
   launch_configuration = "${aws_launch_configuration.bd-lc.name}"
-  load_balancers = ["${var.bd_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
 
   tag = {
