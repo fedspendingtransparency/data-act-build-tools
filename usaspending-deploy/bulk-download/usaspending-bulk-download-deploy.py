@@ -1,21 +1,16 @@
 import boto
 from boto import ec2
-import sh
-import os
 import json
 import argparse
 import sys
-from subprocess import Popen, PIPE, STDOUT, call
+from subprocess import Popen, PIPE
+
 
 def deploy():
 
-    packer_file     = 'usaspending-bulk-download-packer.json'
-    tfvar_file      = 'usaspending-bulk-download-vars.tf.json'
+    tfvar_file = 'usaspending-bulk-download-vars.tf.json'
 
-    tf_file =         'usaspending-bulk-download-deploy.tf'
-
-    packer_exec_path = '/packer/packerio'
-    tf_exec_path     = '/terraform/terraform'
+    tf_exec_path = '/terraform/terraform'
 
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
@@ -42,85 +37,28 @@ def deploy():
         print ("No environment specified. Please include an argument: --staging, or --prod")
         sys.exit(1)
 
-  ###########################
-  #      Packer Build       #
-  ###########################
+    # Get previously created staging AMI (created by usaspending-deploy.py)
+    staging_ami = conn.get_all_images(filters={
+        "tag:current": "True",
+        "tag:base": "False",
+        "tag:type": "USASpending-API",
+        "tag:environment": "staging"
+    })[0].id
 
     if optionsDict["staging"]:
         deploy_env = 'staging'
 
-    # # Get Base AMI, Update Packer file
-    #     print('Retrieving base AMI...')
-    #     base_ami = conn.get_all_images(filters={
-    #         "tag:current" : "True", 
-    #         "tag:base"    : "True", 
-    #         "tag:type"    : "USASpending-API"
-    #         })[0].id
-    #     print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
-    #     update_packer_spec(packer_file, base_ami)
-    #     print('Done.')
-
-    # # Get Old AMIs, for setting current=False after new one is craeted
-    #     old_instance_amis = conn.get_all_images(filters={ 
-    #         "tag:current" : "True", 
-    #         "tag:base"    : "False", 
-    #         "tag:type"    : "USASpending-API", 
-    #         "tag:environment" : "staging"
-    #         })
-
-    # # Build New AMI
-    #     print('**************************************************************************')
-    #     print(' Building new AMI via Packer. This can take a while...')
-    #     packer_output = packer_build(packer_file, packer_exec_path)
-    #     ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
-    #     new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
-    #     print('Done. New AMI created: ' + new_instance_ami)
-
-
-    # # Set current=False tag for old AMI
-    #     print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
-    #     update_ami_tags(old_instance_amis)
-    #     print('Done.')
-        staging_ami = conn.get_all_images(filters={
-            "tag:current"     : "True", 
-            "tag:base"        : "False", 
-            "tag:type"        : "USASpending-API", 
-            "tag:environment" : "staging"
-            })[0].id
-
-  ###########################
-  #   TF Build - Staging    #
-  ###########################    
-
         # Add new AMI to Terraform variables
         update_tf_ami(staging_ami, tfvar_file)
-
-        # Update Terraform User Data
-        # update_terraform_user_data('staging')    
 
         # Run Terraform
         run_tf(tf_exec_path)
 
-  ###########################
-  #   TF Build - Prod       #
-  ###########################        
-
     elif optionsDict["prod"]:
         deploy_env = 'prod'
 
-        # Get current Staging AMI
-        staging_ami = conn.get_all_images(filters={
-            "tag:current"     : "True", 
-            "tag:base"        : "False", 
-            "tag:type"        : "USASpending-API", 
-            "tag:environment" : "staging"
-            })[0].id
-
         # Add new AMI to Terraform variables
         update_tf_ami(staging_ami, tfvar_file)
-
-        # Update Terraform User Data
-        # update_terraform_user_data('prod')  
 
         # Run Terraform
         run_tf(tf_exec_path)
@@ -129,15 +67,11 @@ def deploy():
 # Helper Functions
 ###############################################################################
 
+
 def run_tf(tf_exec_path):
-    # Run Terraform
     real_time_command([tf_exec_path, 'plan'])
     real_time_command([tf_exec_path, 'apply'])
     return
-
-
-def packer_build(packer_file='packer.json', packer_exec_path='packer'):
-    return real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
 
 
 def real_time_command(command_to_run):
@@ -159,20 +93,6 @@ def real_time_command(command_to_run):
     return total_output
 
 
-def update_packer_spec(packer_file='packer.json', base_ami=''):
-    packer_json = open(packer_file, "r")
-    packer_data = json.load(packer_json)
-    packer_json.close()
-
-    packer_data['builders'][0]['source_ami'] = base_ami
-
-    packer_json = open(packer_file, "w+")
-    packer_json.write(json.dumps(packer_data))
-    packer_json.close()
-
-    return
-
-
 def update_tf_ami(new_ami='', tfvar_file='variables.tf.json'):
     tfvar_json = open(tfvar_file, "r")
     tfvar_data = json.load(tfvar_json)
@@ -186,32 +106,6 @@ def update_tf_ami(new_ami='', tfvar_file='variables.tf.json'):
 
     print ('Updated ' + tfvar_file + ' with AMI id ' + new_ami)
 
-    return
-
-
-def update_terraform_user_data(environment='staging', tf_file='usaspending-bulk-download-deploy.tf'):
-    f = open(tf_file,'r')
-    filedata = f.read()
-    f.close()
-
-    if environment == 'prod':
-        newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-prod.sh")
-    elif environment == 'staging':
-        newdata = filedata.replace("usaspending-start-prod.sh","usaspending-start-staging.sh")
-
-    f = open(tf_file,'w')
-    f.write(newdata)
-    f.close()
-
-    print ('Updated ' + tf_file + ' with user data script for ' + environment)
-
-    return
-
-
-def update_ami_tags(old_instance_amis=False):
-    for ami in old_instance_amis:
-        ami.remove_tag('current','True')
-        ami.add_tag('current','False')
     return
 
 
