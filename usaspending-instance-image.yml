@@ -19,19 +19,9 @@
 
     DOMAIN: "{{ DOMAIN_NAME }}"
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
+    VARS_PREFIX: "{{ VARS_PREFIX }}"
     CODE_HOME: /data-act/backend
     CONFIG_HOME: /data-act/config
-
-    STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
-    ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
-
-    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name_{{ BRANCH }}') }}"
-    CSV_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_name_{{ BRANCH }}') }}"
-    CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
-    BULK_DOWNLOAD_S3_BUCKET_NAME: "{{ lookup('file', 'csv_bulk_{{ BRANCH }}') }}"
-    BULK_DOWNLOAD_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_bulk_{{ BRANCH }}') }}"
-    BULK_DOWNLOAD_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
-    MONTHLY_DOWNLOAD_S3_BUCKET_NAME: "{{ lookup('file', 'monthly_download') }}"
 
     REQ_DIR: "{{ CODE_HOME }}/requirements"
 
@@ -45,6 +35,9 @@
   - pull-repo
   - add-hostfile
   tasks:
+    - name: Load variables from config repo
+      include_vars: {{ VARS_PREFIX }}-bulk-download-vars-ansible.yml
+  
     - name: update pip
       become: true 
       shell: pip3.5 install --upgrade pip 
