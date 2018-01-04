@@ -16,7 +16,7 @@
   tasks:
     - name: Checkout config from git
       git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
-           dest=/data-act/config 
+           dest={{ CONFIG_HOME }}
            accept_hostkey=true 
            force=yes 
            key_file="/home/ec2-user/.ssh/id_rsa"
@@ -25,11 +25,10 @@
     - name: Checkout config from git
       become: true
       git: repo=git@github.com:fedspendingtransparency/usaspending-config.git
-           version="bulk-download-deploy"
            dest={{ CONFIG_HOME }}
            accept_hostkey=true 
            force=yes 
-           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
+           key_file="/home/ec2-user/.ssh/id_rsa"
 
     - name: Load variables from config repo
       include_vars: '/{{ CONFIG_HOME }}/deploy/{{ BRANCH }}-bulk-download-vars-ansible.yml'
