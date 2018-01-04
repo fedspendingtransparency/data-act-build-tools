@@ -3,11 +3,17 @@
 
 # Required: {{ BULK_VARS_PREFIX }}, the prefix to the .yml with bulk download vars
 
-  vars:
-    REPO: https://github.com/fedspendingtransparency/usaspending-api.git
+CODE_HOME: '/data-act/backend'
+REPO: 'https://github.com/fedspendingtransparency/usaspending-api.git'
+REQ_DIR: '{{ CODE_HOME }}/requirements'
 
+  vars:
     BULK_VARS_PREFIX: "{{ BULK_VARS_PREFIX }}"
     CONFIG_HOME: '/data-act/config'
+    
+    REPO: https://github.com/fedspendingtransparency/usaspending-api.git
+    CODE_HOME: '/data-act/backend'
+    REQ_DIR: '{{ CODE_HOME }}/requirements'
 
   become_method: sudo  
 
@@ -32,10 +38,10 @@
     - name: Load variables from config repo
       include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
 
-    - name: Checkout backend from git
+    - name: Checkout usaspending-api code from git
       become: true
-      git: repo={{ REPO }}
-           version={{ ENV_SHORT }}  
+      git: repo='https://github.com/fedspendingtransparency/usaspending-api.git'
+           version={{ USASPENDING_API_BRANCH }}  
            dest={{ CODE_HOME }}
            accept_hostkey=true 
            force=yes
