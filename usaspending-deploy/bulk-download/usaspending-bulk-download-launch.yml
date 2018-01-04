@@ -18,16 +18,9 @@ REQ_DIR: '{{ CODE_HOME }}/requirements'
   become_method: sudo  
 
   user: ec2-user
-  tasks:
-    - name: Checkout config from git
-      become: true
-      git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
-           dest={{ CONFIG_HOME }}
-           accept_hostkey=true 
-           force=yes 
-           key_file="/home/ec2-user/.ssh/id_rsa"    
+  tasks:  
 
-    - name: Checkout config from git
+    - name: Checkout usaspending-config from git
       become: true
       git: repo=git@github.com:fedspendingtransparency/usaspending-config.git
            dest={{ CONFIG_HOME }}
