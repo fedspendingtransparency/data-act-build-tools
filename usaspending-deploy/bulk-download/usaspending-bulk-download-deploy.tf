@@ -8,7 +8,6 @@ resource "aws_autoscaling_group" "bd-asg" {
   min_size = "${var.bd_asg_min}"
   desired_capacity = "${var.bd_asg_desired}"
   health_check_type = "EC2"
-  health_check_grace_period = 120
   launch_configuration = "${aws_launch_configuration.bd-lc.name}"
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
 
