@@ -24,13 +24,21 @@
            accept_hostkey=true 
            force=yes
 
-    - name: Checkout config from git
+    - name: Checkout broker config from git
       become: true
       git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
            dest=/data-act/config 
            accept_hostkey=true 
            force=yes 
            key_file="/home/ec2-user/.ssh/id_rsa"
+    
+    - name: Checkout usaspending config from git
+      become: true
+      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git 
+           dest=/data-act/config 
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
 
     - name: assign ownership of api to ec2-user
       become: true
