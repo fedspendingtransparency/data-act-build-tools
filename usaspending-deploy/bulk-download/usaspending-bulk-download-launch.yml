@@ -28,10 +28,10 @@
            dest={{ CONFIG_HOME }}
            accept_hostkey=true 
            force=yes 
-           key_file="/home/ec2-user/.ssh/id_rsa"
+           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
 
     - name: Load variables from config repo
-      include_vars: '/{{ CONFIG_HOME }}/deploy/{{ BRANCH }}-bulk-download-vars-ansible.yml'
+      include_vars: /{{ CONFIG_HOME }}/deploy/{{ BRANCH }}-bulk-download-vars-ansible.yml
 
     - name: Checkout backend from git
       become: true
