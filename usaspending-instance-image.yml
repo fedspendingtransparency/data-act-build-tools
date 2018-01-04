@@ -36,7 +36,7 @@
   - add-hostfile
   tasks:
     - name: Load variables from config repo
-      include_vars: {{ VARS_PREFIX }}-bulk-download-vars-ansible.yml
+      include_vars: "{{ VARS_PREFIX }}-bulk-download-vars-ansible.yml"
   
     - name: update pip
       become: true 
