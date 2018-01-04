@@ -21,16 +21,6 @@
     CODE_HOME: /data-act/backend
     CONFIG_HOME: /data-act/config
 
-    # Default to staging
-    CSV_S3_BUCKET_NAME: "{{ lookup('file', 'csv_name_staging') }}"
-    CSV_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_name_staging') }}"
-    CSV_AWS_REGION: "{{ lookup('file', 'csv_aws_region') }}"
-    BULK_DOWNLOAD_S3_BUCKET_NAME: "{{ lookup('file', 'csv_bulk_staging') }}"
-    BULK_DOWNLOAD_SQS_QUEUE_NAME: "{{ lookup('file', 'csv_bulk_staging') }}"
-
-    STATIC_ASSETS_URL: "{{ lookup('file', 's3url') }}"
-    ELASTICACHE_URL: "{{ lookup('file', 'elasticacheurl_{{ BRANCH }}') }}"
-
     PROD_CACHE_TIMEOUT: None
     NONPROD_CACHE_TIMEOUT: 600
 
@@ -39,6 +29,9 @@
   user: ec2-user
 
   tasks:
+    
+    - name: Load variables from config repo
+      include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
 
   # /etc/nginx/nginx.conf
 
