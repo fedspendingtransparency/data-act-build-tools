@@ -9,7 +9,7 @@ resource "aws_autoscaling_group" "api-asg" {
   desired_capacity = "${var.api_asg_desired}"
   min_elb_capacity = "${var.api_asg_min}"
   health_check_type = "ELB"
-  health_check_grace_period = 180
+  health_check_grace_period = 30
   launch_configuration = "${aws_launch_configuration.api-lc.name}"
   load_balancers = ["${var.api_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
