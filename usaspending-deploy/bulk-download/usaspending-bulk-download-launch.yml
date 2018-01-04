@@ -1,13 +1,12 @@
 ---
 - hosts: "{{ HOST }}"
 
-# Required: {{ BRANCH }}
+# Required: {{ BULK_VARS_PREFIX }}, the prefix to the .yml with bulk download vars
 
   vars:
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
 
-    ## Branch options: sandbox, dev, stg, master
-    BRANCH: "{{ BRANCH }}"
+    BULK_VARS_PREFIX: "{{ BULK_VARS_PREFIX }}"
     CONFIG_HOME: '/data-act/config'
 
   become_method: sudo  
@@ -15,12 +14,12 @@
   user: ec2-user
   tasks:
     - name: Checkout config from git
+      become: true
       git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
            dest={{ CONFIG_HOME }}
            accept_hostkey=true 
            force=yes 
-           key_file="/home/ec2-user/.ssh/id_rsa"
-      become: true    
+           key_file="/home/ec2-user/.ssh/id_rsa"    
 
     - name: Checkout config from git
       become: true
@@ -31,7 +30,7 @@
            key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
 
     - name: Load variables from config repo
-      include_vars: /{{ CONFIG_HOME }}/deploy/{{ BRANCH }}-bulk-download-vars-ansible.yml
+      include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
 
     - name: Checkout backend from git
       become: true
