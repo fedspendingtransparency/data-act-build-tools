@@ -1,7 +1,8 @@
 ---
 - hosts: "{{ HOST }}"
 
-# Required: {{ BULK_VARS_PREFIX }}, the prefix to the .yml with bulk download vars
+# Required: {{ BULK_VARS_PREFIX }}, the prefix to the .yml with bulk download vars 
+#           AND = the path to the DB URL, either dev or sandbox
 
   vars:
     BULK_VARS_PREFIX: "{{ BULK_VARS_PREFIX }}"
@@ -127,7 +128,7 @@
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
 
     - name: get DATABASE_URL env var
-      shell: cat /etc/db_{{ ENV_SHORT }}.sh
+      shell: cat /etc/db_{{ BULK_VARS_PREFIX }}.sh
       register: DATABASE_URL_VAR
 
 
