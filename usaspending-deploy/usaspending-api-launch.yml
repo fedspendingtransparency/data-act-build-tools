@@ -130,65 +130,29 @@
         regexp: '\s*IS_LOCAL =.*'
         line: "IS_LOCAL = False"
         
-    - name: add baby bucket name (if staging)
+    - name: add baby bucket name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_S3_BUCKET_NAME =.*'
         line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
-
-    - name: add baby bucket name (if prod)
-      when: BRANCH == 'master'
-      vars:
-        BABY_BUCKET_PROD: "{{ lookup('file', 'csv_name_prod') }}"
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
-        line: "CSV_S3_BUCKET_NAME = '{{ BABY_BUCKET_PROD }}'"
         
-    - name: add baby sqs name (if staging)
+    - name: add baby sqs name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
         line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'"
 
-    - name: add baby sqs name (if prod)
-      when: BRANCH == 'master'
-      vars:
-        BABY_SQS_PROD: "{{ lookup('file', 'csv_name_prod') }}"
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
-        line: "CSV_SQS_QUEUE_NAME = '{{ BABY_SQS_PROD }}'"
-
-    - name: add bulk bucket name (if staging)
+    - name: add bulk bucket name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
         line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'"
-
-    - name: add bulk bucket name (if prod)
-      when: BRANCH == 'master'
-      vars:
-        BULK_DOWNLOAD_S3_BUCKET_NAME_PROD: "{{ lookup('file', 'csv_bulk_prod') }}"
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
-        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME_PROD }}'"
         
-    - name: add bulk sqs name (if staging)
+    - name: add bulk sqs name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
         line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'"
-
-    - name: add bulk sqs name (if prod)
-      when: BRANCH == 'master'
-      vars:
-        BULK_DOWNLOAD_SQS_QUEUE_NAME_PROD: "{{ lookup('file', 'csv_bulk_prod') }}"
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
-        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME_PROD }}'"
 
     - name: add CSV AWS region
       lineinfile:
@@ -201,6 +165,12 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'"
+
+    - name: add monthly download bucket
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*'
+        line: "MONTHLY_DOWNLOAD_S3_BUCKET_NAME = '{{ MONTHLY_DOWNLOAD_S3_BUCKET_NAME }}'"
 
     - name: add static url from s3
       lineinfile:
