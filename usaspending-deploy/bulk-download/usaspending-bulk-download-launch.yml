@@ -11,6 +11,11 @@
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     CODE_HOME: '/data-act/backend'
     REQ_DIR: '{{ CODE_HOME }}/requirements'
+    
+# Name mismatching from BULK_VARS_PREFIX
+    env-mapping:
+      prod: {alt_name: master}
+      staging: {alt_name: stg}
 
   become_method: sudo  
 
@@ -127,8 +132,8 @@
         regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
 
-    - name: get DATABASE_URL env var
-      shell: cat /etc/db_{{ BULK_VARS_PREFIX }}.sh
+    - name: get DATABASE_URL env var (requires mapping)
+      shell: cat /etc/db_{{ vars['env-mapping'][BULK_VARS_PREFIX]['alt_name'] }}.sh
       register: DATABASE_URL_VAR
 
 
