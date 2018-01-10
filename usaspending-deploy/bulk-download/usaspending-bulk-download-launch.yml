@@ -26,7 +26,7 @@
            key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
 
     - name: Load variables from config repo
-      include_vars: "{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml"
+      include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
 
     - name: Checkout usaspending-api code from git
       become: true
