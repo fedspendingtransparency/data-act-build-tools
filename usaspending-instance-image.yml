@@ -34,10 +34,32 @@
   become_method: sudo  
 
   user: ec2-user
-  roles:
-  - pull-repo
-  - add-hostfile
   tasks:
+
+    - name: Checkout code from git
+      become: true
+      git: repo={{ REPO }}
+           version={{ BRANCH }}  
+           dest={{ CODE_HOME }} 
+           accept_hostkey=true 
+           force=yes
+
+    - name: Checkout config from git
+      become: true
+      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git 
+           dest={{ CONFIG_HOME }} 
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa"
+
+    - name: assign ownership of api to ec2-user
+      become: true
+      file: path=/data-act owner=ec2-user recurse=yes
+
+    - name: assign ownership of tmp to ec2-user
+      become: true
+      file: path=/tmp owner=ec2-user recurse=yes
+
     - name: Load variables from config repo
       include_vars: "{{ VARS_PREFIX }}-bulk-download-vars-ansible.yml"
   
