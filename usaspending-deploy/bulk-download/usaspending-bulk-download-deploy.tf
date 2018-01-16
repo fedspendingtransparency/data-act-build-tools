@@ -49,6 +49,11 @@ resource "aws_launch_configuration" "bd-lc" {
   lifecycle {
     create_before_destroy = true
   }
+  root_block_device {
+    device_name = "${var.bd_ebs_name}"
+    volume_size = "${var.bd_ebs_size}"
+    volume_type = "${var.bd_ebs_type}"
+  }
 }
 
 resource "aws_autoscaling_policy" "bd_scale_up" {
