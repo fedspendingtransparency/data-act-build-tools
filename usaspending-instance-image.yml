@@ -50,7 +50,7 @@
            dest={{ CONFIG_HOME }} 
            accept_hostkey=true 
            force=yes 
-           key_file="/home/ec2-user/.ssh/id_rsa"
+           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
 
     - name: assign ownership of api to ec2-user
       become: true
