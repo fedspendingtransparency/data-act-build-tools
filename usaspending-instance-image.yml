@@ -3,6 +3,9 @@
 
 # You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL
 
+# NOTE -------
+# This playbook is used for dev and sbx environments. Prod/Staging deploys are built by usaspending-api-image.yml and usaspending-api-launch.yml
+
   vars:
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
 
@@ -296,18 +299,12 @@
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'elasticache'"
 
-    - name: enable local cache (on dev and sbx)
+    - name: enable local cache
       when: BRANCH == 'dev' or BRANCH == 'sandbox'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'local'"
-    
-    - name: replace ELASTICACHE-CONNECTION-STRING
-      replace:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: 'ELASTICACHE-CONNECTION-STRING'
-        replace: "{{ ELASTICACHE_URL }}"
 
     - name: replace TIMEOUT-IN-SECONDS ( NONPROD )
       when: BRANCH == 'sandbox' or BRANCH == 'dev'
@@ -322,6 +319,12 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
+
+    - name: add elastic-search endpoint env var 
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*ES_HOSTNAME\*=.*'
+        line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'"
 
 # SSL Certificates
 
