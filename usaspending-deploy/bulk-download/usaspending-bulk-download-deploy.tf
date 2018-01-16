@@ -50,7 +50,6 @@ resource "aws_launch_configuration" "bd-lc" {
     create_before_destroy = true
   }
   root_block_device {
-    device_name = "${var.bd_ebs_name}"
     volume_size = "${var.bd_ebs_size}"
     volume_type = "${var.bd_ebs_type}"
   }
