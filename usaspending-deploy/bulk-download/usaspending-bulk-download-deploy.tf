@@ -38,7 +38,7 @@ resource "aws_autoscaling_group" "bd-asg" {
 }
 
 resource "aws_launch_configuration" "bd-lc" {
-  name = "${var.bd_name_prefix}_LC_${lookup(var.aws_amis, var.aws_region)}"
+  name = "${var.bd_name_prefix}_LC_${lookup(var.aws_amis, var.aws_region)}_BD"
   image_id = "${lookup(var.aws_amis, var.aws_region)}"
   instance_type = "${var.bd_instance_type}"
   ebs_optimized = true
