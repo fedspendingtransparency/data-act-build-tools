@@ -220,7 +220,7 @@
     - name: add elastic-search endpoint env var 
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*ES_HOSTNAME =.*'
+        regexp: '\s*ES_HOSTNAME\*=.*'
         line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'"
 
  # SSL Certificates
