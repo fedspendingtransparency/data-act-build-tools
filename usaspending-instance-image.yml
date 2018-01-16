@@ -34,10 +34,32 @@
   become_method: sudo  
 
   user: ec2-user
-  roles:
-  - pull-repo
-  - add-hostfile
   tasks:
+
+    - name: Checkout code from git
+      become: true
+      git: repo={{ REPO }}
+           version={{ BRANCH }}  
+           dest={{ CODE_HOME }} 
+           accept_hostkey=true 
+           force=yes
+
+    - name: Checkout config from git
+      become: true
+      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git 
+           dest={{ CONFIG_HOME }} 
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
+
+    - name: assign ownership of api to ec2-user
+      become: true
+      file: path=/data-act owner=ec2-user recurse=yes
+
+    - name: assign ownership of tmp to ec2-user
+      become: true
+      file: path=/tmp owner=ec2-user recurse=yes
+
     - name: Load variables from config repo
       include_vars: "{{ VARS_PREFIX }}-bulk-download-vars-ansible.yml"
   
@@ -113,7 +135,7 @@
 
     - name: set nginx configuration path to SSL
       set_fact:
-         nginx_path: "{{ CONFIG_HOME }}/nginx/nginx_ds_api.conf"
+         nginx_path: "{{ CONFIG_HOME }}/deploy/nginx/nginx_usaspending_api.conf"
 
     - name: (remove later) run nginx as ec2-user
       lineinfile:
@@ -347,7 +369,7 @@
     - name: copy filebeat config
       become: true
       copy:
-        src:  "{{ CONFIG_HOME }}/filebeat/filebeat-usaspending.yml"
+        src:  "{{ CONFIG_HOME }}/deploy/elk/filebeat_usaspending_api.yml"
         dest: "/etc/filebeat/filebeat.yml"
         remote_src: true
     - name: update filebeat config to set correct index
