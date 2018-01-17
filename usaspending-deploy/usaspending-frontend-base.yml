@@ -33,10 +33,8 @@
         - python35u-devel 
         - python35u-libs
         - python35u-pip
-        - nginx
         - unzip
         - wget
-        - zlib-devel
         - mlocate
         - vim
         - telnet
@@ -46,7 +44,7 @@
       yum: 
         name=http://nginx.org/packages/mainline/centos/7/x86_64/RPMS/nginx-1.13.8-1.el7_4.ngx.x86_64.rpm
 
-     - name: install filebeat
+    - name: install filebeat (from filebeat repo)
       become: true
       yum: 
         name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
@@ -55,11 +53,16 @@
       become: true
       pip: name=awscli executable=pip3.5
 
-    - name: pull data act build tools repo
-      git: repo=https://github.com/fedspendingtransparency/data-act-build-tools.git
-           version=master
-           dest=/home/ec2-user/data-act-build-tools
-
-     - name: Show timestamp in history
+    - name: show timestamp in history (root)
       become: true
       shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+
+    - name: show timestamp in history (ec2-user)
+      shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+
+    - name: colorize (root)
+      become: true
+      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+
+    - name: colorize (ec2-user)
+      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
