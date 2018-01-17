@@ -404,15 +404,7 @@
       become: true
       shell: systemctl start filebeat  
 
-    - name: stop supervisord
+    - name: restart supervisord
       become: true
-      shell: pkill supervisord
+      shell: systemctl restart supervisord
       ignore_errors: true    
-
-    - name: start supervisord
-      become: true
-      shell: "supervisord -c {{ CODE_HOME }}/config/supervisord.conf &"
-      environment:
-        PYTHONPATH: "{{ CODE_HOME }}"
-      args:
-        chdir: "{{ CODE_HOME }}/usaspending_api/"
