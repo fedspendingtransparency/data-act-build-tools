@@ -2,6 +2,9 @@
 - hosts: ds_website_{{ ENV }}
   user: ec2-user
   become_method: sudo
+
+# Requires: BUILD_ID, ENV, and DOMAIN
+
   tasks:
     - name: remove old frontend backed up files
       become: true
@@ -24,6 +27,12 @@
            accept_hostkey=true 
            force=yes 
            key_file="/home/ec2-user/.ssh/id_rsa"
+
+    - name: add server name to nginx config
+      lineinfile:
+        dest: /data-act/config/nginx/nginx_ds_website.conf
+        regexp: '\s*server_name.*;'
+        line: "\tserver_name {{ DOMAIN }};"
     
     - name: remove basic auth from prod
       become: true
