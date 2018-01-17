@@ -404,7 +404,7 @@
       become: true
       shell: systemctl start filebeat  
 
-    - name: stop supervisord
+    - name: restart supervisord
       become: true
       shell: systemctl restart supervisord
       ignore_errors: true    
