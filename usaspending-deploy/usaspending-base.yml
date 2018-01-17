@@ -78,19 +78,11 @@
         dest: "/etc/yum.repos.d/elastic-beats.repo"
         remote_src: true
 
-    - name: copy logstash repo info
-      become: true
-      shell: "{{ item }}"
-      with_items:
-        - "rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch" 
-        - "cp /home/ec2-user/data-act-build-tools/logstash.repo /etc/yum.repos.d/logstash.repo"
-
-    - name: install filebeat and logstash
+    - name: install filebeat
       become: true
       yum: name={{ item }}
       with_items:
         - filebeat
-        - logstash
     
     - name: disable requiretty
       become: true
