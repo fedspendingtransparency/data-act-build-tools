@@ -36,7 +36,6 @@
         - libffi-devel
         - libmemcached
         - memcached
-        - nginx
         - pcre.x86_64
         - pcre-devel.x86_64
         - postgresql-devel.x86_64
@@ -71,28 +70,21 @@
       become: true
       pip: name=newrelic executable=pip3.5
 
-    - name: pull data act build tools repo
-      git: repo=https://github.com/fedspendingtransparency/data-act-build-tools.git
-           version=master
-           dest=/home/ec2-user/data-act-build-tools
-
-    - name: copy filebeat repo info
+    - name: install filebeat (from filebeat repo)
       become: true
-      copy:
-        src:  "/home/ec2-user/data-act-build-tools/elastic-beats.repo"
-        dest: "/etc/yum.repos.d/elastic-beats.repo"
-        remote_src: true
-
-    - name: install filebeat
-      become: true
-      yum: name={{ item }}
-      with_items:
-        - filebeat
+      yum: 
+        name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
     
-    - name: disable requiretty
+    - name: show timestamp in history (root)
       become: true
-      lineinfile: 
-        dest=/etc/sudoers 
-        regexp="Defaults\s+requiretty"
-        line="# Defaults requiretty"
-      
+      shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+
+    - name: show timestamp in history (ec2-user)
+      shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+
+    - name: colorize (root)
+      become: true
+      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+
+    - name: colorize (ec2-user)
+      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
