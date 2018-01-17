@@ -36,7 +36,6 @@
         - libffi-devel
         - libmemcached
         - memcached
-        - nginx
         - pcre.x86_64
         - pcre-devel.x86_64
         - postgresql-devel.x86_64
