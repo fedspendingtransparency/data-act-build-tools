@@ -57,6 +57,11 @@
       become: true
       yum: 
         name=http://mirror.centos.org/centos/7/os/x86_64/Packages/libmemcached-devel-1.0.16-5.el7.x86_64.rpm
+        
+    - name: install nginx (from nginx repo)
+      become: true
+      yum: 
+        name=http://nginx.org/packages/mainline/centos/7/x86_64/RPMS/nginx-1.13.8-1.el7_4.ngx.x86_64.rpm
 
     - name: install aws cli pip package
       become: true
