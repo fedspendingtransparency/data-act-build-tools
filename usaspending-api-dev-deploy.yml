@@ -395,14 +395,10 @@
 
 # Start/Stop Services  
 
-    - name: stop filebeat
+    - name: restart filebeat
       become: true
-      shell: systemctl stop filebeat
+      shell: systemctl restart filebeat
       ignore_errors: true
-
-    - name: start filebeat
-      become: true
-      shell: systemctl start filebeat  
 
     - name: restart supervisord
       become: true

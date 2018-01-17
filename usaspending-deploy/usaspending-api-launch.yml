@@ -250,6 +250,11 @@
 
  # Start/Stop Services
 
+    - name: restart filebeat
+      become: true
+      shell: systemctl restart filebeat
+      ignore_errors: true 
+
     - name: stop supervisord
       become: true
       shell: pkill supervisord
