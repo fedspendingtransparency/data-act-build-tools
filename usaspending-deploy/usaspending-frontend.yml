@@ -29,6 +29,7 @@
            key_file="/home/ec2-user/.ssh/id_rsa"
 
     - name: add server name to nginx config
+      become: true
       lineinfile:
         dest: /data-act/config/nginx/nginx_ds_website.conf
         regexp: '\s*server_name.*;'
