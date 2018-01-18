@@ -63,12 +63,18 @@
       become: true
       shell: cp /data-act/config/nginx/nginx_ds_website.conf /etc/nginx/nginx.conf
 
-    - name: stop nginx service
+    - name: modify SELinux sebool for httpd_can_network_connect
       become: true
-      shell: service nginx stop
-      ignore_errors: yes
+      command: setsebool -P httpd_can_network_connect on
 
-    - name: start nginx service
+    - name: run restorecon on /var/www/
       become: true
-      shell: service nginx start &
-      
+      command: restorecon -R -v /var/www/
+
+    - name: enable nginx service
+      become: true
+      shell: systemctl enable nginx
+
+    - name: restart nginx service
+      become: true
+      shell: systemctl restart nginx
