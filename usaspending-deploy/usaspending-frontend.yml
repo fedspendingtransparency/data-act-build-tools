@@ -73,13 +73,8 @@
 
     - name: enable nginx service
       become: true
-      systemd:
-        name: nginx
-        enabled: yes
+      shell: systemctl enable nginx
 
     - name: restart nginx service
       become: true
-      systemd:
-        name: nginx
-        state: restarted
-      
+      shell: systemctl restart nginx
