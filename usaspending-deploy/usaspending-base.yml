@@ -48,7 +48,7 @@
         - unzip
         - wget
         - zlib-devel
-        - locate
+        - mlocate
         - vim
         - telnet
 
