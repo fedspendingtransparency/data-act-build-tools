@@ -25,7 +25,6 @@ def deploy():
     parser.add_argument("-dev", "--dev", action="store_true", help="Runs deploy for dev")
     parser.add_argument("-stg", "--staging", action="store_true", help="Runs deploy for staging")
     parser.add_argument("-prod", "--prod", action="store_true", help="Runs deploy for prod")
-    parser.add_argument("-fabs", "--fabs_staging", action="store_true", help="Runs deploy for fabs_staging")
     args = parser.parse_args()
     optionsDict = vars(args)
     noArgs = True
@@ -35,14 +34,14 @@ def deploy():
             noArgs = False
 
     if noArgs:
-        print ("No environment specified. Please include an argument: --dev, --staging, --prod ,or --fabs_staging")
+        print ("No environment specified. Please include an argument: --dev, --staging, --prod")
         sys.exit(1)
 
     if optionsDict["dev"]:
         deploy_env = 'dev'
 
-    elif optionsDict["fabs_staging"] or optionsDict["staging"]:
-        deploy_env = 'fabs' if optionsDict["fabs_staging"] else 'staging'
+    elif optionsDict["staging"]:
+        deploy_env = 'staging'
         # Retrieve current App Instance AMIs
         print('Retrieving current app instance AMI(s)...')
         current_app_amis = conn.get_all_images(filters={"tag:current" : "True", "tag:base" : "False", "tag:type" : "Application", "tag:environment" : deploy_env})
