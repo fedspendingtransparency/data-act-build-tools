@@ -4,14 +4,14 @@
   yum: name=* state=latest
 
 - name: install EPEL and IUS repos
-  become: true
+  sudo: true
   yum: name={{ item }}
   with_items:
     - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     - https://centos7.iuscommunity.org/ius-release.rpm
 
 - name: install base dependencies
-  become: true
+  sudo: true
   yum: name={{ item }}
   with_items:
     - git
@@ -38,47 +38,48 @@
     - erlang
 
 - name: install aws cli pip package
-  become: true
+  sudo: true
   pip: name=awscli executable=pip3.5
 
 - name: install nginx (from nginx repo)
-  become: true
+  sudo: true
   yum: 
     name=http://nginx.org/packages/mainline/centos/7/x86_64/RPMS/nginx-1.13.8-1.el7_4.ngx.x86_64.rpm
 
 - name: install New Relic APM
-  become: true
+  sudo: true
   pip: name=newrelic executable=pip3.5
 
 - name: Download New Relic Infrastructure
-  become: true
+  sudo: true
   shell: curl -o /etc/yum.repos.d/newrelic-infra.repo https://download.newrelic.com/infrastructure_agent/linux/yum/el/7/x86_64/newrelic-infra.repo
 
 - name: Update cache for New Relic Infrastructure
-  become: true
+  sudo: true
   shell: yum -q makecache -y --disablerepo='*' --enablerepo='newrelic-infra'
 
 - name: Install New Relic Infrastructure
-  become: true
+  sudo: true
   yum: name=newrelic-infra
 
 # Activate the following if we want to update Broker's ELK
 #- name: install filebeat (from filebeat repo)
-#  become: true
+#  sudo: true
 #  yum: 
 #    name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
     
 - name: show timestamp in history (root)
-  become: true
+  sudo: true
   shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
 
 - name: show timestamp in history (ec2-user)
   shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
 
 - name: colorize (root)
-  become: true
+  sudo: true
   shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
 
 - name: colorize (ec2-user)
+  sudo: true
   shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
-  
+
