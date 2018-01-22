@@ -66,9 +66,21 @@
       become: true
       pip: name=awscli executable=pip3.5
       
-    - name: install newrelic
+    - name: install New Relic APM
       become: true
       pip: name=newrelic executable=pip3.5
+
+    - name: Download New Relic Infrastructure
+      become: true
+      shell: curl -o /etc/yum.repos.d/newrelic-infra.repo https://download.newrelic.com/infrastructure_agent/linux/yum/el/7/x86_64/newrelic-infra.repo
+
+    - name: Update cache for New Relic Infrastructure
+      become: true
+      shell: yum -q makecache -y --disablerepo='*' --enablerepo='newrelic-infra'
+
+    - name: Install New Relic Infrastructure
+      become: true
+      yum: name=newrelic-infra
 
     - name: install filebeat (from filebeat repo)
       become: true
@@ -88,3 +100,4 @@
 
     - name: colorize (ec2-user)
       shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+      
