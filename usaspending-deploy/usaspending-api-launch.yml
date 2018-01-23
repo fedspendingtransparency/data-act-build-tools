@@ -86,29 +86,31 @@
 
     - name: copy nr_key from S3
       become: true 
-      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key --region us-gov-west-1"
+      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/ --region us-gov-west-1"
+
+    - name: load nr_key var
+      include_vars: /etc/nr_key.yml
      
 # newrelic settings
 
-    - name: get contents of nr_key file
-      command: cat /etc/nr_key
-      register: NR_KEY
-
-    - name: add newrelic license key
+    - name: add newrelic license key to newrelic.ini
       lineinfile:
         dest: "{{ CODE_HOME }}/config/newrelic.ini"
         regexp: '\s*license_key =.*'
-        line: "license_key = {{ NR_KEY.stdout }}"
+        line: "license_key = {{ NR_KEY }}"
 
     - name: copy nr_key to newrelic-infra.yml file
       become: true
-      shell: echo "license_key:'{{ NR_KEY.stdout }}'" | tee -a /etc/newrelic-infra.yml
-        
+      lineinfile:
+        create: true
+        dest: "/etc/newrelic-infra.yml"
+        line: "license_key = {{ NR_KEY }}"
+
     - name: add newrelic label (app_name)
       lineinfile:
         dest: "{{ CODE_HOME }}/config/newrelic.ini"
         regexp: '\s*app_name =.*'
-        line: "app_name = DA-Website-API-{{ BRANCH }}"
+        line: "app_name = usaspending-api-{{ BRANCH }}"
         
     - name: add single-interpreter to uwsgi_db.ini
       become: true
@@ -294,6 +296,10 @@
         dest: "/usr/lib/systemd/system/supervisord.service"
 
  # start/stop services
+
+    - name: enable filebeat service
+      become: true
+      shell: systemctl restart filebeat
 
     - name: restart filebeat
       become: true
