@@ -33,6 +33,7 @@
         - gcc-c++
         - git
         - java-1.8.0-openjdk
+        - java-1.8.0-openjdk-devel.x86_64
         - libffi-devel
         - libmemcached
         - memcached
