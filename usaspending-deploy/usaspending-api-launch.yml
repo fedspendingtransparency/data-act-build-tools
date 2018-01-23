@@ -297,14 +297,21 @@
 
  # start/stop services
 
+    - name: enable newrelic-infra service
+      become: true
+      shell: systemctl enable newrelic-infra
+
+    - name: restart newrelic-infra service
+      become: true
+      shell: systemctl restart newrelic-infra
+
     - name: enable filebeat service
       become: true
-      shell: systemctl restart filebeat
+      shell: systemctl enable filebeat
 
     - name: restart filebeat
       become: true
       shell: systemctl restart filebeat
-      ignore_errors: true 
 
     - name: enable supervisord.service
       become: true
