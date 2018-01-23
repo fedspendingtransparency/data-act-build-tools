@@ -58,7 +58,7 @@
         dest: "/etc/nginx/nginx.conf"
         remote_src: true
 
-  # config/uwsgi.ini
+# config/uwsgi.ini
 
     - name: duplicate config file to uwsgi_db.ini
       become: true
@@ -67,25 +67,24 @@
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
 
-    - name: Download secrets from S3 Bucket
+    - name: download secrets from S3 bucket
       become: true
       shell: " aws s3 cp s3://da-config/usaspending/{{ BRANCH }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
-    - name: Load secrets 
+    - name: load secrets 
       include_vars: /etc/{{ BRANCH }}-usaspending-api-secrets.yml
 
     - name: add DB_SOURCE to uswgi ini
       become: true
-      shell: "echo -n env=DB_SOURCE= | cat - {{ DB_SOURCE }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      shell: "echo env=DB_SOURCE={{ DB_SOURCE }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
     - name: add DB_R1 to uswgi ini
       become: true
-      shell: "echo -n env=DB_R1= | cat - {{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+      shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
+# copy New Relic License key from S3 Bucket
 
-# Copy New Relic License key from S3 Bucket
-
-    - name: copy NR_Key from S3
+    - name: copy nr_key from S3
       become: true 
       shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key --region us-gov-west-1"
      
@@ -138,49 +137,49 @@
     - name: add CSV download option
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*IS_LOCAL =.*'
+        regexp: '^IS_LOCAL =.*'
         line: "IS_LOCAL = False"
         
     - name: add baby bucket name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_S3_BUCKET_NAME =.*'
+        regexp: '^CSV_S3_BUCKET_NAME =.*'
         line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'"
         
     - name: add baby sqs name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_SQS_QUEUE_NAME =.*'
+        regexp: '^CSV_SQS_QUEUE_NAME =.*'
         line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'"
 
     - name: add bulk bucket name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
+        regexp: '^BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
         line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'"
         
     - name: add bulk sqs name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
+        regexp: '^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
         line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'"
 
     - name: add CSV AWS region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CSV_AWS_REGION =.*'
+        regexp: '^CSV_AWS_REGION =.*'
         line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'"
 
     - name: add Bulk AWS region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
+        regexp: '^BULK_DOWNLOAD_AWS_REGION =.*'
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'"
 
     - name: add monthly download bucket
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*'
+        regexp: '^MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*'
         line: "MONTHLY_DOWNLOAD_S3_BUCKET_NAME = '{{ MONTHLY_DOWNLOAD_S3_BUCKET_NAME }}'"
 
     - name: add static url from s3
@@ -202,31 +201,47 @@
         regexp: '\s*ALLOWED_HOSTS =.*'
         line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS }}']"
 
-    - name: enable elasticache
+    - name: enable elasticache (in staging or prod)
+      when: BRANCH == 'stg' or BRANCH == 'master'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'elasticache'"
 
-    - name: replace ELASTICACHE-CONNECTION-STRING
+    - name: replace ELASTICACHE-CONNECTION-STRING (in staging or prod)
+      when: BRANCH == 'stg' or BRANCH == 'master'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'ELASTICACHE-CONNECTION-STRING'
         replace: "{{ ELASTICACHE_URL }}"
 
-    - name: replace TIMEOUT-IN-SECONDS ( NONPROD )
-      when: BRANCH == 'sandbox' or BRANCH == 'dev'
+    - name: enable local cache (in dev or sandbox)
+      when: BRANCH == 'dev' or BRANCH == 'sandbox'
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
+        line: "CACHE_ENVIRONMENT = 'local'"
+
+    - name: replace TIMEOUT-IN-SECONDS (in dev or sandbox)
+      when: BRANCH == 'dev' or BRANCH == 'sandbox'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ NONPROD_CACHE_TIMEOUT }}"
 
-    - name: replace TIMEOUT-IN-SECONDS ( PROD )
+    - name: replace TIMEOUT-IN-SECONDS (in staging or prod)
       when: BRANCH == 'master' or BRANCH == 'stg'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
+
+    - name: add elastic-search endpoint env var 
+      when: BRANCH == 'dev' or BRANCH == 'sandbox'
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*ES_HOSTNAME\*=.*'
+        line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'"
 
  # SSL Certificates
 
@@ -237,7 +252,6 @@
     - name: copy private.pem from S3 Bucket
       become: true 
       shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
-
         
  # config/filebeat/filebeat.yml
 
@@ -247,6 +261,7 @@
         src:  "{{ CONFIG_HOME }}/deploy/elk/filebeat_usaspending_api.yml"
         dest: "/etc/filebeat/filebeat.yml"
         remote_src: true
+
     - name: update filebeat config to set correct index
       become: true
       replace:
@@ -254,22 +269,41 @@
         regexp: 'index: filebeat'
         replace: "index: usaspending-api-{{ vars['envs'][BRANCH]['env_short'] }}"
 
- # Start/Stop Services
+# setup supervisord.service
+
+    - name: make supervisord.service directory
+      become: true
+      file:
+        path: /etc/supervisord/conf.d
+        recurse: true
+        state: directory
+
+    - name: supervisord.service conf
+      become: true
+      shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
+
+    - name: supervisord.service conf.d append
+      become: true
+      shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
+
+    - name: supervisord.service copy
+      become: true
+      copy:
+        remote_src: true
+        src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+        dest: "/usr/lib/systemd/system/supervisord.service"
+
+ # start/stop services
 
     - name: restart filebeat
       become: true
       shell: systemctl restart filebeat
       ignore_errors: true 
 
-    - name: stop supervisord
+    - name: enable supervisord.service
       become: true
-      shell: pkill supervisord
-      ignore_errors: yes
+      shell: systemctl enable supervisord
 
-    - name: start supervisord
+    - name: restart supervisord
       become: true
-      shell: "supervisord -c {{ CODE_HOME }}/config/supervisord.conf &"
-      environment:
-        PYTHONPATH: "{{ CODE_HOME }}"
-      args:
-        chdir: "{{ CODE_HOME }}/usaspending_api/"
+      shell: systemctl restart supervisord
