@@ -64,7 +64,7 @@
 
     - name: install aws cli pip package
       become: true
-      pip: name=awscli executable=pip3.5
+      pip: name=awscli executable=pip
       
     - name: install New Relic APM
       become: true
