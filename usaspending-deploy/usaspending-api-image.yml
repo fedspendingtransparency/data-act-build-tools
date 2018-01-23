@@ -51,10 +51,6 @@
   
 # Install Packages  
 
-    - name: update pip
-      become: true 
-      shell: pip3.5 install --upgrade pip 
-
     - name: copy requirements.txt (to check for changes)
       become: true 
       copy:
