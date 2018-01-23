@@ -17,7 +17,7 @@
 # Copy Git Credentials from S3 Bucket
 
     - name: Copy Git credentails from S3 Bucket
-      shell: aws s3 cp s3://da-config/usaspending/id_rsa_usaspending_config /home/ec2-user/.ssh/
+      shell: "aws s3 cp s3://da-config/usaspending/id_rsa_usaspending_config /home/ec2-user/.ssh/ --region us-gov-west-1"
 
 # Git Checkout
 
@@ -50,10 +50,6 @@
       file: path=/tmp owner=ec2-user recurse=yes
   
 # Install Packages  
-
-    - name: update pip
-      become: true 
-      shell: pip3.5 install --upgrade pip 
 
     - name: copy requirements.txt (to check for changes)
       become: true 
