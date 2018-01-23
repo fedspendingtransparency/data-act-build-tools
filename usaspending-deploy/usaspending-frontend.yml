@@ -1,5 +1,5 @@
 ---
-- hosts: ds_website_{{ ENV }}
+- hosts: usaspending_frontend_{{ ENV }}
   user: ec2-user
   become_method: sudo
 
@@ -22,32 +22,32 @@
 
     - name: checkout config from git
       become: true
-      git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
+      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git 
            dest=/data-act/config 
            accept_hostkey=true 
            force=yes 
-           key_file="/home/ec2-user/.ssh/id_rsa"
+           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
 
     - name: add server name to nginx config
       become: true
       lineinfile:
-        dest: /data-act/config/nginx/nginx_ds_website.conf
+        dest: /data-act/config/deploy/nginx/nginx_usaspending_frontend.conf
         regexp: '\s*server_name.*;'
         line: "\tserver_name {{ DOMAIN }};"
     
-    - name: remove basic auth from prod
+    - name: remove basic auth check from prod
       become: true
       when: ENV == 'prod'
       lineinfile:
-        dest: /data-act/config/nginx/nginx_ds_website.conf
+        dest: /data-act/config/deploy/nginx/nginx_usaspending_frontend.conf
         regexp: '\s*auth_basic "Basic Auth Check".*'
         state: absent
     
-    - name: remove basic auth from prod
+    - name: remove basic auth file from prod
       become: true
       when: ENV == 'prod'
       lineinfile:
-        dest: /data-act/config/nginx/nginx_ds_website.conf
+        dest: /data-act/config/deploy/nginx/nginx_usaspending_frontend.conf
         regexp: '\s*auth_basic_user_file /etc/nginx/.*'
         state: absent
     
@@ -55,13 +55,13 @@
       become: true
       when: ENV != 'prod'
       lineinfile:
-        dest: /data-act/config/nginx/nginx_ds_website.conf
+        dest: /data-act/config/deploy/nginx/nginx_usaspending_frontend.conf
         regexp: '\s*add_header Cache-Control.*'
         state: absent
     
     - name: copy ENV config
       become: true
-      shell: cp /data-act/config/nginx/nginx_ds_website.conf /etc/nginx/nginx.conf
+      shell: cp /data-act/config/deploy/nginx/nginx_usaspending_frontend.conf /etc/nginx/nginx.conf
 
     - name: modify SELinux sebool for httpd_can_network_connect
       become: true

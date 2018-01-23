@@ -12,10 +12,12 @@
     CODE_HOME: '/data-act/backend'
     REQ_DIR: '{{ CODE_HOME }}/requirements'
     
-# Name mismatching from BULK_VARS_PREFIX
+# Name mismatching from BULK_VARS_PREFIX (dev/sbx are same)
     env_mapping:
       prod: {alt_name: master}
       staging: {alt_name: stg}
+      dev: {alt_name: dev}
+      sandbox: {alt_name: sandbox}
 
   become_method: sudo  
 

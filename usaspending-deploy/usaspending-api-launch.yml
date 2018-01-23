@@ -136,7 +136,7 @@
 
  # usaspending_api/settings.py
  
-    - name: add CSV download option
+    - name: add bulk download option
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '^IS_LOCAL =.*'
