@@ -1,48 +1,56 @@
-# Base image playbook for all environments
+# DataAct base image playbook for all environments
 
 ---
-- name: upgrade all packages
-  sudo: true
-  yum: name=* state=latest
+- hosts: govcloud_app_base_image
 
-- name: install EPEL and IUS repos
-  sudo: true
-  yum: name={{ item }}
-  with_items:
-    - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    - https://centos7.iuscommunity.org/ius-release.rpm
+  become_method: sudo
 
-- name: install base dependencies
-  sudo: true
-  yum: name={{ item }}
-  with_items:
-    - git
-    - ansible
-    - mlocate
-    - vim
-    - telnet
-    - wget
-    - unzip
-    - java-1.8.0-openjdk
-    - java-1.8.0-openjdk-devel.x86_64
+  user: ec2-user
 
-- name: install aws cli pip package
-  sudo: true
-  pip: name=awscli executable=pip
+  tasks:
 
-- name: show timestamp in history (root)
-  sudo: true
-  shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+    - name: upgrade all packages
+      become: true
+      yum: name=* state=latest
 
-- name: show timestamp in history (ec2-user)
-  shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+    - name: install EPEL and IUS repos
+      become: true
+      yum: name={{ item }}
+      with_items:
+        - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+        - https://centos7.iuscommunity.org/ius-release.rpm
 
-- name: colorize (root)
-  sudo: true
-  shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+    - name: install base dependencies
+      become: true
+      yum: name={{ item }}
+      with_items:
+        - git
+        - ansible
+        - mlocate
+        - vim
+        - telnet
+        - wget
+        - unzip
+        - java-1.8.0-openjdk
+        - java-1.8.0-openjdk-devel.x86_64
 
-- name: colorize (ec2-user)
-  sudo: true
-  shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+    - name: install aws cli pip package
+      become: true
+      pip: name=awscli executable=pip
 
-  
+    - name: show timestamp in history (root)
+      become: true
+      shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+
+    - name: show timestamp in history (ec2-user)
+      shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+
+    - name: colorize (root)
+      become: true
+      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+
+    - name: colorize (ec2-user)
+      become: true
+      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+
+      
