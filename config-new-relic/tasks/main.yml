@@ -1,0 +1,46 @@
+---
+- name: copy nr_key from S3
+  sudo: true
+  shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key --region us-gov-west-1 --region us-gov-west-1"
+
+- name: get contents of nr_key file
+  command: cat /etc/nr_key
+  register: NR_KEY
+
+- name: add newrelic license key
+  lineinfile:
+    dest: "/data-act/backend/dataactbroker/config/newrelic.ini"
+    regexp: '\s*license_key =.*'
+    line: "license_key = {{ NR_KEY.stdout }}"
+
+- name: copy nr_key to newrelic-infra.yml file
+  sudo: true
+  shell: echo "license_key:'{{ NR_KEY.stdout }}'" | tee -a /etc/newrelic-infra.yml
+    
+- name: add newrelic label (app_name)
+  lineinfile:
+    dest: "/data-act/backend/dataactbroker/config/newrelic.ini"
+    regexp: '\s*app_name =.*'
+    line: "app_name = DA-Broker-API-{{ BRANCH }}"
+    
+- name: add single-interpreter to uwsgi_db.ini
+  sudo: true
+  ini_file:
+    dest: "/data-act/backend/dataactbroker/config/uwsgi.ini"
+    section: "uwsgi"
+    option: single-interpreter
+    value: true
+    
+- name: modify supervisord configuration (start command)
+  ini_file:
+    dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+    section: "program:uwsgi"
+    option: command
+    value: "newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
+    
+- name: modify supervisord configuration (environment)
+  ini_file:
+    dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+    section: "program:uwsgi"
+    option: environment
+    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/backend/dataactbroker/config/newrelic.ini"

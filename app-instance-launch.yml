@@ -3,9 +3,12 @@
   user: ec2-user
   roles:
     - copy-files
-    - { role: fsrs-cron, when: APP == "jobmgr"}
-    - { role: start-server, when: APP != "jobmgr"}
-    - { role: start-jobmgr, when: APP == "jobmgr"}
+    - config-new-relic
     - start-new-relic
+    - start-server
   environment:
-    env: "{{ ENV }}"
+    apps: "{{ APP }}"
+  vars:
+    apps:
+      broker: {app_long: broker, app_short: API}
+      validator: {app_long: validator, app_short: Val}
