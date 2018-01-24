@@ -1,8 +1,15 @@
 ---
-- name: copy git credentials from S3 Bucket
+- name: copy broker git credentials from S3 Bucket
   shell: "aws s3 cp s3://da-config/broker/id_rsa_broker_config /home/ec2-user/.ssh/ --region us-gov-west-1"
 
+- name: copy usaspending git credentials from S3 Bucket
+  shell: "aws s3 cp s3://da-config/broker/id_rsa_usaspending_config /home/ec2-user/.ssh/ --region us-gov-west-1"
+
 - name: change mode for the id_rsa_broker_config
+  become: true 
+  shell: chmod 400 /home/ec2-user/.ssh/id_rsa_broker_config
+
+- name: change mode for the id_rsa_usaspending_config
   become: true 
   shell: chmod 400 /home/ec2-user/.ssh/id_rsa_usaspending_config
 
@@ -14,10 +21,18 @@
        accept_hostkey=true 
        force=yes
        
-- name: Checkout config from git
+- name: Checkout broker config from git
   become: true
   git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
        dest=/data-act/config 
+       accept_hostkey=true 
+       force=yes 
+       key_file="/home/ec2-user/.ssh/id_rsa_broker_config"
+
+- name: Checkout usaspending config from git (for supervisord service)
+  become: true
+  git: repo=git@github.com:fedspendingtransparency/data-act-usaspending-config.git 
+       dest=/data-act/usaspending-config 
        accept_hostkey=true 
        force=yes 
        key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
@@ -29,3 +44,4 @@
 - name: assign ownership of tmp to ec2-user
   become: true
   file: path=/tmp owner=ec2-user recurse=yes
+  
