@@ -24,9 +24,13 @@
   user: ec2-user
   tasks:  
 
+    - name: copy git credentials from S3 Bucket
+      shell: "aws s3 cp s3://da-config/usaspending/id_rsa_usaspending_config /home/ec2-user/.ssh/ --region us-gov-west-1"
+
     - name: Checkout usaspending-config from git
       become: true
       git: repo=git@github.com:fedspendingtransparency/usaspending-config.git
+           version=master
            dest={{ CONFIG_HOME }}
            accept_hostkey=true 
            force=yes 
@@ -47,33 +51,18 @@
       become: true 
       shell: pip3.5 install --upgrade pip 
 
-    - name: copy requirements.txt (to check for changes)
-      become: true 
-      copy:
-        src:  "{{ REQ_DIR }}/requirements.txt"
-        dest: "{{ REQ_DIR }}/requirements_copy.txt"
-        remote_src: true
-      register: requirements_txt
     - name: install python packages based on requirements.txt
       become: true 
-      when: requirements_txt.changed
       pip: chdir="{{ REQ_DIR }}" requirements="requirements.txt" executable=pip3.5
 
-    - name: copy legacy_requirements.txt (to check for changes)
-      become: true
-      copy:
-        src:  "{{ REQ_DIR }}/legacy_requirements.txt"
-        dest: "{{ REQ_DIR }}/legacy_requirements_copy.txt"
-        remote_src: true
-      register: legacy_requirements_txt
     - name: install python packages based on legacy_requirements.txt
       become: true
-      when: legacy_requirements_txt.changed
       pip: chdir="{{ REQ_DIR }}" requirements="legacy_requirements.txt" executable=pip2
 
     - name: Copy New Relic package
       become: true
       shell: rpm -Uvh https://download.newrelic.com/pub/newrelic/el5/i386/newrelic-repo-5-3.noarch.rpm --replacefiles --replacepkgs
+      
     - name: Install New Relic Sysmond
       become: true
       yum:
@@ -87,17 +76,20 @@
         line: "cd {{ CODE_HOME }}"
         insertafter: EOF
 
+# copy New Relic License key from S3 Bucket
+
+    - name: copy nr_key from S3
+      become: true 
+      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/ --region us-gov-west-1"
+
+    - name: load nr_key var
+      include_vars: /etc/nr_key.yml
 
 # newrelic settings
 
-    - name: get contents of nr_key file
-      command: cat /etc/nr_key
-      register: NR_KEY
-
-    - name: Set New Relic License Key
+    - name: set new relic license key
       become: true
-      shell: nrsysmond-config --set license_key={{ NR_KEY.stdout }}
-
+      shell: nrsysmond-config --set license_key={{ NR_KEY }}
 
 # usaspending_api/settings.py (for running the actual generate download command)
 
@@ -134,10 +126,12 @@
         regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
 
-    - name: get DATABASE_URL env var (requires mapping)
-      shell: cat /etc/db_{{ vars['env_mapping'][BULK_VARS_PREFIX]['alt_name'] }}.sh
-      register: DATABASE_URL_VAR
+    - name: download secrets from S3 bucket
+      become: true
+      shell: " aws s3 cp s3://da-config/usaspending/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
+    - name: load secrets 
+      include_vars: /etc/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml
 
 # Start Worker
 
@@ -156,6 +150,6 @@
       environment:
         PYTHONPATH: "{{ CODE_HOME }}"
         NUM_PROCS: "{{ NUM_PROCS }}"
-        DATABASE_URL_VAR: "{{ DATABASE_URL_VAR.stdout }}"
+        DATABASE_URL_VAR: "{{ DB_SOURCE }}"
       args:
         chdir: "{{ CODE_HOME }}/usaspending_api/"
