@@ -1,7 +1,7 @@
 # DataAct base image playbook for all environments
 
 ---
-- hosts: govcloud_app_base_image
+- hosts: "{{ HOST }}"
 
   become_method: sudo
 

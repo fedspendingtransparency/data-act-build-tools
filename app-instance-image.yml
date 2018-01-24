@@ -5,7 +5,6 @@
   roles:
   - pull-repo
   - install-requirements
-  - add-hostfile
   vars:
     REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
 
