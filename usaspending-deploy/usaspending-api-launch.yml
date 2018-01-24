@@ -72,7 +72,7 @@
       shell: " aws s3 cp s3://da-config/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
     - name: load secrets 
-      include_vars: /etc/{{ BRANCH }}-usaspending-api-secrets.yml
+      include_vars: /etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml
 
     - name: add DB_SOURCE to uswgi ini
       become: true
