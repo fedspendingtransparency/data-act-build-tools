@@ -4,8 +4,7 @@
   roles:
     - copy-files
     - config-new-relic
-    - start-new-relic
-    - start-server
+    - start-services
   environment:
     apps: "{{ APP }}"
   vars:

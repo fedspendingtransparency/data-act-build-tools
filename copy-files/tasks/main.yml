@@ -1,13 +1,17 @@
 ---
 - name: Copy core config
   shell:  cp /data-act/config/backend/config.yml /data-act/backend/dataactcore/config.yml 
+
 - name: Copy ENV config
   shell: cp /data-act/config/backend/{{ ENV }}_config.yml /data-act/backend/dataactcore/{{ ENV }}_config.yml
+
 - name: Copy secrets
   shell: "aws s3 cp s3://da-config/{{ ENV }}_secrets.yml /data-act/backend/dataactcore/{{ ENV }}_secrets.yml --region us-gov-west-1"
+
 - name: Copy Filebeat config
   shell: cp /data-act/config/filebeat/filebeat-{{ ENV }}-{{ APP }}.yml /etc/filebeat/filebeat.yml
   sudo: true
+
 - name: Copy Nginx config
   shell: cp /data-act/config/nginx/nginx_{{ ENV }}_{{ APP }}.conf /etc/nginx/nginx.conf 
   sudo: true
@@ -18,6 +22,7 @@
   sudo: true
   when: APP == "broker"
   ignore_errors: yes
+
 - name: copy cert.key
   shell: "cp /{{ PATH }}/cert_{{ ENV }}.key /{{ PATH }}/cert.key"
   sudo: true
@@ -29,6 +34,7 @@
   file: path=/{{ PATH }}/cert.pem owner=ec2-user
   when: APP == "broker"
   ignore_errors: yes
+
 - name: assign ownership of cert.key to ec2-user
   sudo: true
   file: path=/{{ PATH }}/cert.key owner=ec2-user
@@ -38,6 +44,8 @@
 - name: assign ownership of api to ec2-user
   sudo: true
   file: path=/data-act owner=ec2-user recurse=yes
+
 - name: assign ownership of api to ec2-user
   sudo: true
   file: path=/tmp owner=ec2-user recurse=yes
+  

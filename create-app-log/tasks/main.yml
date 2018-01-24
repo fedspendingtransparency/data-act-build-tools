@@ -1,0 +1,15 @@
+---
+# create app logs for VAL
+
+- name: create app log if it doesn't exist
+  shell: touch /data-act/app.json-log
+  ignore_errors: yes
+
+- name: create app log if it doesn't exist
+  shell: touch /data-act/info.log
+  ignore_errors: yes
+
+- name: set owner of data-act folder to ec2-user
+  shell: chown -R ec2-user /data-act
+  sudo: true
+  

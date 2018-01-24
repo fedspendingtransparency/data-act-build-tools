@@ -3,8 +3,33 @@
   user: ec2-user
   roles:
   - pull-repo
-  - pip-install
+  - install-requirements
   - add-hostfile
   vars:
     REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
-    
+
+# setup supervisord.service
+
+  - name: make supervisord.service directory
+    become: true
+    file:
+      path: /etc/supervisord/conf.d
+      recurse: true
+      state: directory
+
+  - name: supervisord.service conf
+    become: true
+    shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
+
+  - name: supervisord.service conf.d append
+    become: true
+    shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
+
+  - name: supervisord.service copy
+    become: true
+    copy:
+      remote_src: true
+      src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+      dest: "/usr/lib/systemd/system/supervisord.service"
+
+      

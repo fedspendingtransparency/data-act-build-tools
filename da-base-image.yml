@@ -38,6 +38,10 @@
       become: true
       pip: name=awscli executable=pip
 
+    - name: setsebook command
+      shell: setsebool -P httpd_can_network_connect=1
+      become: true
+
     - name: show timestamp in history (root)
       become: true
       shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile

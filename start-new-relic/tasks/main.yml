@@ -1,8 +1,0 @@
----
-  - name: enable newrelic-infra service
-    become: true
-    shell: systemctl enable newrelic-infra
-
-  - name: restart newrelic-infra service
-    become: true
-    shell: systemctl restart newrelic-infra
