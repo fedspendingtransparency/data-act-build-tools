@@ -1,5 +1,5 @@
 ---
-- hosts: govcloud_instance_image
+- hosts: "{{ HOST }}"
   user: ec2-user
   become_method: sudo
   roles:
