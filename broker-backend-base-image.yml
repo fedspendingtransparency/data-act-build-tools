@@ -13,7 +13,6 @@
       yum: name={{ item }}
       with_items:
         - python-devel.x86_64
-        - python-pip
         - python35u
         - python35u-libs
         - python35u-devel 

@@ -25,6 +25,7 @@
       yum: name={{ item }}
       with_items:
         - git
+        - python-pip
         - ansible
         - mlocate
         - vim
