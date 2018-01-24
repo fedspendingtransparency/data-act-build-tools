@@ -13,13 +13,13 @@
 # Filebeat
 
 - name: Copy Filebeat config
-  shell: cp /data-act/config/filebeat/filebeat-{{ vars['envs'][BRANCH]['env_long'] }}-{{ APP }}.yml /etc/filebeat/filebeat.yml
   become: true
+  shell: cp /data-act/config/filebeat/filebeat-{{ vars['envs'][BRANCH]['env_long'] }}-{{ APP }}.yml /etc/filebeat/filebeat.yml
 
 # Nginx 
 - name: Copy Nginx config
-  shell: cp /data-act/config/nginx/nginx_{{ vars['envs'][BRANCH]['env_long'] }}-{{ APP }}.conf /etc/nginx/nginx.conf 
   become: true
+  shell: cp /data-act/config/nginx/nginx_{{ vars['envs'][BRANCH]['env_long'] }}-{{ APP }}.conf /etc/nginx/nginx.conf 
   when: APP = "broker"
 
 # SSL Certs

@@ -25,19 +25,11 @@
       become: true
       shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
 
-    - name: supervisord.service config file location (broker aka api)
-      when: APP == 'broker'
-      become: true
-      replace:
-        dest: "/data-act/usaspending-config/supervisord.service/supervisord.service"
-        regexp: 'ExecStart=/bin/supervisord.*'
-        replace: "ExecStart=/bin/supervisord -c /data-act/backend/dataactbroker/config/supervisord.conf"
-
     - name: supervisord.service config file location (validator)
       when: APP == 'validator'
       become: true
       replace:
-        dest: "/data-act/usaspending-config/supervisord.service/supervisord.service"
+        dest: "/data-act/data-act-broker-config/supervisord.service/supervisord.service"
         regexp: 'ExecStart=/bin/supervisord.*'
         replace: "ExecStart=/bin/supervisord -c /data-act/backend/dataactvalidator/config/supervisord.conf"
 
@@ -45,8 +37,6 @@
       become: true
       copy:
         remote_src: true
-        src:  "/data-act/usaspending-config/supervisord.service/supervisord.service"
+        src:  "/data-act/data-act-broker-config/supervisord.service/supervisord.service"
         dest: "/usr/lib/systemd/system/supervisord.service"
-
-
-      
+        

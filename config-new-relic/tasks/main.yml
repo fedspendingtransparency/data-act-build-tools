@@ -4,7 +4,7 @@
   shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key --region us-gov-west-1 --region us-gov-west-1"
 
 - name: load nr_key var
-    include_vars: /etc/nr_key.yml
+  include_vars: /etc/nr_key.yml
 
 - name: add newrelic license key to newrelic.ini
   lineinfile:
@@ -14,11 +14,11 @@
     line: "license_key = {{ NR_KEY }}"
 
 - name: copy nr_key to newrelic-infra.yml file
-      become: true
-      lineinfile:
-        create: true
-        dest: "/etc/newrelic-infra.yml"
-        line: "license_key = {{ NR_KEY }}"
+  become: true
+  lineinfile:
+    create: true
+    dest: "/etc/newrelic-infra.yml"
+    line: "license_key = {{ NR_KEY }}"
     
 - name: add newrelic label (app_name)
   lineinfile:
