@@ -9,7 +9,8 @@
 
 - name: add newrelic license key
   lineinfile:
-    dest: "/data-act/backend/dataactbroker/config/newrelic.ini"
+    ## Change to config repo and grab one file
+    dest: "/data-act/config/newrelic.ini"
     regexp: '\s*license_key =.*'
     line: "license_key = {{ NR_KEY.stdout }}"
 
@@ -19,28 +20,30 @@
     
 - name: add newrelic label (app_name)
   lineinfile:
-    dest: "/data-act/backend/dataactbroker/config/newrelic.ini"
+    dest: "/data-act/config/newrelic.ini"
     regexp: '\s*app_name =.*'
-    line: "app_name = DA-Broker-API-{{ BRANCH }}"
+    line: "app_name = DA-Broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
     
-- name: add single-interpreter to uwsgi_db.ini
+- name: add single-interpreter to uwsgi.ini
+  # TO DO: Only do this for Broker API
   sudo: true
   ini_file:
-    dest: "/data-act/backend/dataactbroker/config/uwsgi.ini"
+    dest: "/data-act/backend/dataact{{ vars['apps'][APP]['app_long'] }}/config/uwsgi.ini"
     section: "uwsgi"
     option: single-interpreter
     value: true
     
+## TO DO: Add separate supervisord config changes for API and Val since Val doesn't use uwsgi
 - name: modify supervisord configuration (start command)
   ini_file:
-    dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+    dest: "/data-act/backend/dataact{{ vars['apps'][APP]['app_short'] }}/config/supervisord.conf"
     section: "program:uwsgi"
     option: command
     value: "newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
     
 - name: modify supervisord configuration (environment)
   ini_file:
-    dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+    dest: "/data-act/backend/dataact{{ vars['apps'][APP]['app_long'] }}/config/supervisord.conf"
     section: "program:uwsgi"
     option: environment
-    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/backend/dataactbroker/config/newrelic.ini"
+    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/backend/dataact{{ vars['apps'][APP]['app_long'] }}/config/newrelic.ini"
