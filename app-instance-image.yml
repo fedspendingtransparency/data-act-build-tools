@@ -1,6 +1,7 @@
 ---
 - hosts: govcloud_instance_image
   user: ec2-user
+  become_method: sudo
   roles:
   - pull-repo
   - install-requirements

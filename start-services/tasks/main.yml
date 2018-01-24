@@ -2,19 +2,19 @@
 # start/stop services
 
 - name: enable newrelic-infra service
-  sudo: true
+  become: true
   shell: systemctl enable newrelic-infra
 
 - name: restart newrelic-infra service
-  sudo: true
+  become: true
   shell: systemctl restart newrelic-infra
 
 - name: enable filebeat service
-  sudo: true
+  become: true
   shell: systemctl enable filebeat
 
 - name: restart filebeat
-  sudo: true
+  become: true
   shell: systemctl restart filebeat
 
 - name: enable supervisord service
@@ -24,4 +24,3 @@
 - name: restart supervisord
   become: true
   shell: systemctl restart supervisord
-

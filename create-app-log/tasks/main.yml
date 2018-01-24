@@ -11,5 +11,5 @@
 
 - name: set owner of data-act folder to ec2-user
   shell: chown -R ec2-user /data-act
-  sudo: true
+  become: true
   

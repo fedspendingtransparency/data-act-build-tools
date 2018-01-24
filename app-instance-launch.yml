@@ -1,13 +1,21 @@
 ---
 - hosts: govcloud_instance_launch
   user: ec2-user
+  become_method: sudo
   roles:
     - copy-files
     - config-new-relic
+    - create-app-log
     - start-services
   environment:
-    apps: "{{ APP }}"
+    APP: "{{ APP }}"
+    BRANCH: "{{ BRANCH }}"
   vars:
     apps:
       broker: {app_long: broker, app_short: API}
       validator: {app_long: validator, app_short: Val}
+    envs:
+      master: {env_long: prod, env_short: prod}
+      stg: {env_long: staging, env_short: stg}
+      dev: {env_long: dev, env_short: dev}
+      sandbox: {env_long: sandbox, env_short: sbx}

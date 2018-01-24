@@ -1,5 +1,4 @@
-# Broker 
-
+# Base image for both broker-api and broker-val
 ---
 - hosts: govcloud_app_base_image
 

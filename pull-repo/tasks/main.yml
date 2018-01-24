@@ -1,21 +1,31 @@
 ---
+- name: copy git credentials from S3 Bucket
+  shell: "aws s3 cp s3://da-config/broker/id_rsa_broker_config /home/ec2-user/.ssh/ --region us-gov-west-1"
+
+- name: change mode for the id_rsa_broker_config
+  become: true 
+  shell: chmod 400 /home/ec2-user/.ssh/id_rsa_usaspending_config
+
 - name: Checkout backend from git
-  sudo: true
+  become: true
   git: repo={{ REPO }}
        version={{ BRANCH }}  
        dest=/data-act/backend 
        accept_hostkey=true 
        force=yes
+       
 - name: Checkout config from git
+  become: true
   git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
        dest=/data-act/config 
        accept_hostkey=true 
        force=yes 
-       key_file="/home/ec2-user/.ssh/id_rsa"
-  sudo: true
+       key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
+  
 - name: assign ownership of api to ec2-user
-  sudo: true
+  become: true
   file: path=/data-act owner=ec2-user recurse=yes
+
 - name: assign ownership of tmp to ec2-user
-  sudo: true
+  become: true
   file: path=/tmp owner=ec2-user recurse=yes
