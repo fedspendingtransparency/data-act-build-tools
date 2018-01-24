@@ -69,7 +69,7 @@
 
     - name: download secrets from S3 bucket
       become: true
-      shell: " aws s3 cp s3://da-config/usaspending/{{ BRANCH }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
+      shell: " aws s3 cp s3://da-config/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
     - name: load secrets 
       include_vars: /etc/{{ BRANCH }}-usaspending-api-secrets.yml
