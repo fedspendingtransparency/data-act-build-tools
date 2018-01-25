@@ -1,11 +1,10 @@
 ---
 - name: copy nr_key from S3
   become: true
-  shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key.yml --region us-gov-west-1 --region us-gov-west-1"
+  shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key.yml --region us-gov-west-1"
 
-- name: get contents of nr_key file
-  command: cat /etc/nr_key.yml
-  register: NR_KEY
+- name: load nr_key var
+    include_vars: /etc/nr_key.yml
 
 - name: add newrelic license key to newrelic.ini
   lineinfile:
