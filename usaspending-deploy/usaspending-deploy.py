@@ -131,6 +131,7 @@ def deploy():
         run_tf(tf_exec_path)
 
     global EXIT_CODE
+    print('Exited with a code of {}'.format(EXIT_CODE))
     return EXIT_CODE
 
 ###############################################################################
@@ -145,7 +146,7 @@ def run_tf(tf_exec_path):
 
 
 def packer_build(packer_file='packer.json', packer_exec_path='packer'):
-    return real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
+    return real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'a])
 
 
 def real_time_command(command_to_run):
