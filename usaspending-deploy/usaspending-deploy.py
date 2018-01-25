@@ -145,7 +145,7 @@ def run_tf(tf_exec_path):
 
 
 def packer_build(packer_file='packer.json', packer_exec_path='packer'):
-    return real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable', '-color=false'])
+    return real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
 
 
 def real_time_command(command_to_run):
