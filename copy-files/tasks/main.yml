@@ -19,8 +19,8 @@
 # Nginx 
 - name: Copy Nginx config
   become: true
-  shell: cp /data-act/config/nginx/nginx_{{ vars['envs'][BRANCH]['env_long'] }}-{{ APP }}.conf /etc/nginx/nginx.conf 
-  when: APP = "broker"
+  shell: cp /data-act/config/nginx/nginx_{{ vars['envs'][BRANCH]['env_long'] }}_{{ APP }}.conf /etc/nginx/nginx.conf 
+  when: APP == "broker"
 
 # SSL Certs
 # master
