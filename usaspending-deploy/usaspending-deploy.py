@@ -131,8 +131,9 @@ def deploy():
         run_tf(tf_exec_path)
 
     global EXIT_CODE
-    print('Exited with a code of {}'.format(EXIT_CODE))
-    return EXIT_CODE
+    if EXIT_CODE != 0:
+        print('Exiting with a code of {}'.format(EXIT_CODE))
+        sys.exit(1)
 
 ###############################################################################
 # Helper Functions
