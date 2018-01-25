@@ -3,14 +3,14 @@
   become: true
   shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key.yml --region us-gov-west-1 --region us-gov-west-1"
 
-- name: load nr_key var
-  become: true
-  include_vars: /etc/nr_key.yml
+- name: get contents of nr_key file
+  command: cat /etc/nr_key.yml
+  register: NR_KEY
 
 - name: add newrelic license key to newrelic.ini
   lineinfile:
     ## Change to config repo and grab one file
-    dest: "/data-act/config/newrelic.ini"
+    dest: "/data-act/config/newrelic/newrelic.ini"
     regexp: '\s*license_key =.*'
     line: "license_key = {{ NR_KEY }}"
 
@@ -23,7 +23,7 @@
     
 - name: add newrelic label (app_name)
   lineinfile:
-    dest: "/data-act/config/newrelic.ini"
+    dest: "/data-act/config/newrelic/newrelic.ini"
     regexp: '\s*app_name =.*'
     line: "app_name = Broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
 
@@ -52,7 +52,7 @@
     dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
     section: "program:uwsgi"
     option: environment
-    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic.ini"
+    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
 
 # Modify supervisord config to enable newrelic for broker-VAL
 
@@ -68,7 +68,7 @@
     dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
     section: "program:uwsgi"
     option: environment
-    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic.ini"
+    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
 
 # Modify supervisord config to enable newrelic for broker-VAL-Healthcheck
 
@@ -84,5 +84,5 @@
     dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
     section: "program:uwsgi"
     option: environment
-    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic.ini"
+    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
 

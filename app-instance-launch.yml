@@ -5,6 +5,7 @@
   roles:
     - copy-files
     - config-new-relic
+    - supervisord
     - create-app-log
     - start-services
   environment:
