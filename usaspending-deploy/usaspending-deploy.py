@@ -130,6 +130,7 @@ def deploy():
         # Run Terraform
         run_tf(tf_exec_path)
 
+    global EXIT_CODE
     return EXIT_CODE
 
 ###############################################################################
@@ -163,6 +164,7 @@ def real_time_command(command_to_run):
             print(output.strip())
             
     rc = process.poll()
+    global EXIT_CODE
     EXIT_CODE += rc
 
     return total_output
