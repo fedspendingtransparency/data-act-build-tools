@@ -1,6 +1,0 @@
----
-- hosts: govcloud_base_image
-  user: ec2-user
-  roles:
-  - base-image-installs-python35
-  - disable-requiretty

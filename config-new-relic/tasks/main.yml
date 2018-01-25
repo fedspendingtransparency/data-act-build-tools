@@ -1,0 +1,88 @@
+---
+- name: copy nr_key from S3
+  become: true
+  shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key.yml --region us-gov-west-1 --region us-gov-west-1"
+
+- name: get contents of nr_key file
+  command: cat /etc/nr_key.yml
+  register: NR_KEY
+
+- name: add newrelic license key to newrelic.ini
+  lineinfile:
+    ## Change to config repo and grab one file
+    dest: "/data-act/config/newrelic/newrelic.ini"
+    regexp: '\s*license_key =.*'
+    line: "license_key = {{ NR_KEY }}"
+
+- name: copy nr_key to newrelic-infra.yml file
+  become: true
+  lineinfile:
+    create: true
+    dest: "/etc/newrelic-infra.yml"
+    line: "license_key = {{ NR_KEY }}"
+    
+- name: add newrelic label (app_name)
+  lineinfile:
+    dest: "/data-act/config/newrelic/newrelic.ini"
+    regexp: '\s*app_name =.*'
+    line: "app_name = Broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
+
+
+# Modify uwsgi.ini to enable newrelic only for broker-api
+
+- name: add single-interpreter to uwsgi.ini for broker-api
+  become: true
+  ini_file:
+    dest: "/data-act/backend/dataactbroker/config/uwsgi.ini"
+    section: "uwsgi"
+    option: single-interpreter
+    value: true
+
+# Modify supervisord config to enable newrelic for broker-api
+
+- name: modify supervisord configuration for broker-api (start command)
+  ini_file:
+    dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+    section: "program:uwsgi"
+    option: command
+    value: "newrelic-admin run-program uwsgi --ini /data-act/backend/dataactbroker/config/uwsgi.ini --socket :3030 --stats /tmp/stats.socket"
+    
+- name: modify supervisord configuration for broker-api (environment)
+  ini_file:
+    dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+    section: "program:uwsgi"
+    option: environment
+    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
+
+# Modify supervisord config to enable newrelic for broker-VAL
+
+- name: modify supervisord configuration for broker-val (start command)
+  ini_file:
+    dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
+    section: "program:data_act_validator_app"
+    option: command
+    value: "newrelic-admin run-program /usr/bin/python3 app.py"
+    
+- name: modify supervisord configuration broker-val (environment)
+  ini_file:
+    dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
+    section: "program:uwsgi"
+    option: environment
+    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
+
+# Modify supervisord config to enable newrelic for broker-VAL-Healthcheck
+
+- name: modify supervisord configuration for broker-val (start command)
+  ini_file:
+    dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
+    section: "program:data_act_validator_app"
+    option: command
+    value: "newrelic-admin run-program /usr/bin/python3 health_check.py"
+    
+- name: modify supervisord configuration broker-val (environment)
+  ini_file:
+    dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
+    section: "program:uwsgi"
+    option: environment
+    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
+
