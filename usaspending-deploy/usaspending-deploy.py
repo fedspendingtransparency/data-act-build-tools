@@ -9,6 +9,7 @@ from subprocess import Popen, PIPE, STDOUT, call
 
 def deploy():
 
+    # This tf_var file is expected to be copied from an external source
     packer_file     = 'usaspending-packer.json'
     tfvar_file      = 'usaspending-vars.tf.json'
 
@@ -24,6 +25,9 @@ def deploy():
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("--dev", 
+        action="store_true", 
+        help="Runs deploy for dev")
     parser.add_argument("--staging", 
         action="store_true", 
         help="Runs deploy for staging")
@@ -46,10 +50,15 @@ def deploy():
   #      Packer Build       #
   ###########################
 
+    if optionsDict["dev"]:
+        deploy_env = 'dev'
+
     if optionsDict["staging"]:
         deploy_env = 'staging'
 
-    # Get Base AMI, Update Packer file
+    if optionsDict["dev"] or optionsDict["staging"]:
+
+        # Get Base AMI, Update Packer file
         print('Retrieving base AMI...')
         base_ami = conn.get_all_images(filters={
             "tag:current" : "True", 
@@ -65,7 +74,7 @@ def deploy():
             "tag:current" : "True", 
             "tag:base"    : "False", 
             "tag:type"    : "USASpending-API", 
-            "tag:environment" : "staging"
+            "tag:environment" : deploy_env
             })
 
     # Build New AMI
@@ -90,7 +99,7 @@ def deploy():
         update_tf_ami(new_instance_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data('staging')    
+        update_terraform_user_data(deploy_env)    
 
         # Run Terraform
         run_tf(tf_exec_path)
@@ -190,8 +199,10 @@ def update_terraform_user_data(environment='staging', tf_file='usaspending-deplo
 
     if environment == 'prod':
         newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-prod.sh")
-    elif environment == 'staging':
-        newdata = filedata.replace("usaspending-start-prod.sh","usaspending-start-staging.sh")
+    elif environment == 'staging': # does nothing
+        newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-staging.sh")
+    elif environment == 'dev':
+        newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-dev.sh")
 
     f = open(tf_file,'w')
     f.write(newdata)
