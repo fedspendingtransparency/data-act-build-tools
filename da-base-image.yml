@@ -39,7 +39,7 @@
       become: true
       pip: name=awscli executable=pip
 
-    - name: setsebook command
+    - name: setsebool command
       shell: setsebool -P httpd_can_network_connect=1
       become: true
 
