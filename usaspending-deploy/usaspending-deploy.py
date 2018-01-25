@@ -7,6 +7,8 @@ import argparse
 import sys
 from subprocess import Popen, PIPE, STDOUT, call
 
+EXIT_CODE = 0
+
 def deploy():
 
     # This tf_var file is expected to be copied from an external source
@@ -43,7 +45,7 @@ def deploy():
             noArgs = False
 
     if noArgs:
-        print ("No environment specified. Please include an argument: --staging, or --prod")
+        print ("No environment specified. Please include an argument: --dev, --staging, or --prod")
         sys.exit(1)
 
   ###########################
@@ -128,6 +130,8 @@ def deploy():
         # Run Terraform
         run_tf(tf_exec_path)
 
+    return EXIT_CODE
+
 ###############################################################################
 # Helper Functions
 ###############################################################################
@@ -140,7 +144,7 @@ def run_tf(tf_exec_path):
 
 
 def packer_build(packer_file='packer.json', packer_exec_path='packer'):
-    return real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
+    return real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable', '-color=false'])
 
 
 def real_time_command(command_to_run):
@@ -159,6 +163,8 @@ def real_time_command(command_to_run):
             print(output.strip())
             
     rc = process.poll()
+    EXIT_CODE += rc
+
     return total_output
 
 
