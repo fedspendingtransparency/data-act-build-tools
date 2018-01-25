@@ -66,7 +66,7 @@ def deploy():
             "tag:type"    : "USASpending-API"
             })[0].id
         print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
-        update_packer_spec(packer_file, base_ami)
+        update_packer_spec(packer_file, base_ami, deploy_env)
         print('Done.')
 
     # Get Old AMIs, for setting current=False after new one is craeted
@@ -162,12 +162,16 @@ def real_time_command(command_to_run):
     return total_output
 
 
-def update_packer_spec(packer_file='packer.json', base_ami=''):
+def update_packer_spec(packer_file='packer.json', base_ami='', environment='staging'):
     packer_json = open(packer_file, "r")
     packer_data = json.load(packer_json)
     packer_json.close()
 
     packer_data['builders'][0]['source_ami'] = base_ami
+
+    if environment == 'dev':
+        packer_data['builders'][0]['tags']['environment'] = "dev"
+        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH=dev HOST=local'"
 
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
