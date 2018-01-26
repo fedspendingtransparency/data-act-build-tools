@@ -24,25 +24,25 @@
     - name: add Bulk Download option
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*IS_LOCAL =.*'
+        regexp: '^IS_LOCAL =.*'
         line: "IS_LOCAL = False"
 
     - name: add Bulk Download S3 name
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
+        regexp: '^BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
         line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'"
 
     - name: add Bulk Download SQS url
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
+        regexp: '^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
         line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'"
 
     - name: add Bulk Download AWS region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*BULK_DOWNLOAD_AWS_REGION =.*'
+        regexp: '^BULK_DOWNLOAD_AWS_REGION =.*'
         line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
 
     - name: download secrets from S3 bucket
