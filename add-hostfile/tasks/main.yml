@@ -1,3 +1,0 @@
----
-- lineinfile: dest=/tmp/packer-provisioner-ansible-local/hosts state=present create=true line="[govcloud_instance_launch]"
-- lineinfile: dest=/tmp/packer-provisioner-ansible-local/hosts state=present create=true line="127.0.0.1"

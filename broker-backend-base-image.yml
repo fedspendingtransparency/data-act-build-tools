@@ -1,0 +1,51 @@
+# Base image for both broker-api and broker-val
+---
+- hosts: "{{ HOST }}"
+
+  become_method: sudo
+
+  user: ec2-user
+
+  tasks:
+
+    - name: install base dependencies
+      become: true
+      yum: name={{ item }}
+      with_items:
+        - python-devel.x86_64
+        - python35u
+        - python35u-libs
+        - python35u-devel 
+        - python35u-pip
+        - postgresql-devel.x86_64
+        - gcc
+        - gcc-c++
+        - libffi-devel
+        - pcre.x86_64
+        - pcre-devel.x86_64
+
+    - name: install nginx (from nginx repo)
+      become: true
+      yum: 
+        name=http://nginx.org/packages/mainline/centos/7/x86_64/RPMS/nginx-1.13.8-1.el7_4.ngx.x86_64.rpm
+
+    - name: install New Relic APM
+      become: true
+      pip: name=newrelic executable=pip3.5
+
+    - name: Download New Relic Infrastructure
+      become: true
+      shell: curl -o /etc/yum.repos.d/newrelic-infra.repo https://download.newrelic.com/infrastructure_agent/linux/yum/el/7/x86_64/newrelic-infra.repo
+
+    - name: Update cache for New Relic Infrastructure
+      become: true
+      shell: yum -q makecache -y --disablerepo='*' --enablerepo='newrelic-infra'
+
+    - name: Install New Relic Infrastructure
+      become: true
+      yum: name=newrelic-infra
+
+    - name: install filebeat (from filebeat repo)
+      become: true
+      yum: 
+        name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.1.1-x86_64.rpm
