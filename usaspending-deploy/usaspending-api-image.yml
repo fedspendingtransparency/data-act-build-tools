@@ -86,3 +86,25 @@
         dest: /home/ec2-user/.bashrc
         line: "cd {{ CODE_HOME }}"
         insertafter: EOF 
+
+# Configure New Relic Key
+
+    - name: copy nr_key from S3
+      become: true 
+      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/ --region us-gov-west-1"
+
+    - name: load nr_key var
+      include_vars: /etc/nr_key.yml
+
+    - name: add newrelic license key to newrelic.ini
+      lineinfile:
+        dest: "{{ CODE_HOME }}/config/newrelic.ini"
+        regexp: '\s*license_key =.*'
+        line: "license_key = {{ NR_KEY }}"
+
+    - name: copy nr_key to newrelic-infra.yml file
+      become: true
+      lineinfile:
+        create: true
+        dest: "/etc/newrelic-infra.yml"
+        line: "license_key = {{ NR_KEY }}"

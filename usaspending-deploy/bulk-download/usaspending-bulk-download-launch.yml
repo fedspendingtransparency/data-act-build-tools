@@ -1,6 +1,8 @@
 ---
 - hosts: "{{ HOST }}"
 
+# NOTE: This should run after usaspending-api-image.yml
+
 # Required: {{ BULK_VARS_PREFIX }}, the prefix to the .yml with bulk download vars 
 #           AND = the path to the DB URL, either dev or sandbox
 
@@ -11,57 +13,14 @@
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     CODE_HOME: '/data-act/backend'
     REQ_DIR: '{{ CODE_HOME }}/requirements'
-    
-# Name mismatching from BULK_VARS_PREFIX (dev/sbx are same)
-    env_mapping:
-      prod: {alt_name: master}
-      staging: {alt_name: stg}
-      dev: {alt_name: dev}
-      sandbox: {alt_name: sandbox}
 
   become_method: sudo  
 
   user: ec2-user
   tasks:  
 
-    - name: copy git credentials from S3 Bucket
-      shell: "aws s3 cp s3://da-config/usaspending/id_rsa_usaspending_config /home/ec2-user/.ssh/ --region us-gov-west-1"
-      
-    - name: change mode for the id_rsa_usaspending_config
-      become: true 
-      shell: chmod 400 /home/ec2-user/.ssh/id_rsa_usaspending_config
-
-    - name: Checkout usaspending-config from git
-      become: true
-      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git
-           version=master
-           dest={{ CONFIG_HOME }}
-           accept_hostkey=true 
-           force=yes 
-           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
-
     - name: Load variables from config repo
       include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
-
-    - name: Checkout usaspending-api code from git
-      become: true
-      git: repo='https://github.com/fedspendingtransparency/usaspending-api.git'
-           version={{ USASPENDING_API_BRANCH }}  
-           dest={{ CODE_HOME }}
-           accept_hostkey=true 
-           force=yes
-
-    - name: update pip
-      become: true 
-      shell: pip3.5 install --upgrade pip 
-
-    - name: install python packages based on requirements.txt
-      become: true 
-      pip: chdir="{{ REQ_DIR }}" requirements="requirements.txt" executable=pip3.5
-
-    - name: install python packages based on legacy_requirements.txt
-      become: true
-      pip: chdir="{{ REQ_DIR }}" requirements="legacy_requirements.txt" executable=pip2
 
     - name: Copy New Relic package
       become: true
@@ -134,7 +93,7 @@
       become: true
       shell: " aws s3 cp s3://da-config/usaspending/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
-    - name: load secrets 
+    - name: load secrets (DB_SOURCE)
       include_vars: /etc/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml
 
 # Start Worker

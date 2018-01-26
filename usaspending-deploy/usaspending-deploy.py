@@ -124,7 +124,6 @@ def deploy():
   ###########################        
 
     elif optionsDict["prod"]:
-        deploy_env = 'prod'
 
         # Get current Staging AMI
         staging_ami = conn.get_all_images(filters={
@@ -147,7 +146,7 @@ def deploy():
     global EXIT_CODE
     if EXIT_CODE != 0:
         print('Exiting with a code of {}'.format(EXIT_CODE))
-        sys.exit(1)
+        sys.exit(EXIT_CODE)
 
 ###############################################################################
 # Helper Functions

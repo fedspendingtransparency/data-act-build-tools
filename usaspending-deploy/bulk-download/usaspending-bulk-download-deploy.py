@@ -52,10 +52,10 @@ def deploy():
     if optionsDict["dev"]:
         deploy_env = 'dev'
 
-    if optionsDict["staging"] or optionsDict["prod"]:
+    if optionsDict["staging"] or optionsDict["prod"]: # both pull staging AMI
         deploy_env = 'staging'
 
-    # Get previously created AMI (created by usaspending-deploy.py)
+    # Get previously created API AMI (created by usaspending-deploy.py)
     current_api_ami = conn.get_all_images(filters={
         "tag:current": "True",
         "tag:base": "False",
@@ -63,19 +63,17 @@ def deploy():
         "tag:environment": deploy_env
     })[0].id
 
-    # Staging and prod do the same thing with different tfvar_files
-    if optionsDict["staging"] or optionsDict["prod"]:
-        # Add new AMI to Terraform variables
-        update_tf_ami(current_api_ami, tfvar_file)
+    # Add API AMI to Terraform variables
+    update_tf_ami(current_api_ami, tfvar_file)
 
-        # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
+    # Run Terraform plan and apply
+    real_time_command([tf_exec_path, 'plan'])
+    real_time_command([tf_exec_path, 'apply'])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
         print('Exiting with a code of {}'.format(EXIT_CODE))
-        sys.exit(1)
+        sys.exit(EXIT_CODE)
 
 ###############################################################################
 # Helper Functions
