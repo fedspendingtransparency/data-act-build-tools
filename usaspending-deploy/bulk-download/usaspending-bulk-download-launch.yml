@@ -9,10 +9,7 @@
   vars:
     BULK_VARS_PREFIX: "{{ BULK_VARS_PREFIX }}"
     CONFIG_HOME: '/data-act/config'
-    
-    REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     CODE_HOME: '/data-act/backend'
-    REQ_DIR: '{{ CODE_HOME }}/requirements'
 
   become_method: sudo  
 
@@ -22,48 +19,7 @@
     - name: Load variables from config repo
       include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
 
-    - name: Copy New Relic package
-      become: true
-      shell: rpm -Uvh https://download.newrelic.com/pub/newrelic/el5/i386/newrelic-repo-5-3.noarch.rpm --replacefiles --replacepkgs
-      
-    - name: Install New Relic Sysmond
-      become: true
-      yum:
-        name: newrelic-sysmond
-        state: latest
-
-    - name: set starting directory to CODE_HOME
-      become: true
-      lineinfile: 
-        dest: /home/ec2-user/.bashrc
-        line: "cd {{ CODE_HOME }}"
-        insertafter: EOF
-
-# copy New Relic License key from S3 Bucket
-
-    - name: copy nr_key from S3
-      become: true 
-      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/ --region us-gov-west-1"
-
-    - name: load nr_key var
-      include_vars: /etc/nr_key.yml
-
-# newrelic settings
-
-    - name: set new relic license key
-      become: true
-      shell: nrsysmond-config --set license_key={{ NR_KEY }}
-
 # usaspending_api/settings.py (for running the actual generate download command)
-
-    - name: make ec2-user own everything
-      become: true
-      file: 
-        path: /data-act
-        state: directory
-        owner: ec2-user
-        mode: "u+wrx"
-        recurse: true
 
     - name: add Bulk Download option
       lineinfile:
@@ -97,10 +53,6 @@
       include_vars: /etc/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml
 
 # Start Worker
-
-    - name: Run New Relic
-      become: true
-      shell: /etc/init.d/newrelic-sysmond start
 
     - name: stop supervisord
       become: true
