@@ -12,14 +12,14 @@ EXIT_CODE = 0
 def deploy():
 
     # This tf_var file is expected to be copied from an external source
-    packer_file     = 'usaspending-packer.json'
-    tfvar_file      = 'usaspending-vars.tf.json'
+    tfvar_file       = 'usaspending-vars.tf.json'
 
-    tf_file =         'usaspending-deploy.tf'
+    tf_exec_path     = '/terraform/terraform'
+    tf_file          = 'usaspending-deploy.tf'
 
     packer_exec_path = '/packer/packerio'
-    tf_exec_path     = '/terraform/terraform'
-
+    packer_file      = 'usaspending-packer.json'
+    
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
     conn = boto.ec2.connect_to_region(region_name='us-gov-west-1')
@@ -88,10 +88,10 @@ def deploy():
             "tag:environment" : deploy_env
             })
 
-    # Build New AMI
+    # Build New AMI (Packer)
         print('**************************************************************************')
         print(' Building new AMI via Packer. This can take a while...')
-        packer_output = packer_build(packer_file, packer_exec_path)
+        packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
         ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
         new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
         print('Done. New AMI created: ' + new_instance_ami)
@@ -106,7 +106,7 @@ def deploy():
             print('No matching old AMIs. Skipping tag update...')
 
   ###########################
-  #   TF Build - Staging    #
+  #   TF Build - NonProd    #
   ###########################    
 
         # Add new AMI to Terraform variables
@@ -115,8 +115,9 @@ def deploy():
         # Update Terraform User Data
         update_terraform_user_data(deploy_env)    
 
-        # Run Terraform
-        run_tf(tf_exec_path)
+        # Run Terraform plan and apply
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
   ###########################
   #   TF Build - Prod       #
@@ -139,8 +140,9 @@ def deploy():
         # Update Terraform User Data
         update_terraform_user_data('prod')  
 
-        # Run Terraform
-        run_tf(tf_exec_path)
+        # Run Terraform plan and apply
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
@@ -150,18 +152,6 @@ def deploy():
 ###############################################################################
 # Helper Functions
 ###############################################################################
-
-
-def run_tf(tf_exec_path):
-    # Run Terraform
-    real_time_command([tf_exec_path, 'plan'])
-    real_time_command([tf_exec_path, 'apply'])
-    return
-
-
-def packer_build(packer_file='packer.json', packer_exec_path='packer'):
-    return real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
-
 
 def real_time_command(command_to_run):
     process = Popen(command_to_run, stdout=PIPE)
