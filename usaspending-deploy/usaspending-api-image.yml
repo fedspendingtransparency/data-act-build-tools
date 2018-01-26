@@ -107,4 +107,4 @@
       lineinfile:
         create: true
         dest: "/etc/newrelic-infra.yml"
-        line: "license_key = {{ NR_KEY }}"
+        line: "license_key: {{ NR_KEY }}"
