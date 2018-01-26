@@ -27,6 +27,9 @@ def deploy():
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("--sandbox", 
+        action="store_true", 
+        help="Runs deploy for sandbox")
     parser.add_argument("--dev", 
         action="store_true", 
         help="Runs deploy for dev")
@@ -45,12 +48,18 @@ def deploy():
             noArgs = False
 
     if noArgs:
-        print ("No environment specified. Please include an argument: --dev, --staging, or --prod")
+        print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, or --prod")
         sys.exit(1)
 
   ###########################
   #      Packer Build       #
   ###########################
+
+  # Sandbox, dev, and staging are all built the same way: packer, then create TF resources
+  # Prod pulls the same staging AMI that packer creates, and alters the launch config/AWS names
+
+    if optionsDict["sandbox"]:
+        deploy_env = 'sandbox'
 
     if optionsDict["dev"]:
         deploy_env = 'dev'
@@ -58,7 +67,7 @@ def deploy():
     if optionsDict["staging"]:
         deploy_env = 'staging'
 
-    if optionsDict["dev"] or optionsDict["staging"]:
+    if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
         # Get Base AMI, Update Packer file
         print('Retrieving base AMI...')
@@ -71,7 +80,7 @@ def deploy():
         update_packer_spec(packer_file, base_ami, deploy_env)
         print('Done.')
 
-    # Get Old AMIs, for setting current=False after new one is craeted
+    # Get Old AMIs, for setting current=False after new one is created
         old_instance_amis = conn.get_all_images(filters={ 
             "tag:current" : "True", 
             "tag:base"    : "False", 
@@ -88,10 +97,13 @@ def deploy():
         print('Done. New AMI created: ' + new_instance_ami)
 
 
-    # Set current=False tag for old AMI
-        print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
-        update_ami_tags(old_instance_amis)
-        print('Done.')
+    # Set current=False tag for old AMIs
+        if old_instance_amis:
+            print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
+            update_ami_tags(old_instance_amis)
+            print('Done.')
+        else:
+            print('No matching old AMIs. Skipping tag update...')
 
   ###########################
   #   TF Build - Staging    #
@@ -139,6 +151,7 @@ def deploy():
 # Helper Functions
 ###############################################################################
 
+
 def run_tf(tf_exec_path):
     # Run Terraform
     real_time_command([tf_exec_path, 'plan'])
@@ -182,6 +195,9 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
     if environment == 'dev':
         packer_data['builders'][0]['tags']['environment'] = "dev"
         packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH=dev HOST=local'"
+    if environment == 'sandbox':
+        packer_data['builders'][0]['tags']['environment'] = "sandbox"
+        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH=sandbox HOST=local'"
 
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
@@ -217,6 +233,8 @@ def update_terraform_user_data(environment='staging', tf_file='usaspending-deplo
         newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-staging.sh")
     elif environment == 'dev':
         newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-dev.sh")
+    elif environment == 'sandbox':
+        newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-sandbox.sh")
 
     f = open(tf_file,'w')
     f.write(newdata)
