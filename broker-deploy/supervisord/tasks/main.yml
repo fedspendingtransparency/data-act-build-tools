@@ -1,0 +1,40 @@
+# setup supervisord.service
+
+---
+- name: make supervisord.service directory
+  become: true
+  file:
+    path: /etc/supervisord/conf.d
+    recurse: true
+    state: directory
+
+- name: supervisord.service conf
+  become: true
+  shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
+
+- name: supervisord.service conf.d append
+  become: true
+  shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
+
+- name: supervisord.service config file location (validator)
+  when: APP == 'validator'
+  become: true
+  replace:
+    dest: "/data-act/config/supervisord.service/supervisord.service"
+    regexp: 'ExecStart=/bin/supervisord.*'
+    replace: "ExecStart=/bin/supervisord -c /data-act/backend/dataactvalidator/config/supervisord.conf"
+
+- name: supervisord.service copy
+  become: true
+  copy:
+    remote_src: true
+    src:  "/data-act/config/supervisord.service/supervisord.service"
+    dest: "/usr/lib/systemd/system/supervisord.service"
+
+- name: modify supervisord configuration to add ENV variable
+  ini_file:
+    dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+    section: "supervisord"
+    option: environment
+    value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,env={{ vars['envs'][BRANCH]['env_long'] }}"
+
