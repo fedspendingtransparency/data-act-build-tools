@@ -181,12 +181,9 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
 
     packer_data['builders'][0]['source_ami'] = base_ami
 
-    if environment == 'dev':
-        packer_data['builders'][0]['tags']['environment'] = "dev"
-        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH=dev HOST=local'"
-    if environment == 'sandbox':
-        packer_data['builders'][0]['tags']['environment'] = "sandbox"
-        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH=sandbox HOST=local'"
+    if environment == 'dev' or environment == 'sandbox':
+        packer_data['builders'][0]['tags']['environment'] = environment
+        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={} HOST=local'".format(environment)
 
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
@@ -216,14 +213,9 @@ def update_terraform_user_data(environment='staging', tf_file='usaspending-deplo
     filedata = f.read()
     f.close()
 
-    if environment == 'prod':
-        newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-prod.sh")
-    elif environment == 'staging': # does nothing
-        newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-staging.sh")
-    elif environment == 'dev':
-        newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-dev.sh")
-    elif environment == 'sandbox':
-        newdata = filedata.replace("usaspending-start-staging.sh","usaspending-start-sandbox.sh")
+    # environment = prod, staging, dev, or sandbox
+    startup_shell_script = "usaspending-start-{}.sh".format(environment)
+    newdata = filedata.replace("usaspending-start-staging.sh", startup_shell_script)
 
     f = open(tf_file,'w')
     f.write(newdata)
