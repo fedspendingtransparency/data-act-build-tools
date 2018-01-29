@@ -50,6 +50,11 @@ def deploy():
     if optionsDict["staging"]:
         deploy_env = 'staging'
 
+    if optionsDict["prod"]:
+        deploy_env = 'prod'
+
+    tfvar_file = deploy_env + '-variables.tf.json'
+
     if optionsDict["sandbox"] or optionsDict["dev"]:
 
         # Retrieve current Base app AMI (where type=app and current=true)
