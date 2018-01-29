@@ -5,6 +5,10 @@ import os
 import json
 import argparse
 import sys
+from subprocess import Popen, PIPE, STDOUT, call
+
+EXIT_CODE = 0
+
 
 def deploy():
 
@@ -75,7 +79,7 @@ def deploy():
         # Build new app instance AMI via Packer
         print('**************************************************************************')
         print('Buiding new app instance AMI via Packer. This may take a few minutes...')
-        packer_output = packer_build(packer_file, packer_exec_path)
+        packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
         ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
         ami_id = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
         print('Done. Packer AMI created: '+ami_id)
@@ -103,7 +107,8 @@ def deploy():
         update_lc_ami(ami_id, tfvar_file)
 
         #Run terraform
-        run_tf(tf_exec_path)
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
     elif optionsDict["prod"]:
         #For prod, we don't build a new artifact, we just run terraform against the current staging AMI
@@ -113,30 +118,35 @@ def deploy():
         # Update terraform variables with staging ami_id
         update_lc_ami(staging_ami, 'variables.tf.json')
         print(staging_ami)
-        #Rune terraform
-        run_tf(tf_exec_path)
+        #Run terraform
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
+    global EXIT_CODE
+    if EXIT_CODE != 0:
+        print('Exiting with a code of {}'.format(EXIT_CODE))
+        sys.exit(EXIT_CODE)
 
-def run_tf(tf_exec_path):
-    # Run terraform
-    plan_output = tf_plan(tf_exec_path)
-    print(plan_output)
-    apply_output = tf_apply(tf_exec_path)
-    print(apply_output)
-    return
+def real_time_command(command_to_run):
+    process = Popen(command_to_run, stdout=PIPE)
+    total_output = ''
+    while True:
+        output = process.stdout.readline().decode()
+        if output == '' and process.poll() is not None:
+            break
+        if output:
+            total_output += output
 
+            # Pretty-print human readable output
+            if '-machine-readable' in command_to_run:
+                output = output[output.rfind(',') + 1:]
+            print(output.strip())
+            
+    rc = process.poll()
+    global EXIT_CODE
+    EXIT_CODE += rc
 
-def packer_build(packer_file='packer.json', packer_exec_path='packer'):
-    cmd = sh.Command(packer_exec_path).build.bake(packer_file).bake('-machine-readable')
-    return cmd()
-
-def tf_plan(tf_exec_path):
-    cmd = sh.Command(tf_exec_path).plan
-    return cmd()
-
-def tf_apply(tf_exec_path):
-    cmd = sh.Command(tf_exec_path).apply
-    return cmd()
+    return total_output
 
 def update_packer_spec(packer_file='packer.json', current_base_ami=''):
     packer_json = open(packer_file, "r")
