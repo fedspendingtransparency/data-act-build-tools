@@ -54,6 +54,7 @@ def deploy():
         deploy_env = 'prod'
 
     tfvar_file = deploy_env + '-variables.tf.json'
+    packer_file = deploy_env + '-packer.json'
 
     if optionsDict["sandbox"] or optionsDict["dev"]:
 
