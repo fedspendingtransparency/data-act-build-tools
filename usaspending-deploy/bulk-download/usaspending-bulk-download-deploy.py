@@ -5,12 +5,15 @@ import argparse
 import sys
 from subprocess import Popen, PIPE
 
+EXIT_CODE = 0
 
 def deploy():
 
-    # This file gets copied over from either prod-bulk-download-vars.tf.json or staging-bulk-download-vars.tf.json
-    tfvar_file = 'usaspending-bulk-download-vars.tf.json'
+    # This tf_var file is expected to be copied from an external source
+    tfvar_file   = 'usaspending-bulk-download-vars.tf.json'
+
     tf_exec_path = '/terraform/terraform'
+    tf_file      = 'usaspending-deploy.tf'
 
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
@@ -19,6 +22,12 @@ def deploy():
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("--sandbox", 
+        action="store_true", 
+        help="Runs deploy for sandbox")
+    parser.add_argument("--dev", 
+        action="store_true", 
+        help="Runs deploy for dev")
     parser.add_argument("--staging", 
         action="store_true", 
         help="Runs deploy for staging")
@@ -33,37 +42,42 @@ def deploy():
         if(optionsDict[arg]):
             noArgs = False
 
-    # TODO Can add arguments with this and combine with create-and-start-csv.py
     if noArgs:
-        print ("No environment specified. Please include an argument: --staging, or --prod")
+        print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, or --prod")
         sys.exit(1)
 
-    # Get previously created staging AMI (created by usaspending-deploy.py)
-    staging_ami = conn.get_all_images(filters={
+    if optionsDict["sandbox"]:
+        deploy_env = 'sandbox'
+
+    if optionsDict["dev"]:
+        deploy_env = 'dev'
+
+    if optionsDict["staging"] or optionsDict["prod"]: # both pull staging AMI
+        deploy_env = 'staging'
+
+    # Get previously created API AMI (created by usaspending-deploy.py)
+    current_api_ami = conn.get_all_images(filters={
         "tag:current": "True",
         "tag:base": "False",
         "tag:type": "USASpending-API",
-        "tag:environment": "staging"
+        "tag:environment": deploy_env
     })[0].id
 
-    # Staging and prod do the same thing with different tfvar_files
-    if optionsDict["staging"] or optionsDict["prod"]:
-        # Add new AMI to Terraform variables
-        update_tf_ami(staging_ami, tfvar_file)
+    # Add API AMI to Terraform variables
+    update_tf_ami(current_api_ami, tfvar_file)
 
-        # Run Terraform
-        run_tf(tf_exec_path)
+    # Run Terraform plan and apply
+    real_time_command([tf_exec_path, 'plan'])
+    real_time_command([tf_exec_path, 'apply'])
+
+    global EXIT_CODE
+    if EXIT_CODE != 0:
+        print('Exiting with a code of {}'.format(EXIT_CODE))
+        sys.exit(EXIT_CODE)
 
 ###############################################################################
 # Helper Functions
 ###############################################################################
-
-
-def run_tf(tf_exec_path):
-    real_time_command([tf_exec_path, 'plan'])
-    real_time_command([tf_exec_path, 'apply'])
-    return
-
 
 def real_time_command(command_to_run):
     process = Popen(command_to_run, stdout=PIPE)
@@ -81,6 +95,9 @@ def real_time_command(command_to_run):
             print(output.strip())
             
     rc = process.poll()
+    global EXIT_CODE
+    EXIT_CODE += rc
+
     return total_output
 
 
