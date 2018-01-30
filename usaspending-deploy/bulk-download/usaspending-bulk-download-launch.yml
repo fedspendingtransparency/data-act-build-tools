@@ -8,8 +8,8 @@
 
   vars:
     BULK_VARS_PREFIX: "{{ BULK_VARS_PREFIX }}"
-    CONFIG_HOME: '/data-act/config'
-    CODE_HOME: '/data-act/backend'
+    CONFIG_HOME: "/data-act/config"
+    CODE_HOME: "/data-act/backend"
 
   become_method: sudo  
 
@@ -21,33 +21,34 @@
 
 # usaspending_api/settings.py (for running the actual generate download command)
 
-    - name: add Bulk Download option
+    - name: set up bulk download -> IS_LOCAL = False, S3/SQS/Region
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '^IS_LOCAL =.*'
-        line: "IS_LOCAL = False"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - { regexp: "^IS_LOCAL =.*", 
+            line:   "IS_LOCAL = False" }
+            
+        - { regexp: "^BULK_DOWNLOAD_S3_BUCKET_NAME =.*", 
+            line:   "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
-    - name: add Bulk Download S3 name
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '^BULK_DOWNLOAD_S3_BUCKET_NAME =.*'
-        line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'"
+        - { regexp: "^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*", 
+            line:   "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'" }
 
-    - name: add Bulk Download SQS url
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*'
-        line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'"
+        - { regexp: "^BULK_DOWNLOAD_AWS_REGION =.*", 
+            line:   "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'" }
 
-    - name: add Bulk Download AWS region
+    - name: set ES_HOSTNAME
+      when: BULK_VARS_PREFIX == 'dev' or BULK_VARS_PREFIX == 'sandbox'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '^BULK_DOWNLOAD_AWS_REGION =.*'
-        line: "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'"
+        regexp: '\s*ES_HOSTNAME\*=.*'
+        line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'"
 
     - name: download secrets from S3 bucket
       become: true
-      shell: " aws s3 cp s3://da-config/usaspending/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
+      shell: "aws s3 cp s3://da-config/usaspending/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
     - name: load secrets (DB_SOURCE)
       include_vars: /etc/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml
