@@ -18,7 +18,7 @@
   lineinfile:
     create: true
     dest: "/etc/newrelic-infra.yml"
-    line: "license_key = {{ NR_KEY }}"
+    line: "license_key: {{ NR_KEY }}"
     
 - name: add newrelic label (app_name)
   lineinfile:

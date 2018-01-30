@@ -33,7 +33,7 @@
 
 - name: modify supervisord configuration to add ENV variable
   ini_file:
-    dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+    dest: "/data-act/backend/dataact{{ APP }}/config/supervisord.conf"
     section: "supervisord"
     option: environment
     value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,env={{ vars['envs'][BRANCH]['env_long'] }}"
