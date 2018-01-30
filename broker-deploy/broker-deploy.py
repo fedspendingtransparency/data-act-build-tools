@@ -222,7 +222,7 @@ def update_lc_ami(new_ami='', tfvar_file='variables.tf.json', deploy_env='sbx'):
     tfvar_data = json.load(tfvar_json)
     tfvar_json.close()
     if deploy_env == 'sbx':
-        tfvar_data['variable']['ami']['default'] = new_ami
+        tfvar_data['variable']['base_ami']['default'] = new_ami
     else:
         tfvar_data['variable']['aws_amis']['default']['us-gov-west-1'] = new_ami
     tfvar_json = open(tfvar_file, "w+")
