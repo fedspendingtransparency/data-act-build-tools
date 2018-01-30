@@ -56,7 +56,7 @@ def deploy():
     tfvar_file = deploy_env + '-variables.tf.json'
     packer_file = deploy_env + '-packer.json'
 
-    if optionsDict["sandbox"] or optionsDict["dev"]:
+    if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
         # Retrieve current Base app AMI (where type=app and current=true)
         print('Retrieving current base app AMI...')
@@ -143,7 +143,6 @@ def real_time_command(command_to_run):
         if output:
             total_output += output
 
-            # Pretty-print human readable output
             if '-machine-readable' in command_to_run:
                 output = output[output.rfind(',') + 1:]
             print(output.strip())
