@@ -54,31 +54,35 @@ def deploy():
 
     if optionsDict["sandbox"]:
         current_base_ami = get_current_base_ami()
-        val_instance = get_running_instance(deploy_env='sbx', component='Validator')
-        api_instance = get_running_instance(deploy_env='sbx', component='API')
-        if val_instance.image_id != api_instance.image_id:
-            print("Error, current environment not configured correctly.")
-            EXIT_CODE = 1
-            sys.exit(EXIT_CODE)
-        elif val_instance.image_id != current_base_ami: # temporarily forcing false to test
-            # Create hosts file for ansible and exit with 0 code
-            with open('hosts','w') as f:
-                f.write('[validator]\n')
-                f.write(val_instance.private_ip_address + '\n')
-                f.write('\n')
-                f.write('[api]\n')
-                f.write(api_instance.private_ip_address + '\n')
-            print("Current base AMI in use. Hosts file has been built for deploying via ansible.")
-            EXIT_CODE = 0
-            sys.exit(EXIT_CODE)
+        update_lc_ami(current_base_ami, tfvar_file, 'sbx')
 
-        else:
-            # Run terraform
-            update_lc_ami(current_base_ami, 'temp.tf.json', 'sbx')
-            #Run terraform
-            ## TO DO: Build tf and vars files
-            # real_time_command([tf_exec_path, 'plan'])
-            # real_time_command([tf_exec_path, 'apply'])
+        ## Possible to-do: only run terraform when active instances are not running on current base ami
+        # val_instance = get_running_instance(deploy_env='sbx', component='Validator')
+        # api_instance = get_running_instance(deploy_env='sbx', component='API')
+        # if val_instance.image_id != api_instance.image_id:
+        #     print("Error, current environment not configured correctly.")
+        #     EXIT_CODE = 1
+        #     sys.exit(EXIT_CODE)
+        # elif val_instance.image_id != current_base_ami: # temporarily forcing false to test
+        #     # Create hosts file for ansible and exit with 0 code
+        #     with open('hosts','w') as f:
+        #         f.write('[validator]\n')
+        #         f.write(val_instance.private_ip_address + '\n')
+        #         f.write('\n')
+        #         f.write('[api]\n')
+        #         f.write(api_instance.private_ip_address + '\n')
+        #     print("Current base AMI in use. Hosts file has been built for deploying via ansible.")
+        #     EXIT_CODE = 0
+        #     sys.exit(EXIT_CODE)
+
+        # else:
+        #     # Run terraform
+        #     update_lc_ami(current_base_ami, 'temp.tf.json', 'sbx')
+
+        #Run terraform
+
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
     elif optionsDict["dev"] or optionsDict["staging"]:
 
