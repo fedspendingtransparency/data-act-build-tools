@@ -1,0 +1,102 @@
+# launch playbook for ElasticSearch
+
+---
+- hosts: "{{ HOST }}"
+
+  become_method: sudo
+
+  user: ec2-user
+
+  tasks:
+
+    - name: update jvm heap size Xms/Xmx
+      become: true
+      lineinfile:
+        dest: "/etc/elasticsearch/jvm.options"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - { regexp: "^-Xms1g",
+            line: "-Xms32g" }
+
+        - { regexp: "^-Xmx1g",
+            line: "-Xmx32g" }
+
+    - name: disable swap files
+      become: true
+      shell: swapoff -a 
+
+    - name: update ulimit | create dir
+      become: true
+      file: 
+        path: /etc/systemd/system/elasticsearch.service.d
+        recurse: true
+        state: directory
+
+    - name: update override.conf file
+      become: true
+      copy: 
+        content: "[Service]
+        LimitNOFILE=65536"
+        dest: /etc/systemd/system/elasticsearch.service.d/override.conf
+        mode: 0644
+
+    - name: update ulimit | check file exists
+      become: true
+      stat: 
+        path="/etc/systemd/system/elasticsearch.service.d/override.conf"
+      register: file_path
+
+    - name: update ulimit | edit override.conf
+      become: true
+      shell: printf '[Service]\n
+        LimitNOFILE=65536\n' > /etc/systemd/system/elasticsearch.service.d/override.conf 
+
+    - name: reload daemon
+      become: true
+      shell: systemctl daemon-reload
+        
+    - name: update log rolling size
+      become: true
+      lineinfile:
+        dest: "/etc/elasticsearch/log4j2.properties"
+        regexp: '^appender.rolling.policies.size.size =.*'
+        line: "appender.rolling.policies.size.size = 256MB"
+
+# Copy elasticsearch.yml to /etc/elasticsearch/elasticsearch.yml
+
+    # - name: copy elasticsearch.yml
+    #   become: true
+
+
+# Copy filebeat.yml to /etc/filebeat/filebeat.yml
+
+# Enable services:
+
+    - name: enable elasticsearch
+      become: true
+      shell: systemctl enable elasticsearch
+
+    - name: enable filebeat
+      become: true
+      shell: systemctl enable filebeat
+
+    - name: enable nginx
+      become: true
+      shell: systemctl enable nginx
+
+# Restart services:
+
+    - name: restart elasticsearch
+      become: true
+      shell: systemctl restart elasticsearch
+
+    - name: restart filebeat
+      become: true
+      shell: systemctl restart filebeat
+
+    - name: restart nginx
+      become: true
+      shell: systemctl restart nginx
+
+
