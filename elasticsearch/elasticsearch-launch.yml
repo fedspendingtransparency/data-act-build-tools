@@ -3,11 +3,35 @@
 ---
 - hosts: "{{ HOST }}"
 
+  vars:
+    REPO: https://github.com/fedspendingtransparency/usaspending-config.git
+
   become_method: sudo
 
   user: ec2-user
 
   tasks:
+
+# Copy Git Credentials from S3 Bucket
+
+    - name: copy git credentials from S3 Bucket
+      shell: "aws s3 cp s3://da-config/usaspending/id_rsa_usaspending_config /home/ec2-user/.ssh/ --region us-gov-west-1"
+
+    - name: change mode for the id_rsa_usaspending_config
+      become: true 
+      shell: chmod 400 /home/ec2-user/.ssh/id_rsa_usaspending_config
+
+# Git Checkout
+    
+    - name: checkout usaspending-config from git
+      become: true
+      git: repo={{ REPO }} 
+           dest=/data-act/config 
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
+
+# Modify java heap size
 
     - name: update jvm heap size Xms/Xmx
       become: true
@@ -22,9 +46,13 @@
         - { regexp: "^-Xmx1g",
             line: "-Xmx32g" }
 
+# Disable swap 
+
     - name: disable swap files
       become: true
       shell: swapoff -a 
+
+# Update ulimit
 
     - name: update ulimit | create dir
       become: true
@@ -36,7 +64,7 @@
     - name: update override.conf file
       become: true
       copy: 
-        content: "[Service]
+        content: "[Service]\n
         LimitNOFILE=65536"
         dest: /etc/systemd/system/elasticsearch.service.d/override.conf
         mode: 0644
@@ -49,12 +77,14 @@
 
     - name: update ulimit | edit override.conf
       become: true
-      shell: printf '[Service]\n
-        LimitNOFILE=65536\n' > /etc/systemd/system/elasticsearch.service.d/override.conf 
+      shell: printf "[Service]\n
+        LimitNOFILE=65536\n" > /etc/systemd/system/elasticsearch.service.d/override.conf 
 
     - name: reload daemon
       become: true
       shell: systemctl daemon-reload
+
+# Update log size from 128 to 256MB
         
     - name: update log rolling size
       become: true
@@ -65,11 +95,21 @@
 
 # Copy elasticsearch.yml to /etc/elasticsearch/elasticsearch.yml
 
-    # - name: copy elasticsearch.yml
-    #   become: true
-
+    - name: copy elasticsearch config
+      become: true
+      copy:
+        src:  "/data-act/config/deploy/elk/usaspending-elasticsearch-elasticsearch.yml"
+        dest: "/etc/elasticsearch/elasticsearch.yml"
+        remote_src: true
 
 # Copy filebeat.yml to /etc/filebeat/filebeat.yml
+
+    - name: copy filebeat config
+      become: true
+      copy:
+        src:  "/data-act/config/deploy/elk/usaspending-elasticsearch-filebeat.yml"
+        dest: "/etc/filebeat/filebeat.yml"
+        remote_src: true
 
 # Enable services:
 
