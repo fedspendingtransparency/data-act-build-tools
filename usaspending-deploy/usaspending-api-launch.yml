@@ -216,8 +216,8 @@
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
 
-    - name: add elastic-search endpoint env var 
-      when: BRANCH == 'dev' or BRANCH == 'sandbox'
+    - name: add elastic-search endpoint env var (only set up for nonprod)
+      when: BRANCH != 'master'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*ES_HOSTNAME\*=.*'
