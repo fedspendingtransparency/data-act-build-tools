@@ -36,6 +36,10 @@
         - java-1.8.0-openjdk
         - java-1.8.0-openjdk-devel.x86_64
 
+    - name: install aws cli pip package
+      become: true
+      pip: name=awscli executable=pip
+
     - name: install elasticsearch
       become: true
       yum: 

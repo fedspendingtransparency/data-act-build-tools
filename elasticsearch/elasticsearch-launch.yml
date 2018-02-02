@@ -1,4 +1,4 @@
-# launch playbook for ElasticSearch
+# launch playbook for USASpending-ElasticSearch
 
 ---
 - hosts: "{{ HOST }}"
@@ -25,7 +25,7 @@
     
     - name: checkout usaspending-config from git
       become: true
-      git: repo={{ REPO }} 
+      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git
            dest=/data-act/config 
            accept_hostkey=true 
            force=yes 
@@ -50,7 +50,7 @@
 
     - name: disable swap files
       become: true
-      shell: swapoff -a 
+      shell: swapoff -av 
 
 # Update ulimit
 
@@ -64,8 +64,7 @@
     - name: update override.conf file
       become: true
       copy: 
-        content: "[Service]\n
-        LimitNOFILE=65536"
+        content: "[Service]\nLimitNOFILE=65536"
         dest: /etc/systemd/system/elasticsearch.service.d/override.conf
         mode: 0644
 
@@ -74,11 +73,6 @@
       stat: 
         path="/etc/systemd/system/elasticsearch.service.d/override.conf"
       register: file_path
-
-    - name: update ulimit | edit override.conf
-      become: true
-      shell: printf "[Service]\n
-        LimitNOFILE=65536\n" > /etc/systemd/system/elasticsearch.service.d/override.conf 
 
     - name: reload daemon
       become: true
@@ -110,6 +104,12 @@
         src:  "/data-act/config/deploy/elk/usaspending-elasticsearch-filebeat.yml"
         dest: "/etc/filebeat/filebeat.yml"
         remote_src: true
+
+# Copy nginx conf file to /etc/nginx/nginx.conf
+
+    - name: copy nginx conf
+      become: true
+      shell: cp /data-act/config/deploy/nginx/nginx-usaspending-elasticsearch.conf /etc/nginx/nginx.conf
 
 # Enable services:
 
