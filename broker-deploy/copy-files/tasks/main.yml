@@ -1,0 +1,70 @@
+---
+- name: Copy core config
+  shell:  cp /data-act/config/backend/config.yml /data-act/backend/dataactcore/config.yml 
+
+- name: Copy ENV config
+  shell: cp /data-act/config/backend/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml /data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml
+
+# Download secret files
+- name: download secrets from S3 bucket
+  become: true
+  shell: " aws s3 cp s3://da-config/broker/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml /data-act/backend/dataactcore/ --region us-gov-west-1"
+
+# Filebeat
+
+- name: Copy Filebeat config
+  become: true
+  shell: cp /data-act/config/filebeat/filebeat-{{ vars['envs'][BRANCH]['env_long'] }}-{{ APP }}.yml /etc/filebeat/filebeat.yml
+
+# Nginx 
+- name: Copy Nginx config
+  become: true
+  shell: cp /data-act/config/nginx/nginx_{{ vars['envs'][BRANCH]['env_long'] }}_{{ APP }}.conf /etc/nginx/nginx.conf 
+  when: APP == "broker"
+
+# SSL Certs
+# master
+- name: copy public.pem from S3 Bucket
+  become: true
+  when: BRANCH == 'master' 
+  shell: "aws s3 cp s3://usaspending-ssl/broker-api.usaspending.gov/public.pem /etc/cert.pem --region us-gov-west-1"
+
+- name: copy private.pem from S3 Bucket
+  become: true
+  when: BRANCH == 'master' 
+  shell: "aws s3 cp s3://usaspending-ssl/broker-api.usaspending.gov/private.pem /etc/cert.key --region us-gov-west-1"
+
+# other environments
+- name: copy public.pem from S3 Bucket
+  become: true
+  when: BRANCH == 'dev' or BRANCH == 'sandbox' or BRANCH == 'staging'
+  shell: "aws s3 cp s3://usaspending-ssl/alpha-broker-{{ vars['envs'][BRANCH]['env_long'] }}-api.usaspending.gov/public.pem /etc/cert.pem --region us-gov-west-1"
+
+- name: copy private.pem from S3 Bucket
+  become: true
+  when: BRANCH == 'dev' or BRANCH == 'sandbox' or BRANCH == 'staging'
+  shell: "aws s3 cp s3://usaspending-ssl/alpha-broker-{{ vars['envs'][BRANCH]['env_long'] }}-api.usaspending.gov/private.pem /etc/cert.key --region us-gov-west-1"
+
+
+# Apply permissions
+
+- name: assign ownership of cert.pem to ec2-user
+  become: true
+  file: path=/{{ PATH }}/cert.pem owner=ec2-user
+  when: APP == "broker"
+  ignore_errors: yes
+
+- name: assign ownership of cert.key to ec2-user
+  become: true
+  file: path=/{{ PATH }}/cert.key owner=ec2-user
+  when: APP == "broker"
+  ignore_errors: yes
+
+- name: assign ownership of api to ec2-user
+  become: true
+  file: path=/data-act owner=ec2-user recurse=yes
+
+- name: assign ownership of api to ec2-user
+  become: true
+  file: path=/tmp owner=ec2-user recurse=yes
+  
