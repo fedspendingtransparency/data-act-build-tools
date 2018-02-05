@@ -26,7 +26,7 @@
     - name: checkout usaspending-config from git
       become: true
       git: repo=git@github.com:fedspendingtransparency/usaspending-config.git
-           dest=/data-act/config 
+           dest=/data-act/config
            accept_hostkey=true 
            force=yes 
            key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
@@ -48,25 +48,25 @@
 
 # Disable swap 
 
-    - name: disable swap files
+    - name: disable swap on the filesystem
       become: true
       shell: swapoff -av 
 
-# Update ulimit
+# # Update ulimit
 
-    - name: update ulimit | create dir
-      become: true
-      file: 
-        path: /etc/systemd/system/elasticsearch.service.d
-        recurse: true
-        state: directory
+    # - name: update ulimit | create dir
+    #   become: true
+    #   file: 
+    #     path: /etc/systemd/system/elasticsearch.service.d
+    #     recurse: true
+    #     state: directory
 
-    - name: update override.conf file
+    - name: edit override.conf file to set ulimit nLimitNOFILE=65536
       become: true
       copy: 
         content: "[Service]\nLimitNOFILE=65536"
         dest: /etc/systemd/system/elasticsearch.service.d/override.conf
-        mode: 0644
+        # mode: 0644
 
     - name: update ulimit | check file exists
       become: true
