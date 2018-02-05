@@ -52,14 +52,7 @@
       become: true
       shell: swapoff -av 
 
-# # Update ulimit
-
-    # - name: update ulimit | create dir
-    #   become: true
-    #   file: 
-    #     path: /etc/systemd/system/elasticsearch.service.d
-    #     recurse: true
-    #     state: directory
+# Update ulimit
 
     - name: edit override.conf file to set ulimit nLimitNOFILE=65536
       become: true
@@ -103,12 +96,6 @@
         src:  "/data-act/config/deploy/elk/usaspending-elasticsearch-filebeat.yml"
         dest: "/etc/filebeat/filebeat.yml"
         remote_src: true
-
-# Copy nginx conf file to /etc/nginx/nginx.conf
-
-    - name: copy nginx conf
-      become: true
-      shell: cp /data-act/config/deploy/nginx/nginx-usaspending-elasticsearch.conf /etc/nginx/nginx.conf
 
 # Enable services:
 
