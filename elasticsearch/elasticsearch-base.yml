@@ -1,0 +1,66 @@
+# Data-Act Playbook for ElasticSearch
+# This does not install any ES plugins
+
+---
+- hosts: "{{ HOST }}"
+
+  become_method: sudo
+
+  user: ec2-user
+
+  tasks:
+
+    - name: upgrade all packages + security patches
+      become: true
+      yum: name=* state=latest
+
+    - name: install EPEL and IUS repos
+      become: true
+      yum: name={{ item }}
+      with_items:
+        - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+        - https://centos7.iuscommunity.org/ius-release.rpm
+
+    - name: install base packages
+      become: true
+      yum: name={{ item }}
+      with_items:
+        - git
+        - python-pip
+        - ansible
+        - mlocate
+        - vim
+        - telnet
+        - wget
+        - unzip
+        - java-1.8.0-openjdk
+        - java-1.8.0-openjdk-devel.x86_64
+
+    - name: install aws cli pip package
+      become: true
+      pip: name=awscli executable=pip
+
+    - name: install elasticsearch
+      become: true
+      yum: 
+        name=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.1.1.rpm
+
+    - name: install filebeat
+      become: true
+      yum: 
+        name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
+
+    - name: show timestamp in history (root)
+      become: true
+      shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+
+    - name: show timestamp in history (ec2-user)
+      shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+
+    - name: colorize (root)
+      become: true
+      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+
+    - name: colorize (ec2-user)
+      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+
