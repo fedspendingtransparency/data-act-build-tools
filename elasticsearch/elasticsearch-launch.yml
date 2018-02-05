@@ -4,7 +4,7 @@
 - hosts: "{{ HOST }}"
 
   vars:
-    REPO: https://github.com/fedspendingtransparency/usaspending-config.git
+    REPO: git@github.com:fedspendingtransparency/usaspending-config.git
 
   become_method: sudo
 
@@ -25,7 +25,7 @@
     
     - name: checkout usaspending-config from git
       become: true
-      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git
+      git: repo={{ REPO }}
            dest=/data-act/config
            accept_hostkey=true 
            force=yes 
@@ -66,7 +66,6 @@
       copy: 
         content: "[Service]\nLimitNOFILE=65536"
         dest: /etc/systemd/system/elasticsearch.service.d/override.conf
-        # mode: 0644
 
     - name: update ulimit | check file exists
       become: true
@@ -121,10 +120,6 @@
       become: true
       shell: systemctl enable filebeat
 
-    - name: enable nginx
-      become: true
-      shell: systemctl enable nginx
-
 # Restart services:
 
     - name: restart elasticsearch
@@ -134,9 +129,4 @@
     - name: restart filebeat
       become: true
       shell: systemctl restart filebeat
-
-    - name: restart nginx
-      become: true
-      shell: systemctl restart nginx
-
 
