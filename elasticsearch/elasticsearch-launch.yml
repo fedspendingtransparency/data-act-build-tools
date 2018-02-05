@@ -41,10 +41,10 @@
         line: "{{ item.line }}"
       with_items:
         - { regexp: "^-Xms1g",
-            line: "-Xms32g" }
+            line: "-Xms16g" }
 
         - { regexp: "^-Xmx1g",
-            line: "-Xmx32g" }
+            line: "-Xmx16g" }
 
 # Disable swap 
 
