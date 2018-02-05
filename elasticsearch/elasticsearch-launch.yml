@@ -25,7 +25,7 @@
     
     - name: checkout usaspending-config from git
       become: true
-      git: repo={{ REPO }}
+      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git
            dest=/data-act/config
            accept_hostkey=true 
            force=yes 
