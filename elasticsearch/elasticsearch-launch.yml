@@ -19,7 +19,9 @@
 
     - name: change mode for the id_rsa_usaspending_config
       become: true 
-      shell: chmod 400 /home/ec2-user/.ssh/id_rsa_usaspending_config
+      file: 
+        path: /home/ec2-user/.ssh/id_rsa_usaspending_config
+        mode: 0400
 
 # Git Checkout
     
