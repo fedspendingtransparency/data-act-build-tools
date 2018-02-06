@@ -59,7 +59,7 @@
     - name: edit override.conf file to set ulimit nLimitNOFILE=65536
       become: true
       copy: 
-        content: "[Service]\nLimitNOFILE=65536"
+        content: "[Service]\nLimitNOFILE=65536\nLimitMEMLOCK=infinity"
         dest: /etc/systemd/system/elasticsearch.service.d/override.conf
 
     - name: update ulimit | check file exists
