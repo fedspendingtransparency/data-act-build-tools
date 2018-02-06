@@ -50,6 +50,10 @@
       yum: 
         name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
 
+    - name: modify setsebool to enable httpd_can_network_connect
+      become: true
+      shell: setsebool -P httpd_can_network_connect=1
+
     - name: show timestamp in history (root)
       become: true
       shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile

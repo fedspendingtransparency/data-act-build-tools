@@ -3,9 +3,6 @@
 ---
 - hosts: "{{ HOST }}"
 
-  vars:
-    REPO: git@github.com:fedspendingtransparency/usaspending-config.git
-
   become_method: sudo
 
   user: ec2-user
@@ -56,7 +53,15 @@
 
 # Update ulimit
 
-    - name: edit override.conf file to set ulimit nLimitNOFILE=65536
+    - name: update ulimit | create directory /etc/systemd/system/elasticsearch.service.d/
+      become: true
+      file:
+        path: /etc/systemd/system/elasticsearch.service.d/
+        recurse: true
+        state: directory
+        mode: 0644
+
+    - name: edit override.conf file to set ulimit nLimitNOFILE=65536 & LimitMEMLOCK=infinity
       become: true
       copy: 
         content: "[Service]\nLimitNOFILE=65536\nLimitMEMLOCK=infinity"
@@ -99,6 +104,12 @@
         dest: "/etc/filebeat/filebeat.yml"
         remote_src: true
 
+# Copy nginx conf file to /etc/nginx/nginx.conf
+
+    - name: copy nginx config
+      become: true
+      shell: cp /data-act/config/deploy/nginx/nginx_usaspending_elasticsearch.conf /etc/nginx/nginx.conf
+
 # Enable services:
 
     - name: enable elasticsearch
@@ -109,6 +120,10 @@
       become: true
       shell: systemctl enable filebeat
 
+    - name: enable nginx
+      become: true
+      shell: systemctl enable nginx
+
 # Restart services:
 
     - name: restart elasticsearch
@@ -118,4 +133,8 @@
     - name: restart filebeat
       become: true
       shell: systemctl restart filebeat
+
+    - name: restart nginx
+      become: true
+      shell: systemctl restart nginx
 
