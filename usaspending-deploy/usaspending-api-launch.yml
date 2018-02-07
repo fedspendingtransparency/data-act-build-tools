@@ -238,7 +238,7 @@
     - name: copy filebeat config
       become: true
       copy:
-        src:  "{{ CONFIG_HOME }}/deploy/elk/filebeat_usaspending_api.yml"
+        src:  "{{ CONFIG_HOME }}/deploy/elk/usaspending_api_filebeat.yml"
         dest: "/etc/filebeat/filebeat.yml"
         remote_src: true
 
