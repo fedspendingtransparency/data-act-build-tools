@@ -110,6 +110,15 @@
       become: true
       shell: cp /data-act/config/deploy/nginx/nginx_usaspending_elasticsearch.conf /etc/nginx/nginx.conf
 
+# Copy htpasswd from S3 Bucket
+
+    - name: copy es-admin-credentials from S3 Bucket
+      shell: "aws s3 cp s3://da-config/usaspending/usaspending-elasticsearch-Prod-htpasswd /etc/nginx/.htpasswd --region us-gov-west-1"
+
+    - name: change mode for /etc/nginx/.htpasswd
+      become: true 
+      shell: chmod 0644 /etc/nginx/.htpasswd
+
 # Enable services:
 
     - name: enable elasticsearch
