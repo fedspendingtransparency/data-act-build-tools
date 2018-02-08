@@ -39,10 +39,10 @@
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       with_items:
-        - { regexp: "^-Xms1g",
+        - { regexp: "^-Xms.*",
             line: "-Xms12g" }
 
-        - { regexp: "^-Xmx1g",
+        - { regexp: "^-Xmx.*",
             line: "-Xmx12g" }
 
 # Disable swap 
@@ -108,16 +108,22 @@
 
     - name: copy nginx config
       become: true
-      shell: cp /data-act/config/deploy/nginx/nginx_usaspending_elasticsearch.conf /etc/nginx/nginx.conf
+      copy:
+        src:  "/data-act/config/deploy/nginx/nginx_usaspending_elasticsearch.conf"
+        dest: "/etc/nginx/nginx.conf"
+        remote_src: true
 
 # Copy htpasswd from S3 Bucket
 
     - name: copy es-admin-credentials from S3 Bucket
+      become: true
       shell: "aws s3 cp s3://da-config/usaspending/usaspending-elasticsearch-Prod-htpasswd /etc/nginx/.htpasswd --region us-gov-west-1"
 
     - name: change mode for /etc/nginx/.htpasswd
       become: true 
-      shell: chmod 0644 /etc/nginx/.htpasswd
+      file: 
+        path: /etc/nginx/.htpasswd
+        mode: 0644
 
 # Enable services:
 
