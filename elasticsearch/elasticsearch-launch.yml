@@ -3,9 +3,6 @@
 ---
 - hosts: "{{ HOST }}"
 
-  vars:
-    REPO: git@github.com:fedspendingtransparency/usaspending-config.git
-
   become_method: sudo
 
   user: ec2-user
@@ -42,11 +39,11 @@
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       with_items:
-        - { regexp: "^-Xms1g",
-            line: "-Xms16g" }
+        - { regexp: "^-Xms.*",
+            line: "-Xms12g" }
 
-        - { regexp: "^-Xmx1g",
-            line: "-Xmx16g" }
+        - { regexp: "^-Xmx.*",
+            line: "-Xmx12g" }
 
 # Disable swap 
 
@@ -56,7 +53,15 @@
 
 # Update ulimit
 
-    - name: edit override.conf file to set ulimit nLimitNOFILE=65536
+    - name: update ulimit | create directory /etc/systemd/system/elasticsearch.service.d/
+      become: true
+      file:
+        path: /etc/systemd/system/elasticsearch.service.d/
+        recurse: true
+        state: directory
+        mode: 0644
+
+    - name: edit override.conf file to set ulimit nLimitNOFILE=65536 & LimitMEMLOCK=infinity
       become: true
       copy: 
         content: "[Service]\nLimitNOFILE=65536\nLimitMEMLOCK=infinity"
@@ -99,6 +104,27 @@
         dest: "/etc/filebeat/filebeat.yml"
         remote_src: true
 
+# Copy nginx conf file to /etc/nginx/nginx.conf
+
+    - name: copy nginx config
+      become: true
+      copy:
+        src:  "/data-act/config/deploy/nginx/nginx_usaspending_elasticsearch.conf"
+        dest: "/etc/nginx/nginx.conf"
+        remote_src: true
+
+# Copy htpasswd from S3 Bucket
+
+    - name: copy es-admin-credentials from S3 Bucket
+      become: true
+      shell: "aws s3 cp s3://da-config/usaspending/usaspending-elasticsearch-Prod-htpasswd /etc/nginx/.htpasswd --region us-gov-west-1"
+
+    - name: change mode for /etc/nginx/.htpasswd
+      become: true 
+      file: 
+        path: /etc/nginx/.htpasswd
+        mode: 0644
+
 # Enable services:
 
     - name: enable elasticsearch
@@ -109,6 +135,10 @@
       become: true
       shell: systemctl enable filebeat
 
+    - name: enable nginx
+      become: true
+      shell: systemctl enable nginx
+
 # Restart services:
 
     - name: restart elasticsearch
@@ -118,4 +148,8 @@
     - name: restart filebeat
       become: true
       shell: systemctl restart filebeat
+
+    - name: restart nginx
+      become: true
+      shell: systemctl restart nginx
 
