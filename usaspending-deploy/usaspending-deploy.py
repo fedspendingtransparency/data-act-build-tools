@@ -36,9 +36,12 @@ def deploy():
     parser.add_argument("--staging", 
         action="store_true", 
         help="Runs deploy for staging")
-    parser.add_argument("--prod", 
+    parser.add_argument("--prod-safe", 
         action="store_true", 
-        help="Runs deploy for prod")
+        help="Redeploy to prod")
+    parser.add_argument("--prod-push", 
+        action="store_true", 
+        help="Tag current staging AMI and deploy it to production")
     args = parser.parse_args()
     optionsDict = vars(args)
     noArgs = True
@@ -80,7 +83,7 @@ def deploy():
         update_packer_spec(packer_file, base_ami, deploy_env)
         print('Done.')
 
-    # Get Old AMIs, for setting current=False after new one is created
+        # Get Old AMIs, for setting current=False after new one is created
         old_instance_amis = conn.get_all_images(filters={ 
             "tag:current" : "True", 
             "tag:base"    : "False", 
@@ -88,7 +91,7 @@ def deploy():
             "tag:environment" : deploy_env
             })
 
-    # Build New AMI (Packer)
+        # Build New AMI (Packer)
         print('**************************************************************************')
         print(' Building new AMI via Packer. This can take a while...')
         packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
@@ -97,17 +100,13 @@ def deploy():
         print('Done. New AMI created: ' + new_instance_ami)
 
 
-    # Set current=False tag for old AMIs
+        # Set current=False tag for old AMIs
         if old_instance_amis:
             print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
             update_ami_tags(old_instance_amis)
             print('Done.')
         else:
             print('No matching old AMIs. Skipping tag update...')
-
-  ###########################
-  #   TF Build - NonProd    #
-  ###########################    
 
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
@@ -123,18 +122,41 @@ def deploy():
   #   TF Build - Prod       #
   ###########################        
 
-    elif optionsDict["prod"]:
+    elif optionsDict["prod-push"] or optionsDict["prod-safe"]:
 
-        # Get current Staging AMI
-        staging_ami = conn.get_all_images(filters={
-            "tag:current"     : "True", 
-            "tag:base"        : "False", 
-            "tag:type"        : "USASpending-API", 
-            "tag:environment" : "staging"
+        if optionsDict["prod-push"]:
+
+            # Un-tag current-prod AMIs
+            old_prod = conn.get_all_images(filters={
+                "tag:type"         : "USASpending-API", 
+                "tag:current-prod" : "True"
+                })
+
+            for ami in old_prod:
+                print('Setting "current-prod" tag to False for AMI {}...'.format(ami.id))
+                ami.remove_tag('current-prod','True')
+                ami.add_tag('current-prod','False')
+
+            # Get current Staging AMI
+            staging_ami = conn.get_all_images(filters={
+                "tag:current"     : "True", 
+                "tag:base"        : "False", 
+                "tag:type"        : "USASpending-API", 
+                "tag:environment" : "staging"
+                })[0]
+
+            # Tag current Staging AMI for prod deployments
+            print('Setting "current-prod" tag to True for AMI {}...'.format(staging_ami.id))
+            staging_ami.add_tag('current-prod','True')
+
+        # Get current Production AMI
+        prod_ami = conn.get_all_images(filters={
+            "tag:type"         : "USASpending-API", 
+            "tag:current-prod" : "True"
             })[0].id
 
         # Add new AMI to Terraform variables
-        update_tf_ami(staging_ami, tfvar_file)
+        update_tf_ami(prod_ami, tfvar_file)
 
         # Update Terraform User Data
         update_terraform_user_data('prod')  
