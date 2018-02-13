@@ -67,5 +67,6 @@
         PYTHONPATH: "{{ CODE_HOME }}"
         NUM_PROCS: "{{ NUM_PROCS }}"
         DATABASE_URL_VAR: "{{ DB_SOURCE }}"
+        BULK_DOWNLOAD_DATABASE_URL: "{{ BULK_DOWNLOAD_DATABASE_URL }}"
       args:
         chdir: "{{ CODE_HOME }}/usaspending_api/"
