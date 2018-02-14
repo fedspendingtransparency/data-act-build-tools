@@ -53,7 +53,34 @@
     - name: load secrets (DB_SOURCE)
       include_vars: /etc/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml
 
+# config/filebeat/filebeat.yml
+
+    - name: copy filebeat config
+      become: true
+      copy:
+        src:  "{{ CONFIG_HOME }}/deploy/elk/usaspending_api_filebeat.yml"
+        dest: "/etc/filebeat/filebeat.yml"
+        remote_src: true
+
+    - name: update filebeat config to set correct index
+      become: true
+      replace:
+        dest: "/etc/filebeat/filebeat.yml"
+        regexp: 'index: filebeat'
+        replace: "index: usaspending-bd-{{ vars['envs'][BRANCH]['env_short'] }}"
+
+
 # Start Worker
+
+    - name: enable filebeat service
+      become: true
+      shell: systemctl enable filebeat
+
+
+    - name: restart filebeat
+      become: true
+      shell: systemctl restart filebeat
+
 
     - name: stop supervisord
       become: true
