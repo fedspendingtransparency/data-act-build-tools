@@ -40,7 +40,6 @@
             line:   "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'" }
 
     - name: set ES_HOSTNAME
-      when: BULK_VARS_PREFIX == 'dev' or BULK_VARS_PREFIX == 'sandbox'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*ES_HOSTNAME\*=.*'
