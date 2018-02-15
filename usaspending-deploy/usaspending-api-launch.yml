@@ -123,32 +123,32 @@
         - { regexp: "^IS_LOCAL =.*", 
             line:   "IS_LOCAL = False" }
 
-        - { regexp: '^CSV_S3_BUCKET_NAME =.*',
-            line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'" }
-
-        - { regexp: '^CSV_SQS_QUEUE_NAME =.*', 
-            line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'" }
-
         - { regexp: '^BULK_DOWNLOAD_S3_BUCKET_NAME =.*',
             line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
         - { regexp: '^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*', 
             line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'" }
 
+        - { regexp: '^BULK_DOWNLOAD_AWS_REGION =.*', 
+            line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'" }
+
+        - { regexp: '^CSV_S3_BUCKET_NAME =.*',
+            line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'" }
+
+        - { regexp: '^CSV_SQS_QUEUE_NAME =.*', 
+            line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'" }
+
         - { regexp: '^CSV_AWS_REGION =.*', 
             line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'" }
 
-        - { regexp: '^BULK_DOWNLOAD_AWS_REGION =.*', 
-            line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'" }
+        - { regexp: '\s*ES_HOSTNAME\*=.*',
+            line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'" }
 
         - { regexp: '^MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*', 
             line: "MONTHLY_DOWNLOAD_S3_BUCKET_NAME = '{{ MONTHLY_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
         - { regexp: '\s*STATIC_URL =.*',
             line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}{{ BRANCH }}/'" }
-
-        - { regexp: '\s*ES_HOSTNAME\*=.*',
-            line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'" }
 
     - name: turn debug off in production or staging
       when: BRANCH == 'master' or BRANCH == 'stg'
