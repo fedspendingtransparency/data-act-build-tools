@@ -7,6 +7,8 @@
 #           AND = the path to the DB URL, either dev or sandbox
 
   vars:
+# Bulk Vars Options: sandbox, dev, staging, prod
+
     BULK_VARS_PREFIX: "{{ BULK_VARS_PREFIX }}"
     CONFIG_HOME: "/data-act/config"
     CODE_HOME: "/data-act/backend"
@@ -66,7 +68,7 @@
       replace:
         dest: "/etc/filebeat/filebeat.yml"
         regexp: 'index: filebeat'
-        replace: "index: usaspending-bd-{{ vars['envs'][BRANCH]['env_short'] }}"
+        replace: "index: usaspending-bd-{{ BULK_VARS_PREFIX }}"
 
 
 # Start Worker
@@ -75,11 +77,9 @@
       become: true
       shell: systemctl enable filebeat
 
-
     - name: restart filebeat
       become: true
       shell: systemctl restart filebeat
-
 
     - name: stop supervisord
       become: true
