@@ -91,7 +91,7 @@
     - name: copy elasticsearch config
       become: true
       copy:
-        src:  "/data-act/config/deploy/elk/usaspending-ES-dev-elasticsearch.yml"
+        src:  "/data-act/config/deploy/elk/usaspending_es_dev_elasticsearch.yml"
         dest: "/etc/elasticsearch/elasticsearch.yml"
         remote_src: true
 
@@ -100,7 +100,7 @@
     - name: copy filebeat config
       become: true
       copy:
-        src:  "/data-act/config/deploy/elk/usaspending-ES-dev-filebeat.yml"
+        src:  "/data-act/config/deploy/elk/usaspending_es_dev_filebeat.yml"
         dest: "/etc/filebeat/filebeat.yml"
         remote_src: true
 
