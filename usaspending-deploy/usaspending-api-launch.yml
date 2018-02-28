@@ -174,8 +174,22 @@
       when: BRANCH == 'stg' or BRANCH == 'master'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: 'ELASTICACHE-CONNECTION-STRING'
+        regexp: "'ELASTICACHE-CONNECTION-STRING'"
         replace: "{{ ELASTICACHE_URL }}"
+    
+    - name: replace ELASTICACHE-MASTER-STRING (in prod)
+      when: BRANCH == 'master'
+      replace:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: "ELASTICACHE-MASTER-STRING"
+        replace: "{{ ELASTICACHE_MASTER_URL }}"
+    
+    - name: remove ELASTICACHE-MASTER-STRING (in staging)
+      when: BRANCH == 'staging'
+      replace:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: "'MASTER_CACHE': 'ELASTICACHE-MASTER-STRING'"
+        replace: "#'MASTER_CACHE': 'ELASTICACHE-MASTER-STRING'"
 
     - name: enable local cache (in dev or sandbox)
       when: BRANCH == 'dev' or BRANCH == 'sandbox'
