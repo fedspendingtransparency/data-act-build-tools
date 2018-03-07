@@ -110,3 +110,12 @@
         create: true
         dest: "/etc/newrelic-infra.yml"
         line: "license_key: {{ NR_KEY }}"
+
+# Logrotate
+
+    - name: move logrotate into nightly cron
+      become: true
+      copy:
+        src:  "/data-act/config/deploy/elk/usaspending-api.logrotate"
+        dest: "/etc/logrotate.d/usaspending-api"
+        remote_src: true
