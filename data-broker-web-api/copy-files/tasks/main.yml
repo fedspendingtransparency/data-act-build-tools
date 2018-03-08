@@ -4,7 +4,7 @@
 - name: Copy ENV config
   shell: cp /data-act/config/backend/{{ ENV }}_config.yml /data-act/backend/dataactcore/{{ ENV }}_config.yml
 - name: Copy secrets
-  shell: "aws s3 cp s3://da-config/{{ ENV }}_secrets.yml /data-act/backend/dataactcore/{{ ENV }}_secrets.yml --region us-gov-west-1"
+  shell: "aws s3 cp s3://da-config/broker/{{ ENV }}_secrets.yml /data-act/backend/dataactcore/{{ ENV }}_secrets.yml --region us-gov-west-1"
 - name: Copy Filebeat config
   shell: cp /data-act/config/filebeat/filebeat-{{ ENV }}-{{ APP }}.yml /etc/filebeat/filebeat.yml
   sudo: true
