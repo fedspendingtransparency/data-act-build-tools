@@ -1,0 +1,18 @@
+---
+- name: Copy New Relic package
+  shell: rpm -Uvh https://download.newrelic.com/pub/newrelic/el5/i386/newrelic-repo-5-3.noarch.rpm --replacefiles --replacepkgs
+  sudo: true
+
+- name: RedHat | Install New Relic Sysmond
+  yum:
+    name: newrelic-sysmond
+    state: latest
+  sudo: true
+
+- name: Set New Relic License Key
+  shell: nrsysmond-config --set license_key={{ NR_KEY }}
+  sudo: true
+
+- name: Run New Relic
+  shell: /etc/init.d/newrelic-sysmond start
+  sudo: true
