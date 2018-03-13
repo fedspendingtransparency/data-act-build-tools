@@ -1,5 +1,5 @@
 ---
-- hosts: da_broker_val_{{ ENV }}
+- hosts: "{{ HOST }}"
   user: ec2-user
   roles: 
     - yum-installs
