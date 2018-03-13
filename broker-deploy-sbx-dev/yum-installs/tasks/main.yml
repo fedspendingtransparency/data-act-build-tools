@@ -1,0 +1,60 @@
+---
+
+- name: install git
+  sudo: true
+  yum: name=git
+- name: install postgres libraries
+  sudo: true
+  yum: name=postgresql-devel.x86_64
+- name: install gcc
+  sudo: true
+  yum: name=gcc
+- name: install gcc-c++
+  sudo: true
+  yum: name=gcc-c++
+- name: install emacs
+  sudo: true
+  yum: name=emacs
+- name: install libffi-devel
+  sudo: true
+  yum: name=libffi-devel
+- name: install python development libraries
+  sudo: true
+  yum: name=python-devel.x86_64
+- name: install open-ssl development libraries
+  sudo: true
+  yum: name=openssl-devel
+- name: install the epel repo from a remote repo
+  sudo: true
+  yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=present
+- name: install nginx
+  sudo: true
+  yum: name=nginx
+- name: install pip2
+  sudo: true
+  yum: name=python-pip
+- name: install PCRE for uwsgi
+  sudo: true
+  yum: name=pcre.x86_64
+- name: install PCRE development library
+  sudo: true
+  yum: name=pcre-devel.x86_64
+- name: install java
+  sudo: true
+  yum: name=java-1.7.0-openjdk
+- name: install wget
+  yum: name=wget
+  sudo: true
+- name: install python3
+  yum: name=python34
+  sudo: true
+- name: get pip3
+  shell: "wget https://bootstrap.pypa.io/get-pip.py -P /tmp/"
+  sudo: true
+- name: install pip3
+  shell: "python3 /tmp/get-pip.py"
+  sudo: true
+- name: install python34 development libraries
+  sudo: true
+  yum: name=python34-devel
+  

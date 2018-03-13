@@ -1,3 +1,0 @@
----
-- cron: name="sync fsrs data" minute="0" user="ec2-user" job="PYTHONPATH='/data-act/backend' env='{{ ENV }}' python3 /data-act/backend/dataactbroker/scripts/loadFSRS.py &>> /tmp/fsrs.log"
-  sudo: true

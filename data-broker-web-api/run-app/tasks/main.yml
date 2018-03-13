@@ -1,6 +1,0 @@
----
-- shell: python3 app.py &
-  environment:
-    PYTHONPATH: "{{ ansible_env.PYTHONPATH }}:/data-act/backend"
-  args:
-    chdir: /data-act/backend/dataactbroker

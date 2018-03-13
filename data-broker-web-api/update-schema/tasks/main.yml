@@ -1,9 +1,0 @@
----
-- name: core schema update 
-  shell: python3 /data-act/backend/dataactcore/scripts/initialize.py -db -r -v
-  sudo: true
-  environment:
-    PYTHONPATH: "/data-act/backend"
-    env: "{{ ENV }}"
-  args:
-    chdir: /data-act/backend/dataactbroker/scripts/
