@@ -189,11 +189,13 @@
 # Logging
 
     - name: create app json log if it doesn't exist
-      file: /data-act/app.json-log
+      file: 
+        path: /data-act/app.json-log
         state: touch
 
     - name: create app info log if it doesn't exist
-      file: /data-act/info.log
+      file: 
+        path: /data-act/info.log
         state: touch
 
 # start/stop services
