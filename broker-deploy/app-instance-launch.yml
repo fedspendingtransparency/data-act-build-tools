@@ -52,10 +52,6 @@
       become: true
       shell: "aws s3 cp s3://da-config/broker/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml /data-act/backend/dataactcore/ --region us-gov-west-1"
 
-    - name: assign ownership of secrets to ec2-user
-      become: true
-      file: path=/data-act/backend/dataactcore/ owner=ec2-user recurse=yes
-
 
 # SSL Certs (not used for Validator)
 
@@ -78,6 +74,17 @@
       when: APP == "broker"
       become: true
       file: path=/etc/cert.key owner=ec2-user
+
+
+# TODO: Assess this weird ownership redundancy with instance-image.yml
+
+    - name: assign ownership of api to ec2-user
+      become: true
+      file: path=/data-act owner=ec2-user recurse=yes
+
+    - name: assign ownership of api to ec2-user
+      become: true
+      file: path=/tmp owner=ec2-user recurse=yes
       
 
 # New Relic Config
