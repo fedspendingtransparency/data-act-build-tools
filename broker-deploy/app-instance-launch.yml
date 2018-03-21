@@ -52,6 +52,10 @@
       become: true
       shell: "aws s3 cp s3://da-config/broker/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml /data-act/backend/dataactcore/ --region us-gov-west-1"
 
+    - name: assign ownership of secrets to ec2-user
+      become: true
+      file: path=/data-act/backend/dataactcore/ owner=ec2-user recurse=yes
+
 
 # SSL Certs (not used for Validator)
 
