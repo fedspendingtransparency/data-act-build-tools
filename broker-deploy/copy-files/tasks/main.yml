@@ -37,13 +37,24 @@
 # other environments
 - name: copy public.pem from S3 Bucket
   become: true
-  when: BRANCH == 'dev' or BRANCH == 'sandbox' or BRANCH == 'staging'
+  when: BRANCH == 'dev' or BRANCH == 'sandbox'
   shell: "aws s3 cp s3://usaspending-ssl/alpha-broker-{{ vars['envs'][BRANCH]['env_long'] }}-api.usaspending.gov/public.pem /etc/cert.pem --region us-gov-west-1"
 
 - name: copy private.pem from S3 Bucket
   become: true
-  when: BRANCH == 'dev' or BRANCH == 'sandbox' or BRANCH == 'staging'
+  when: BRANCH == 'dev' or BRANCH == 'sandbox'
   shell: "aws s3 cp s3://usaspending-ssl/alpha-broker-{{ vars['envs'][BRANCH]['env_long'] }}-api.usaspending.gov/private.pem /etc/cert.key --region us-gov-west-1"
+
+# staging environment
+- name: copy public.pem from S3 Bucket
+  become: true
+  when: BRANCH == 'staging'
+  shell: "aws s3 cp s3://usaspending-ssl/broker-staging-api.usaspending.gov/public.pem /etc/cert.pem --region us-gov-west-1"
+
+- name: copy private.pem from S3 Bucket
+  become: true
+  when: BRANCH == 'staging'
+  shell: "aws s3 cp s3://usaspending-ssl/broker-staging-api.usaspending.gov/private.pem /etc/cert.key --region us-gov-west-1"
 
 
 # Apply permissions
