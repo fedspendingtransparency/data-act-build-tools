@@ -21,6 +21,7 @@ def deploy():
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("-schemasandbox", "--schemasandbox", action="store_true", help="Runs deploy for schemasandbox")
     parser.add_argument("-sbx", "--sandbox", action="store_true", help="Runs deploy for sandbox")
     parser.add_argument("-dev", "--dev", action="store_true", help="Runs deploy for dev")
     parser.add_argument("-stg", "--staging", action="store_true", help="Runs deploy for staging")
@@ -36,6 +37,9 @@ def deploy():
     if noArgs:
         print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, --prod")
         sys.exit(1)
+
+    if optionsDict["schemasandbox"]:
+        deploy_env = 'schemasandbox'
 
     if optionsDict["sandbox"]:
         deploy_env = 'sandbox'

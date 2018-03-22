@@ -2,21 +2,251 @@
 - hosts: "{{ HOST }}"
   user: ec2-user
   become_method: sudo
-  roles:
-    - copy-files
-    - config-new-relic
-    - supervisord
-    - create-app-log
-    - start-services
-  environment:
+
+  vars:
+
     APP: "{{ APP }}"
     BRANCH: "{{ BRANCH }}"
-  vars:
+
     apps:
       broker: {app_long: broker, app_short: API}
       validator: {app_long: validator, app_short: Val}
+
+    # Domains are used for SSL cert identification
     envs:
-      master: {env_long: prod, env_short: prod}
-      staging: {env_long: staging, env_short: stg}
-      dev: {env_long: dev, env_short: dev}
-      sandbox: {env_long: sandbox, env_short: sbx}
+      master:  {env_long: prod,    domain: 'broker-api.usaspending.gov' }
+      staging: {env_long: staging, domain: 'broker-staging-api.usaspending.gov' }
+      dev:     {env_long: dev,     domain: 'alpha-broker-dev-api.usaspending.gov' }
+      sandbox: {env_long: sandbox, domain: 'alpha-broker-sandbox-api.usaspending.gov'}
+      schemasandbox: {env_long: schemasandbox, domain: 'schema-sandbox-api.usaspending.gov'}
+
+  tasks:
+
+    - name: copy core config
+      copy:
+        src:  "/data-act/config/backend/config.yml"
+        dest: "/data-act/backend/dataactcore/config.yml"
+        remote_src: true
+
+    - name: copy environmental config
+      copy:
+        src:  "/data-act/config/backend/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
+        dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
+        remote_src: true
+
+    - name: copy filebeat config
+      become: true
+      copy:
+        src: "/data-act/config/filebeat/filebeat-{{ vars['envs'][BRANCH]['env_long'] }}-{{ APP }}.yml"
+        dest: "/etc/filebeat/filebeat.yml"
+        remote_src: true
+
+    - name: copy broker nginx config
+      when: APP == "broker"
+      become: true
+      copy:
+        src: "/data-act/config/nginx/nginx_{{ vars['envs'][BRANCH]['env_long'] }}_{{ APP }}.conf"
+        dest: "/etc/nginx/nginx.conf"
+        remote_src: true 
+
+    - name: download secrets from S3 bucket
+      become: true
+      shell: "aws s3 cp s3://da-config/broker/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml /data-act/backend/dataactcore/ --region us-gov-west-1"
+
+
+# SSL Certs (not used for Validator)
+
+    - name: copy public.pem from S3 Bucket
+      when: APP == "broker"
+      become: true
+      shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
+
+    - name: copy private.pem from S3 Bucket
+      when: APP == "broker"
+      become: true
+      shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/private.pem /etc/cert.key --region us-gov-west-1"
+
+    - name: assign ownership of cert.pem to ec2-user
+      when: APP == "broker"
+      become: true
+      file: path=/etc/cert.pem owner=ec2-user
+
+    - name: assign ownership of cert.key to ec2-user
+      when: APP == "broker"
+      become: true
+      file: path=/etc/cert.key owner=ec2-user
+
+
+# TODO: Assess this weird ownership redundancy with instance-image.yml
+
+    - name: assign ownership of api to ec2-user
+      become: true
+      file: path=/data-act owner=ec2-user recurse=yes
+
+    - name: assign ownership of api to ec2-user
+      become: true
+      file: path=/tmp owner=ec2-user recurse=yes
+      
+
+# New Relic Config
+
+    - name: copy nr_key from S3
+      become: true
+      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key.yml --region us-gov-west-1"
+
+    - name: load nr_key var (NR_KEY)
+      include_vars: /etc/nr_key.yml
+
+    - name: add newrelic license key to newrelic.ini
+      lineinfile:
+        ## Change to config repo and grab one file
+        dest: "/data-act/config/newrelic/newrelic.ini"
+        regexp: '\s*license_key =.*'
+        line: "license_key = {{ NR_KEY }}"
+
+    - name: copy nr_key to newrelic-infra.yml file
+      become: true
+      lineinfile:
+        create: true
+        dest: "/etc/newrelic-infra.yml"
+        line: "license_key: {{ NR_KEY }}"
+        
+    - name: add newrelic label (app_name)
+      lineinfile:
+        dest: "/data-act/config/newrelic/newrelic.ini"
+        regexp: '\s*app_name =.*'
+        line: "app_name = Broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
+
+    ###### New Relic - API ######
+
+    - name: add single-interpreter to uwsgi.ini for broker-api
+      become: true
+      ini_file:
+        dest: "/data-act/backend/dataactbroker/config/uwsgi.ini"
+        section: "uwsgi"
+        option: single-interpreter
+        value: true
+
+    - name: modify supervisord configuration -- append newrelic-admin to 'command' for uwsgi
+      ini_file:
+        dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+        section: "program:uwsgi"
+        option: command
+        value: "newrelic-admin run-program uwsgi --ini /data-act/backend/dataactbroker/config/uwsgi.ini --socket :3030 --stats /tmp/stats.socket"
+        
+    - name: modify supervisord configuration -- append newrelic-config location to 'environment' for uwsgi
+      ini_file:
+        dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+        section: "program:uwsgi"
+        option: environment
+        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
+
+    ###### New Relic - Validator ######
+
+    - name: modify supervisord configuration -- append newrelic-admin to 'command' for data_act_validator_app
+      ini_file:
+        dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
+        section: "program:data_act_validator_app"
+        option: command
+        value: "newrelic-admin run-program /usr/bin/python3.5 /data-act/backend/dataactvalidator/app.py"
+
+    - name: modify supervisord configuration -- append newrelic-admin to 'command' for data_act_validator_health_check
+      ini_file:
+        dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
+        section: "program:data_act_validator_health_check"
+        option: command
+        value: "newrelic-admin run-program /usr/bin/python3.5 /data-act/backend/dataactvalidator/health_check.py"
+
+    - name: modify supervisord configuration -- append newrelic-config location to 'environment' for supervisord
+      ini_file:
+        dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
+        section: "supervisord"
+        option: environment
+        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
+
+
+# Supervisord Service
+
+    - name: make supervisord.service directory
+      become: true
+      file:
+        path: /etc/supervisord/conf.d
+        recurse: true
+        state: directory
+
+    - name: supervisord.service conf
+      become: true
+      shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
+
+    - name: supervisord.service conf.d append
+      become: true
+      shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
+
+    - name: supervisord.service config file location (validator)
+      when: APP == 'validator'
+      become: true
+      replace:
+        dest: "/data-act/config/supervisord.service/supervisord.service"
+        regexp: 'ExecStart=/bin/supervisord.*'
+        replace: "ExecStart=/bin/supervisord -c /data-act/backend/dataactvalidator/config/supervisord.conf"
+
+    - name: supervisord.service copy
+      become: true
+      copy:
+        remote_src: true
+        src:  "/data-act/config/supervisord.service/supervisord.service"
+        dest: "/usr/lib/systemd/system/supervisord.service"
+
+    - name: modify supervisord configuration to add ENV variable
+      ini_file:
+        dest: "/data-act/backend/dataact{{ APP }}/config/supervisord.conf"
+        section: "supervisord"
+        option: environment
+        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,env={{ vars['envs'][BRANCH]['env_long'] }}"
+
+
+# Logging
+
+    - name: create app json log if it doesn't exist
+      file: 
+        path: /data-act/app.json-log
+        state: touch
+
+    - name: create app info log if it doesn't exist
+      file: 
+        path: /data-act/info.log
+        state: touch
+
+
+# TODO: Assess this weird ownership redundancy with instance-image.yml
+
+    - name: set owner of data-act folder to ec2-user
+      shell: chown -R ec2-user /data-act
+      become: true
+
+
+# start/stop services
+
+    - name: enable newrelic-infra service
+      become: true
+      shell: systemctl enable newrelic-infra
+
+    - name: restart newrelic-infra service
+      become: true
+      shell: systemctl restart newrelic-infra
+
+    - name: enable filebeat service
+      become: true
+      shell: systemctl enable filebeat
+
+    - name: restart filebeat
+      become: true
+      shell: systemctl restart filebeat
+
+    - name: enable supervisord service
+      become: true
+      shell: systemctl enable supervisord
+
+    - name: restart supervisord
+      become: true
+      shell: systemctl restart supervisord
