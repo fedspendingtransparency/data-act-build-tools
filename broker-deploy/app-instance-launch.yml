@@ -15,7 +15,7 @@
     # Domains are used for SSL cert identification
     envs:
       master:  {env_long: prod,    env_short: prod, domain: 'broker-api.usaspending.gov' }
-      staging: {env_long: staging, env_short: stg,  domain: 'alpha-broker-staging-api.usaspending.gov' }
+      staging: {env_long: staging, env_short: stg,  domain: 'broker-staging-api.usaspending.gov' }
       dev:     {env_long: dev,     env_short: dev,  domain: 'alpha-broker-dev-api.usaspending.gov' }
       sandbox: {env_long: sandbox, env_short: sbx,  domain: 'alpha-broker-sandbox-api.usaspending.gov'}
 
@@ -215,6 +215,9 @@
       file: 
         path: /data-act/info.log
         state: touch
+
+
+# TODO: Assess this weird ownership redundancy with instance-image.yml
 
     - name: set owner of data-act folder to ec2-user
       shell: chown -R ec2-user /data-act
