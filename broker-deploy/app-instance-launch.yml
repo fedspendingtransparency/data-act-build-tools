@@ -18,6 +18,7 @@
       staging: {env_long: staging, domain: 'broker-staging-api.usaspending.gov' }
       dev:     {env_long: dev,     domain: 'alpha-broker-dev-api.usaspending.gov' }
       sandbox: {env_long: sandbox, domain: 'alpha-broker-sandbox-api.usaspending.gov'}
+      schemasandbox: {env_long: schemasandbox, domain: 'schema-sandbox-api.usaspending.gov'}
 
   tasks:
 
