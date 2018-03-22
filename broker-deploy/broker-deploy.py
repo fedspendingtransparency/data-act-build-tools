@@ -35,7 +35,7 @@ def deploy():
             noArgs = False
 
     if noArgs:
-        print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, --prod")
+        print ("No environment specified. Please include an argument: --schemasandbox, --sandbox, --dev, --staging, --prod")
         sys.exit(1)
 
     if optionsDict["schemasandbox"]:
@@ -88,7 +88,7 @@ def deploy():
         real_time_command([tf_exec_path, 'plan'])
         real_time_command([tf_exec_path, 'apply'])
 
-    elif optionsDict["dev"] or optionsDict["staging"]:
+    elif optionsDict["schemasandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
         # Retrieve current Base app AMI (where type=app and current=true)
         print('Retrieving current base app AMI...')
