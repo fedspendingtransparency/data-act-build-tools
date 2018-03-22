@@ -14,10 +14,10 @@
 
     # Domains are used for SSL cert identification
     envs:
-      master:  {env_long: prod,    env_short: prod, domain: 'broker-api.usaspending.gov' }
-      staging: {env_long: staging, env_short: stg,  domain: 'broker-staging-api.usaspending.gov' }
-      dev:     {env_long: dev,     env_short: dev,  domain: 'alpha-broker-dev-api.usaspending.gov' }
-      sandbox: {env_long: sandbox, env_short: sbx,  domain: 'alpha-broker-sandbox-api.usaspending.gov'}
+      master:  {env_long: prod,    domain: 'broker-api.usaspending.gov' }
+      staging: {env_long: staging, domain: 'broker-staging-api.usaspending.gov' }
+      dev:     {env_long: dev,     domain: 'alpha-broker-dev-api.usaspending.gov' }
+      sandbox: {env_long: sandbox, domain: 'alpha-broker-sandbox-api.usaspending.gov'}
 
   tasks:
 
