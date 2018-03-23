@@ -139,7 +139,7 @@
       lineinfile:
         create: true
         dest: "/etc/newrelic-infra.yml"
-        line: "license_key: {{ NR_KEY }}
+        line: "license_key: {{ NR_KEY }}"
 
 # Restart and Enable services:
 
@@ -174,4 +174,4 @@
     - name: restart newrelic-infra service
       become: true
       shell: systemctl restart newrelic-infra
-
+      
