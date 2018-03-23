@@ -129,10 +129,12 @@
 
     - name: copy nr_key from S3
       become: true 
-      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/ --region us-gov-west-1"
+      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key.yml --region us-gov-west-1"
 
     - name: load nr_key var
+      become: true
       include_vars: /etc/nr_key.yml
+
 
     - name: copy nr_key to newrelic-infra.yml file
       become: true
