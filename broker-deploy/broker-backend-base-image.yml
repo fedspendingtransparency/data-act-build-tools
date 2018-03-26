@@ -48,4 +48,4 @@
     - name: install filebeat (from filebeat repo)
       become: true
       yum: 
-        name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.1.1-x86_64.rpm
+        name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
