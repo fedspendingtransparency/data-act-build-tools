@@ -34,12 +34,32 @@
         dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
         remote_src: true
 
+ # config/filebeat/filebeat.yml
+
     - name: copy filebeat config
       become: true
       copy:
-        src: "/data-act/config/filebeat/filebeat-{{ vars['envs'][BRANCH]['env_long'] }}-{{ APP }}.yml"
+        src: "/data-act/config/filebeat/filebeat-broker.yml"
         dest: "/etc/filebeat/filebeat.yml"
         remote_src: true
+
+    - name: update filebeat config to set correct index (broker)
+      when: APP == "broker"
+      become: true
+      replace:
+        dest: "/etc/filebeat/filebeat.yml"
+        regexp: 'index: placeholder'
+        replace: "index: broker-api-{{ vars['envs'][BRANCH]['env_long'] }}"
+
+    - name: update filebeat config to set correct index (val)
+      when: APP == "validator"
+      become: true
+      replace:
+        dest: "/etc/filebeat/filebeat.yml"
+        regexp: 'index: placeholder'
+        replace: "index: broker-val-{{ vars['envs'][BRANCH]['env_long'] }}"
+
+# Nginx
 
     - name: copy broker nginx config
       when: APP == "broker"
