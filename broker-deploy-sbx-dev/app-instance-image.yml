@@ -1,0 +1,64 @@
+---
+- hosts: "{{ HOST }}"
+  user: ec2-user
+  become_method: sudo
+
+  vars:
+    REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
+    BRANCH: "{{ BRANCH }}"
+
+  tasks:
+
+# Copy Git Credentials from S3 Bucket
+
+    - name: pull repo - copy broker git credentials from S3 Bucket
+      become: true
+      shell: "aws s3 cp s3://da-config/broker/id_rsa_broker_config /home/ec2-user/.ssh/id_rsa_broker_config --region us-gov-west-1"
+
+    - name: pull repo - change ownership to /home/ec2-user.ssh/
+      become: true
+      file: path=/home/ec2-user/.ssh/ owner=ec2-user recurse=yes
+
+    - name: pull repo - change mode for the id_rsa_broker_config
+      become: true 
+      shell: chmod 400 /home/ec2-user/.ssh/id_rsa_broker_config
+
+    - name: pull repo - checkout backend from git
+      become: true
+      git: repo={{ REPO }}
+           version={{ BRANCH }}  
+           dest=/data-act/backend 
+           accept_hostkey=true 
+           force=yes
+           
+    - name: pull repo - checkout broker config from git
+      become: true
+      git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git 
+           dest=/data-act/config 
+           accept_hostkey=true 
+           force=yes 
+           key_file="/home/ec2-user/.ssh/id_rsa_broker_config"
+      
+    - name: pull repo - assign ownership of api dir to ec2-user
+      become: true
+      file: path=/data-act owner=ec2-user recurse=yes
+
+    - name: pull repo - assign ownership of tmp dir to ec2-user
+      become: true
+      file: path=/tmp owner=ec2-user recurse=yes
+    
+# Install Packages
+
+    - name: Install backend packages based on requirements.txt.
+      become: true
+      pip: chdir=/data-act/backend requirements="requirements.txt" executable=pip3.5
+
+    - name: Install server packages based on server_requirements.txt.
+      become: true
+      pip: chdir=/data-act/backend requirements="server_requirements.txt" executable=pip3.5
+      
+    - name: Install server packages based on legacy_requirements.txt.
+      become: true
+      pip: chdir=/data-act/backend requirements="legacy_requirements.txt" executable=pip2
+
+#================================ EOF ==========================================#
