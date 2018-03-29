@@ -61,11 +61,18 @@
 
 # Nginx
 
-    - name: update nginx config to set correct server_name
+    - name: copy broker nginx config
       when: APP == "broker"
       become: true
       copy:
-        src: "/data-act/config/nginx/nginx_broker_api.conf"
+        src: "/data-act/config/nginx/nginx_{{ vars['envs'][BRANCH]['env_long'] }}_{{ APP }}.conf"
+        dest: "/etc/nginx/nginx.conf"
+        remote_src: true
+
+    - name: update nginx config to set correct server_name
+      when: APP == "broker"
+      become: true
+      replace:
         dest: "/etc/nginx/nginx.conf"
         regexp: 'server_name INSERT_WITH_ANSIBLE;'
         replace: "server_name {{ vars['envs'][BRANCH]['domain'] }};"
