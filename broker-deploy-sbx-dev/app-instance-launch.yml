@@ -96,38 +96,27 @@
       become: true
       file: path=/etc/cert.key owner=ec2-user
 
-# Update Schema config
+# # Update Schema config. (Not sure if this is required)
 
-    - name: core schema update (api)
-      when: APP == 'broker'
-      become: true
-      shell: python3 /data-act/backend/dataactcore/scripts/initialize.py -db -r -v
-      environment:
-        PYTHONPATH: "/data-act/backend"
-        env: "{{ ENV }}"
-      args:
-        chdir: /data-act/backend/dataactbroker/scripts/
+#     - name: core schema update (api)
+#       when: APP == 'broker'
+#       become: true
+#       shell: "python3.5 /data-act/backend/dataactcore/scripts/initialize.py -db -r -v"
+#       environment:
+#         PYTHONPATH: "/data-act/backend"
+#         env: "{{ ENV }}"
+#       args:
+#         chdir: /data-act/backend/dataactbroker/scripts/
 
-    - name: core schema update (validator)
-      when: APP == 'validator'
-      shell: python3 /data-act/backend/dataactcore/scripts/initialize.py -db -r -v
-      sudo: true
-      environment:
-        PYTHONPATH: "/data-act/backend"
-        env: "{{ ENV }}"
-      args:
-        chdir: /data-act/backend/dataactvalidator/scripts/
-
-
-# TODO: Assess this weird ownership redundancy with instance-image.yml
-
-    - name: assign ownership of api to ec2-user
-      become: true
-      file: path=/data-act owner=ec2-user recurse=yes
-
-    - name: assign ownership of api to ec2-user
-      become: true
-      file: path=/tmp owner=ec2-user recurse=yes
+#     - name: core schema update (validator)
+#       when: APP == 'validator'
+#       shell: "python3.5 /data-act/backend/dataactcore/scripts/initialize.py -db -r -v"
+#       sudo: true
+#       environment:
+#         PYTHONPATH: "/data-act/backend"
+#         env: "{{ ENV }}"
+#       args:
+#         chdir: /data-act/backend/dataactvalidator/scripts/
       
 
 # New Relic Config
@@ -260,12 +249,15 @@
         state: touch
 
 
-# TODO: Assess this weird ownership redundancy with instance-image.yml
+# Assign ec2-user ownership to /data-act and /tmp
 
-    - name: set owner of data-act folder to ec2-user
-      shell: chown -R ec2-user /data-act
+    - name: assign ownership of api to ec2-user
       become: true
+      file: path=/data-act owner=ec2-user recurse=yes
 
+    - name: assign ownership of api to ec2-user
+      become: true
+      file: path=/tmp owner=ec2-user recurse=yes
 
 # start/stop services
 
