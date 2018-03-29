@@ -1,13 +1,23 @@
 ---
 - name: Copy core config
   shell:  cp /data-act/config/backend/config.yml /data-act/backend/dataactcore/config.yml 
+
 - name: Copy ENV config
   shell: cp /data-act/config/backend/{{ ENV }}_config.yml /data-act/backend/dataactcore/{{ ENV }}_config.yml
+
 - name: Copy secrets
   shell: "aws s3 cp s3://da-config/broker/{{ ENV }}_secrets.yml /data-act/backend/dataactcore/{{ ENV }}_secrets.yml --region us-gov-west-1"
+
 - name: Copy Filebeat config
   shell: cp /data-act/config/filebeat/filebeat-{{ ENV }}-{{ APP }}.yml /etc/filebeat/filebeat.yml
   sudo: true
-- name: Copy Nginx config
-  shell: cp /data-act/config/nginx/nginx_{{ ENV }}_{{ APP }}.conf /etc/nginx/nginx.conf 
-  sudo: true
+  
+- name: update nginx config to set correct server_name
+  when: APP == "broker"
+  become: true
+  copy:
+    src: "/data-act/config/nginx/nginx_broker_api.conf"
+    dest: "/etc/nginx/nginx.conf"
+    regexp: 'server_name INSERT_WITH_ANSIBLE;'
+    replace: "server_name alpha-broker-sandbox-api.usaspending.gov;"
+
