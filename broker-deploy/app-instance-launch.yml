@@ -65,7 +65,7 @@
       when: APP == "broker"
       become: true
       copy:
-        src: "/data-act/config/nginx/nginx_{{ vars['envs'][BRANCH]['env_long'] }}_{{ APP }}.conf"
+        src: "/data-act/config/nginx/nginx_broker_api.conf"
         dest: "/etc/nginx/nginx.conf"
         remote_src: true
 
