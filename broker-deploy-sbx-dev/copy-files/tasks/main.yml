@@ -44,4 +44,4 @@
   replace:
     dest: "/etc/nginx/nginx.conf"
     regexp: '^server_name INSERT_WITH_ANSIBLE;'
-    replace: "server_name alpha-broker-sandbox-api.usaspending.gov;"
+    replace: "server_name broker-sandbox-api.usaspending.gov;"
