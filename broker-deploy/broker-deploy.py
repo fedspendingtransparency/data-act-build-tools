@@ -56,39 +56,7 @@ def deploy():
     tfvar_file = deploy_env + '-variables.tf.json'
     packer_file = deploy_env + '-packer.json'
 
-    if optionsDict["sandbox"]:
-        current_base_ami = get_current_base_ami()
-        update_lc_ami(current_base_ami, tfvar_file, 'sbx')
-
-        ## Possible to-do: only run terraform when active instances are not running on current base ami
-        # val_instance = get_running_instance(deploy_env='sbx', component='Validator')
-        # api_instance = get_running_instance(deploy_env='sbx', component='API')
-        # if val_instance.image_id != api_instance.image_id:
-        #     print("Error, current environment not configured correctly.")
-        #     EXIT_CODE = 1
-        #     sys.exit(EXIT_CODE)
-        # elif val_instance.image_id != current_base_ami: # temporarily forcing false to test
-        #     # Create hosts file for ansible and exit with 0 code
-        #     with open('hosts','w') as f:
-        #         f.write('[validator]\n')
-        #         f.write(val_instance.private_ip_address + '\n')
-        #         f.write('\n')
-        #         f.write('[api]\n')
-        #         f.write(api_instance.private_ip_address + '\n')
-        #     print("Current base AMI in use. Hosts file has been built for deploying via ansible.")
-        #     EXIT_CODE = 0
-        #     sys.exit(EXIT_CODE)
-
-        # else:
-        #     # Run terraform
-        #     update_lc_ami(current_base_ami, 'temp.tf.json', 'sbx')
-
-        #Run terraform
-
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
-
-    elif optionsDict["schemasandbox"] or optionsDict["dev"] or optionsDict["staging"]:
+    if optionsDict["sandbox"] or optionsDict["schemasandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
         # Retrieve current Base app AMI (where type=app and current=true)
         print('Retrieving current base app AMI...')
@@ -157,7 +125,7 @@ def deploy():
         print('Exiting with a code of {}'.format(EXIT_CODE))
         sys.exit(EXIT_CODE)
 
-def get_running_instance(deploy_env='sbx', component='Validator'):
+def get_running_instance(deploy_env='na', component='Validator'):
     reservations = conn.get_all_instances(filters={
         "tag:Application" : "Broker",
         "tag:Component" : component,
@@ -221,14 +189,11 @@ def update_packer_spec(packer_file='packer.json', current_base_ami=''):
 
     return
 
-def update_lc_ami(new_ami='', tfvar_file='variables.tf.json', deploy_env='sbx'):
+def update_lc_ami(new_ami='', tfvar_file='variables.tf.json', deploy_env='na'):
     tfvar_json = open(tfvar_file, "r")
     tfvar_data = json.load(tfvar_json)
     tfvar_json.close()
-    if deploy_env == 'sbx':
-        tfvar_data['variable']['base_ami']['default'] = new_ami
-    else:
-        tfvar_data['variable']['aws_amis']['default']['us-gov-west-1'] = new_ami
+    tfvar_data['variable']['aws_amis']['default']['us-gov-west-1'] = new_ami
     tfvar_json = open(tfvar_file, "w+")
     tfvar_json.write(json.dumps(tfvar_data))
     tfvar_json.close()
