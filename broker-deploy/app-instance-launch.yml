@@ -76,14 +76,6 @@
         dest: "/etc/nginx/nginx.conf"
         regexp: 'server_name INSERT_WITH_ANSIBLE;'
         replace: "server_name {{ vars['envs'][BRANCH]['domain'] }};"
-        
-    - name: update nginx config to set correct server_name
-      when: APP == "validator"
-      become: true
-      copy:
-        src: "/data-act/config/nginx/nginx_broker_validator.conf"
-        dest: "/etc/nginx/nginx.conf"
-        remote_src: true 
 
     - name: download secrets from S3 bucket
       become: true
