@@ -7,11 +7,25 @@
 
 - name: Copy secrets
   shell: "aws s3 cp s3://da-config/broker/{{ ENV }}_secrets.yml /data-act/backend/dataactcore/{{ ENV }}_secrets.yml --region us-gov-west-1"
-
-- name: Copy Filebeat config
-  shell: cp /data-act/config/filebeat/filebeat-{{ ENV }}-{{ APP }}.yml /etc/filebeat/filebeat.yml
-  sudo: true
   
+- name: copy and update filebeat config to set correct index name
+  when: APP == "broker"
+  sudo: true
+  copy: 
+    src: "/data-act/config/nginx/filebeat/filebeat-broker.yml"
+    dest: "/etc/filebeat/filebeat.yml"
+    regexp: "^index: placeholder"
+    replace: "index: broker-api-sandbox"
+
+- name: copy and update filebeat config to set correct index name
+  when: APP == "val"
+  sudo: true
+  copy: 
+    src: "/data-act/config/nginx/filebeat/filebeat-broker.yml"
+    dest: "/etc/filebeat/filebeat.yml"
+    regexp: "^index: placeholder"
+    replace: "index: broker-val-sandbox"
+
 - name: update nginx config to set correct server_name
   when: APP == "broker"
   become: true
