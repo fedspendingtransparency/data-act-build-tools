@@ -65,9 +65,17 @@
       when: APP == "broker"
       become: true
       copy:
-        src: "/data-act/config/nginx/nginx_{{ vars['envs'][BRANCH]['env_long'] }}_{{ APP }}.conf"
+        src: "/data-act/config/nginx/nginx_broker_api.conf"
         dest: "/etc/nginx/nginx.conf"
-        remote_src: true 
+        remote_src: true
+
+    - name: update nginx config to set correct server_name
+      when: APP == "broker"
+      become: true
+      replace:
+        dest: "/etc/nginx/nginx.conf"
+        regexp: 'server_name INSERT_WITH_ANSIBLE;'
+        replace: "server_name {{ vars['envs'][BRANCH]['domain'] }};"
 
     - name: download secrets from S3 bucket
       become: true
