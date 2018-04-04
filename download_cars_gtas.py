@@ -73,8 +73,7 @@ def main():
         print('Download successful')
 
     if no_cars and no_gtas:
-        print('No files in "gtas-sf133-frb" modified since {}\n'.format((datetime.datetime.now() - datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%m:%S")))
-        exit(0)
+        print('No files in "gtas-sf133-frb" modified since {}'.format((datetime.datetime.now() - datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%m:%S")))
 
 if __name__ == '__main__':
     main()
