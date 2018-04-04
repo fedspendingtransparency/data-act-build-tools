@@ -20,7 +20,7 @@ def main():
     parser.add_argument('--bucket', nargs='?', const='default', default='default', type=str)
     args = parser.parse_args()
 
-    s3 = boto3.client(service_name='s3',region_name='us-gov-west-1')
+    s3 = boto3.client(service_name='s3', region_name='us-gov-west-1')
 
     files = s3.list_objects(Bucket='gtas-sf133-frb')['Contents']
 
@@ -66,10 +66,10 @@ def main():
     if not no_gtas:
         gtas_year = todays_gtas['Key'].split('GTAS')[1][4:8]
         gtas_period = todays_gtas['Key'].split('GTAS')[1][8:10]
-        gtas_filename = '_'.join(('sf','133',gtas_year,gtas_period))+'.csv'
+        gtas_filename = '_'.join(('sf', '133', gtas_year,gtas_period)) + '.csv'
         os.makedirs('files', exist_ok=True)
-        print('Downloading '+todays_gtas['Key']+' as '+gtas_filename)
-        s3.download_file(args.bucket,todays_gtas['Key'],os.path.join(os.getcwd(),'files',gtas_filename))
+        print('Downloading '+todays_gtas['Key'] + ' as ' + gtas_filename)
+        s3.download_file(args.bucket, todays_gtas['Key'], os.path.join(os.getcwd(), 'files', gtas_filename))
         print('Download successful')
 
     if no_cars and no_gtas:
