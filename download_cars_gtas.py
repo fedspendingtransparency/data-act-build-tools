@@ -68,12 +68,13 @@ def main():
         gtas_period = todays_gtas['Key'].split('GTAS')[1][8:10]
         gtas_filename = '_'.join(('sf', '133', gtas_year,gtas_period)) + '.csv'
         os.makedirs('files', exist_ok=True)
-        print('Downloading '+todays_gtas['Key'] + ' as ' + gtas_filename)
+        print('Downloading ' + todays_gtas['Key'] + ' as ' + gtas_filename)
         s3.download_file(args.bucket, todays_gtas['Key'], os.path.join(os.getcwd(), 'files', gtas_filename))
         print('Download successful')
 
     if no_cars and no_gtas:
         print('No files in "gtas-sf133-frb" modified since {}\n'.format((datetime.datetime.now() - datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%m:%S")))
+        exit(0)
 
 if __name__ == '__main__':
     main()
