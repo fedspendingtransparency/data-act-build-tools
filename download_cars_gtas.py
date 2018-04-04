@@ -13,11 +13,12 @@ def replace_null(row, column_name):
 
 
 def main():
+    print('\nPulling files in "gtas-sf133-frb". Ignoring files modified before {}'.format((datetime.datetime.now() - datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%m:%S")))
+
     # Set arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--bucket', nargs='?', const='default', default='default', type=str)
     args = parser.parse_args()
-
 
     s3 = boto3.client(service_name='s3',region_name='us-gov-west-1')
 
@@ -72,7 +73,7 @@ def main():
         print('Download successful')
 
     if no_cars and no_gtas:
-        print('No files to test/copy for today ({}).'.format(datetime.datetime.now().strftime("%y-%m-%d")))
+        print('No files in "gtas-sf133-frb" modified since {}\n'.format((datetime.datetime.now() - datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%m:%S")))
 
 if __name__ == '__main__':
     main()
