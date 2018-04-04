@@ -29,11 +29,17 @@ def main():
     try:
         todays_cars = [x for x in todays_files if re.search('CARS', x['Key'])][0]
         no_cars = False
+    except Exception as e:
+        print('No CARS file posted in the last 24 hours')
+        no_cars = True
+        pass
+
+    if not no_cars:
         current_dir = os.getcwd()
         cars_file_name = os.path.join(current_dir, 'files', 'cars_tas.csv')
         os.makedirs('files', exist_ok=True)
-        print('Downloading '+todays_cars['Key']+' as cars_tas.csv')
-        s3.download_file('gtas-sf133-frb',todays_cars['Key'],cars_file_name)
+        print('Downloading ' + todays_cars['Key'] + ' as cars_tas.csv')
+        s3.download_file('gtas-sf133-frb', todays_cars['Key'], cars_file_name)
         print('Download successful, beginning file cleanup.')
 
         # read CGAC values from csv
@@ -48,15 +54,15 @@ def main():
                     inplace=True)
         data.to_csv(cars_file_name)
 
-    except Exception as e:
-        print(e)
-        print('No CARS file posted in the last 24 hours')
-        no_cars = True
-        pass
-
     try:
         todays_gtas = [x for x in todays_files if re.search('GTAS', x['Key'])][0]
         no_gtas = False
+    except:
+        print('No GTAS file posted in the last 24 hours')
+        no_gtas = True
+        pass
+
+    if not no_gtas:
         gtas_year = todays_gtas['Key'].split('GTAS')[1][4:8]
         gtas_period = todays_gtas['Key'].split('GTAS')[1][8:10]
         gtas_filename = '_'.join(('sf','133',gtas_year,gtas_period))+'.csv'
@@ -64,14 +70,9 @@ def main():
         print('Downloading '+todays_gtas['Key']+' as '+gtas_filename)
         s3.download_file(args.bucket,todays_gtas['Key'],os.path.join(os.getcwd(),'files',gtas_filename))
         print('Download successful')
-    except:
-        print('No GTAS file posted in the last 24 hours')
-        no_gtas = True
-        pass
 
     if no_cars and no_gtas:
-        print('No files to test/copy. Job failed.')
-        exit(1)
+        print('No files to test/copy for today ({}).'.format(datetime.datetime.now().strftime("%y-%m-%d")))
 
 if __name__ == '__main__':
     main()
