@@ -83,7 +83,7 @@
     - name: download and unarchive terraform_0.6.16_linux_amd64.zip
       become: true
       unarchive:
-        src: https://releases.hashicorp.com/terraform/0.11.5/terraform_0.6.16_linux_amd64.zip
+        src: https://releases.hashicorp.com/terraform/0.11.5/terraform_0.11.5_linux_amd64.zip
         dest: /terraform
         remote_src: yes
 
@@ -111,7 +111,7 @@
 
     - name: setup symlink for packer
       become: true
-      shell: ln -s /usr/sbin/packer packerio
+      shell: ln -s /packer/packerio /usr/sbin/packerio
 
     - name: show timestamp in history (root)
       become: true
@@ -120,7 +120,7 @@
         state: present
         regexp: ''
         insertafter: EOF
-        line: "export HISTTIMEFORMAT="%d/%m/%y %T ""
+        line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
 
     - name: show timestamp in history (ec2-user)
       ini_file: 
@@ -128,7 +128,7 @@
         state: present
         regexp: ''
         insertafter: EOF
-        line: "export HISTTIMEFORMAT="%d/%m/%y %T ""
+        line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
 
     - name: colorize (root)
       become: true
