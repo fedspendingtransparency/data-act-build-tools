@@ -109,45 +109,47 @@
       become: true
       shell: "mv /packer/packer /packer/packerio"
 
-    - name: setup symlink for packer
+    - name: setup symbolic link
       become: true
-      shell: ln -s /packer/packerio /usr/sbin/packerio
+      stat: 
+        path=/usr/sbin/packerio
+      register: links
+
+    - name: check symbolic link
+      debug: msg="Path exists and is a symlink"
+      when: links.stat.islnk is defined and links.stat.islnk
 
     - name: show timestamp in history (root)
       become: true
-      ini_file: 
+      lineinfile: 
         dest: /root/.bash_profile
-        state: present
-        regexp: ''
-        insertafter: EOF
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
+        state: present
 
     - name: show timestamp in history (ec2-user)
-      ini_file: 
+      lineinfile: 
         dest: /home/ec2-user/.bash_profile
-        state: present
-        regexp: ''
-        insertafter: EOF
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
+        state: present
 
     - name: colorize (root)
       become: true
-      ini_file: 
+      lineinfile: 
         dest: /root/.bash_profile
-        state: present
-        regexp: ''
-        insertafter: EOF
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
+        state: present
 
     - name: colorize (ec2-user)
-      ini_file:
+      lineinfile:
         dest: /home/ec2-user/.bash_profile
-        state: present
-        regexp: ''
-        insertafter: EOF
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
+        state: present
 
     - name: restart and enable jenkins service
       become: true
       shell: "systemctl enable jenkins && systemctl restart jenkins"
+
+    - name: enable and restart filebeat 
+      become: true
+      shell: "systemctl enable filebeat && systemctl restart filebeat"
       
