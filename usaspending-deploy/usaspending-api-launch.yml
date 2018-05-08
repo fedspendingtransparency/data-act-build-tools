@@ -164,20 +164,20 @@
         line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS }}']"
 
     - name: enable elasticache (in staging or prod)
-      when: BRANCH == 'stg' or BRANCH == 'master' or BRANCH == 'sandbox'
+      when: BRANCH == 'stg' or BRANCH == 'master'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'elasticache'"
 
     - name: replace ELASTICACHE-CONNECTION-STRING (in staging or prod)
-      when: BRANCH == 'stg' or BRANCH == 'master' or BRANCH == 'sandbox'
+      when: BRANCH == 'stg' or BRANCH == 'master' 
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "'ELASTICACHE-CONNECTION-STRING'"
         replace: "{{ ELASTICACHE_URL }}"
     
-    - name: replace ELASTICACHE-MASTER-STRING (in prod)
+    - name: replace ELASTICACHE-MASTER-STRING (in staging or prod)
       when: BRANCH == 'stg' or BRANCH == 'master'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
@@ -185,21 +185,21 @@
         replace: "{{ ELASTICACHE_MASTER_URL }}"
 
     - name: enable local cache (in dev or sandbox)
-      when: BRANCH == 'dev' 
+      when: BRANCH == 'dev' or BRANCH == 'sandbox'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'local'"
 
     - name: replace TIMEOUT-IN-SECONDS (in dev or sandbox)
-      when: BRANCH == 'dev'
+      when: BRANCH == 'dev' or BRANCH == 'sandbox'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ NONPROD_CACHE_TIMEOUT }}"
 
     - name: replace TIMEOUT-IN-SECONDS (in staging or prod)
-      when: BRANCH == 'master' or BRANCH == 'stg' or BRANCH == 'sandbox'
+      when: BRANCH == 'master' or BRANCH == 'stg'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
