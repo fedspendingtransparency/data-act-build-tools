@@ -68,11 +68,6 @@
       yum:
         name=https://pkg.jenkins.io/redhat-stable/jenkins-2.107.2-1.1.noarch.rpm
 
-    - name: install filebeat (from filebeat repo)
-      become: true
-      yum: 
-        name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
-
     - name: create /terraform directory
       become: true
       file: 
@@ -149,7 +144,4 @@
       become: true
       shell: "systemctl enable jenkins && systemctl restart jenkins"
 
-    - name: enable and restart filebeat 
-      become: true
-      shell: "systemctl enable filebeat && systemctl restart filebeat"
       
