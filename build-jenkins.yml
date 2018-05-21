@@ -22,6 +22,18 @@
         - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
         - https://centos7.iuscommunity.org/ius-release.rpm
 
+    - name: setup jenkins repo
+      become: true
+      get_url: 
+        url: "https://pkg.jenkins.io/redhat-stable/jenkins.repo"
+        dest: "/etc/yum.repos.d/jenkins.repo"
+
+    - name: import jenkins key 
+      become: true
+      rpm_key:
+        state: present
+        key: "https://pkg.jenkins.io/redhat-stable/jenkins.io.key"
+
     - name: install base dependencies
       become: true
       yum: name={{ item }}
@@ -47,6 +59,7 @@
         - mlocate
         - vim
         - telnet
+        - jenkins
 
     - name: install all pip packages
       become: true
@@ -63,15 +76,10 @@
         - wheel
         - virtualenv-clone
 
-    - name: install jenkins 
-      become: true
-      yum:
-        name=https://pkg.jenkins.io/redhat-stable/jenkins-2.107.2-1.1.noarch.rpm
-
-    - name: create /terraform directory
+    - name: create /opt/terraform directory
       become: true
       file: 
-        path: /terraform
+        path: /opt/terraform
         state: directory
         mode: 0755
 
@@ -79,17 +87,17 @@
       become: true
       unarchive:
         src: https://releases.hashicorp.com/terraform/0.11.5/terraform_0.11.5_linux_amd64.zip
-        dest: /terraform
+        dest: /opt/terraform
         remote_src: yes
 
     - name: execute terraform
       become: true
-      shell: /terraform/terraform init /terraform/
+      shell: /opt/terraform/terraform init /opt/terraform/
 
-    - name: create /packer directory
+    - name: create /opt/packer directory
       become: true
       file: 
-        path: /packer
+        path: /opt/packer
         state: directory
         mode: 0755
 
@@ -97,22 +105,32 @@
       become: true
       unarchive:
         src: https://releases.hashicorp.com/packer/1.2.3/packer_1.2.3_linux_amd64.zip
-        dest: /packer
+        dest: /opt/packer
         remote_src: yes
 
     - name: rename packer to packerio
       become: true
-      shell: "mv /packer/packer /packer/packerio"
+      shell: "mv /opt/packer/packer /opt/packer/packerio"
 
     - name: setup symbolic link
       become: true
+      file: 
+        src: /opt/packer/packerio
+        dest: /usr/sbin/packerio
+        owner: root
+        group: root
+        state: link
+
+    - name: load symlink var
+      become: true
       stat: 
-        path=/usr/sbin/packerio
-      register: links
+        path: /usr/sbin/packerio
+      register: pack
 
     - name: check symbolic link
-      debug: msg="Path exists and is a symlink"
-      when: links.stat.islnk is defined and links.stat.islnk
+      debug: 
+        msg="Path exists and is a symlink"
+      when: pack.stat.islnk is defined and pack.stat.islnk
 
     - name: show timestamp in history (root)
       become: true
