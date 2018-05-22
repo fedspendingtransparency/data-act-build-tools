@@ -29,19 +29,21 @@
 
     - name: checkout backend from git
       become: true
-      git: repo={{ REPO }}
-           version={{ BRANCH }}  
-           dest=/data-act/backend 
-           accept_hostkey=true 
-           force=yes
+      git: 
+        repo: "{{ REPO }}"
+        version: "{{ BRANCH }}"
+        dest: "/data-act/backend" 
+        accept_hostkey: true 
+        force: yes
     
     - name: checkout usaspending-config from git
       become: true
-      git: repo=git@github.com:fedspendingtransparency/usaspending-config.git 
-           dest=/data-act/config 
-           accept_hostkey=true 
-           force=yes 
-           key_file="/home/ec2-user/.ssh/id_rsa_usaspending_config"
+      git: 
+        repo: "git@github.com:fedspendingtransparency/usaspending-config.git"
+        dest: "/data-act/config"
+        accept_hostkey: true 
+        force: yes 
+        key_file: "/home/ec2-user/.ssh/id_rsa_usaspending_config"
 
     - name: assign ownership of api to ec2-user
       become: true
@@ -89,27 +91,27 @@
         line: "cd {{ CODE_HOME }}"
         insertafter: EOF 
 
-# Configure New Relic Key
+# Configure DataDog Key
 
-    - name: copy nr_key from S3
+    - name: copy datadog_key from S3
       become: true 
-      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/ --region us-gov-west-1"
+      shell: "aws s3 cp s3://da-config/shared/datadog_key.yml /etc/ --region us-gov-west-1"
 
-    - name: load nr_key var
-      include_vars: /etc/nr_key.yml
+    - name: load datadog_key var
+      include_vars: /etc/datadog_key.yml
 
-    - name: add newrelic license key to newrelic.ini
-      lineinfile:
-        dest: "{{ CODE_HOME }}/config/newrelic.ini"
-        regexp: '\s*license_key =.*'
-        line: "license_key = {{ NR_KEY }}"
-
-    - name: copy nr_key to newrelic-infra.yml file
+    - name: add Datadog license key to datadog.yml
       become: true
       lineinfile:
-        create: true
-        dest: "/etc/newrelic-infra.yml"
-        line: "license_key: {{ NR_KEY }}"
+        dest: "/data-act/config/deploy/datadog.yml"
+        regexp: '\s*api_key: .*'
+        line: "api_key: {{ DD_KEY }}"
+
+    - name: copy datadog.yml to it's home location
+      become: true
+      copy: 
+        src: "/data-act/config/deploy/datadog.yml"
+        dest: "/etc/datadog-agent/datadog.yml"
 
 # Logrotate
 

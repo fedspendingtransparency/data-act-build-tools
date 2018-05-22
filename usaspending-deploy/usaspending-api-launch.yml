@@ -82,13 +82,13 @@
       become: true
       shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
-# New Relic Settings
+# DataDog Settings
 
-    - name: add newrelic label (app_name)
+    - name: add datadog label (app_name)
       lineinfile:
-        dest: "{{ CODE_HOME }}/config/newrelic.ini"
-        regexp: '\s*app_name =.*'
-        line: "app_name = usaspending-api-{{ BRANCH }}"
+        dest: "/etc/datadog-agent/datadog.yml"
+        regexp: '\s* env: .*'
+        line: "  env:  usaspending-api-{{ BRANCH }}"
         
     - name: add single-interpreter to uwsgi_db.ini
       become: true
@@ -103,14 +103,7 @@
         dest: "{{ CODE_HOME }}/config/supervisord.conf"
         section: "program:uwsgi"
         option: command
-        value: "newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
-        
-    - name: modify supervisord configuration (environment)
-      ini_file:
-        dest: "{{ CODE_HOME }}/config/supervisord.conf"
-        section: "program:uwsgi"
-        option: environment
-        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE={{ CODE_HOME }}/config/newrelic.ini"
+        value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
 
  # usaspending_api/settings.py
  
