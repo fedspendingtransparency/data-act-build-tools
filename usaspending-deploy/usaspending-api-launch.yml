@@ -87,7 +87,7 @@
     - name: add datadog label (app_name)
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yml"
-        regexp: '\s* env: .*'
+        regexp: ' env: .*'
         line: "  env:  usaspending-api-{{ BRANCH }}"
         
     - name: add single-interpreter to uwsgi_db.ini
@@ -149,6 +149,23 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*DEBUG =.*'
         line: "DEBUG = False"
+
+    - name: add datadog configuration (1)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        insertafter: "^    'django.contrib.postgres',\n"
+        line: "    'ddtrace.contrib.django',"
+        state: present
+
+    - name: add datadog configuration (2)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        insertafter: "^INTERNAL_IPS = ()\n"
+        line: "DATADOG_TRACE = {\n
+            'DEFAULT_SERVICE': 'USASpending-api-Sandbox',\n
+            'TAGS': {'env': 'sandbox'},\n"
+        state: present
+
 
     - name: add host to ALLOWED_HOSTS
       lineinfile:
@@ -250,26 +267,28 @@
 
  # start/stop services
 
-    - name: enable newrelic-infra service
+    - name: enable & restart datadog-agent service
       become: true
-      shell: systemctl enable newrelic-infra
+      shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
 
-    - name: restart newrelic-infra service
+    - name: enable & restart filebeat service
       become: true
-      shell: systemctl restart newrelic-infra
+      shell: "systemctl enable filebeat && systemctl restart filebeat"
 
-    - name: enable filebeat service
+    - name: enable & restart supervisord.service
       become: true
-      shell: systemctl enable filebeat
+      shell: "systemctl enable supervisord && systemctl restart supervisord"
 
-    - name: restart filebeat
+    - name: check status of all services
       become: true
-      shell: systemctl restart filebeat
+      command: "systemctl status supervisord -l && systemctl status datadog-agent -l && systemctl status filebeat"
+      register: status
+      ignore_errors: yes
 
-    - name: enable supervisord.service
+    - name: output the statuses 
       become: true
-      shell: systemctl enable supervisord
+      debug: 
+        msg="{{ status.stdout }}"
 
-    - name: restart supervisord
-      become: true
-      shell: systemctl restart supervisord
+# =============================== EOF ========================================== #
+

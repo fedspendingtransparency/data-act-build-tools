@@ -87,6 +87,10 @@
         name: datadog-agent
         state: present
 
+    - name: install ddtrace package
+      become: true
+      pip: name=ddtrace executable=pip3.5
+
     - name: install filebeat (from filebeat repo)
       become: true
       yum: 
