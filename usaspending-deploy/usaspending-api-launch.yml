@@ -85,10 +85,20 @@
 # DataDog Settings
 
     - name: add datadog label (app_name)
+      become: true
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yml"
         regexp: ' env: .*'
         line: "  env:  usaspending-api-{{ BRANCH }}"
+
+    - name: ensure dd-agent ownership for datadog directory
+      become: true
+      file: 
+        path: "/etc/datadog-agent/"
+        state: directory
+        owner: dd-agent
+        group: dd-agent
+        recurse: yes
         
     - name: add single-interpreter to uwsgi_db.ini
       become: true
