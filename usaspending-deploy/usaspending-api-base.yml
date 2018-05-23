@@ -1,8 +1,10 @@
-# Base Ansible to run on a fresh RHEL7 install.
-# Installs USASpending API dependencies that are mutal across environments.
+#===============================  USASPENDING-API-BASE PLAYBOOK  ===============================#
 
-# TODO: This does not include newrelic infrastructure setup
-# This does not include the necessary certs and RDS keys to run the API
+#===============================  Notes  ===============================#
+#  - Base Ansible to run on a fresh RHEL7 Install                       #
+#  - Installs API dependencies that are mutal across environments       #
+#  - Does not include the necessary certs and RDS keys to run the API   #
+#=======================================================================#
 
 ---
 - hosts: "{{ HOST }}"
@@ -13,7 +15,7 @@
 
   tasks:
 
-    - name: upgrade all packages
+    - name: upgrade all yum packages/kernel updates/OS patches
       become: true
       yum: name=* state=latest
 
@@ -122,5 +124,4 @@
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
         state: present
 
-#================================ EOF ========================================#
-
+#===============================  EOF  ===============================#

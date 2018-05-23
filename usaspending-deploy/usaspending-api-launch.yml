@@ -1,17 +1,23 @@
+#===============================  USASPENDING-API-LAUNCH PLAYBOOK  ===============================#
+
+#===============================  Notes  ===============================#
+#  - Branch options: sandbox, dev, stg, master, used for filebeat index #
+#  - 'envs' used for filebeat to translate                              #
+#  - You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL           #
+#=======================================================================#
+
+
 ---
 - hosts: "{{ HOST }}"
 
-# You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL
+  become_method: sudo
+  user: ec2-user
 
   vars:
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
-
-    ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
 
-    ## Used only for filebeat: 'envs' is used to translate
-    ## BRANCH options above into filebeat.yml index
     envs:
       master: {env_long: prod, env_short: prod}
       stg: {env_long: staging, env_short: stg}
@@ -24,16 +30,12 @@
     PROD_CACHE_TIMEOUT: None
     NONPROD_CACHE_TIMEOUT: 600
 
-  become_method: sudo
-
-  user: ec2-user
-
   tasks:
     
     - name: Load variables from config repo
       include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
 
-  # /etc/nginx/nginx.conf
+#===============================  Nginx Config  ===============================#
 
     - name: set nginx configuration path to SSL
       set_fact:
@@ -58,7 +60,7 @@
         dest: "/etc/nginx/nginx.conf"
         remote_src: true
 
-# config/uwsgi.ini
+#===============================  uwsgi_db.ini Setup  ===============================#
 
     - name: duplicate config file to uwsgi_db.ini
       become: true
@@ -82,7 +84,7 @@
       become: true
       shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
-# DataDog Settings
+#===============================  DataDog Configuration  ===============================#
 
     - name: add datadog label (app_name)
       become: true
@@ -115,7 +117,25 @@
         option: command
         value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
 
- # usaspending_api/settings.py
+    - name: add datadog configuration (1)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        insertafter: "^    'django.contrib.postgres',\n"
+        line: "    'ddtrace.contrib.django',"
+        state: present
+
+    - name: add datadog configuration (2)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        insertafter: "^INTERNAL_IPS = ()"
+        line: |
+          DATADOG_TRACE = {
+              'DEFAULT_SERVICE': 'USASpending-api-Sandbox',
+              'TAGS': {'env': 'usaspending-api-{{ BRANCH }}'},
+          }
+        state: present
+
+#===============================  usaspending_api/settings.py  ===============================#
  
     - name: add settings.py env vars (bulk/baby download, regions, static asset url, elasticsearch)
       lineinfile:
@@ -159,23 +179,6 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*DEBUG =.*'
         line: "DEBUG = False"
-
-    - name: add datadog configuration (1)
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        insertafter: "^    'django.contrib.postgres',\n"
-        line: "    'ddtrace.contrib.django',"
-        state: present
-
-    - name: add datadog configuration (2)
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        insertafter: "^INTERNAL_IPS = ()\n"
-        line: "DATADOG_TRACE = {\n
-            'DEFAULT_SERVICE': 'USASpending-api-Sandbox',\n
-            'TAGS': {'env': 'sandbox'},\n"
-        state: present
-
 
     - name: add host to ALLOWED_HOSTS
       lineinfile:
@@ -225,7 +228,7 @@
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
 
- # SSL Certificates
+#===============================  SSL Certs  ===============================#
 
     - name: copy public.pem from S3 Bucket
       become: true 
@@ -235,9 +238,9 @@
       become: true 
       shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
         
- # config/filebeat/filebeat.yml
+#===============================  Filebeat Configuration  ===============================#
 
-    - name: copy filebeat config
+    - name: copy filebeat.yml config to it's home dir
       become: true
       copy:
         src:  "{{ CONFIG_HOME }}/deploy/elk/usaspending_api_filebeat.yml"
@@ -251,7 +254,7 @@
         regexp: 'index: filebeat'
         replace: "index: usaspending-api-{{ vars['envs'][BRANCH]['env_short'] }}"
 
-# setup supervisord.service
+#===============================  Setup supervisord.service  ===============================#
 
     - name: make supervisord.service directory
       become: true
@@ -275,7 +278,7 @@
         src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
         dest: "/usr/lib/systemd/system/supervisord.service"
 
- # start/stop services
+#===============================  Enable and Restart Services  ===============================#
 
     - name: enable & restart datadog-agent service
       become: true
@@ -300,5 +303,4 @@
       debug: 
         msg="{{ status.stdout }}"
 
-# =============================== EOF ========================================== #
-
+#===============================  EOF  ===============================#

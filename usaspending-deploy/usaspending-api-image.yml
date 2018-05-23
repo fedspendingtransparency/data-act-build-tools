@@ -1,20 +1,20 @@
+#===============================  USASPENDING-API-IMAGE PLAYBOOK  ===============================#
+
 ---
 - hosts: "{{ HOST }}"
 
+  become_method: sudo
+  user: ec2-user
+
   vars:
     BRANCH: "{{ BRANCH }}"
-
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git   
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
 
-  become_method: sudo
-
-  user: ec2-user
-
   tasks:
 
-# Copy Git Credentials from S3 Bucket
+#=============================== Copy Git Credentials from S3 Bucket ===============================#
 
     - name: copy git credentials from S3 Bucket
       shell: "aws s3 cp s3://da-config/usaspending/id_rsa_usaspending_config /home/ec2-user/.ssh/ --region us-gov-west-1"
@@ -25,7 +25,7 @@
         path: /home/ec2-user/.ssh/id_rsa_usaspending_config
         mode: 0400
 
-# Git Checkout
+#===============================  Git Checkout  ===============================#
 
     - name: checkout backend from git
       become: true
@@ -53,7 +53,7 @@
       become: true
       file: path=/tmp owner=ec2-user recurse=yes
   
-# Install Packages  
+#===============================  Install PIP Packages  ===============================#
 
     - name: update pip
       become: true 
@@ -91,7 +91,7 @@
         line: "cd {{ CODE_HOME }}"
         insertafter: EOF 
 
-# Configure DataDog Key
+#===============================  Configure DataDog Key  ===============================#
 
     - name: copy datadog_key from S3
       become: true 
@@ -113,7 +113,7 @@
         src: "/data-act/config/deploy/datadog.yml"
         dest: "/etc/datadog-agent/datadog.yml"
 
-# Logrotate
+#===============================  Logrotate  ===============================#
 
     - name: move logrotate into nightly cron
       become: true
@@ -121,3 +121,5 @@
         src:  "/data-act/config/deploy/elk/usaspending-api.logrotate"
         dest: "/etc/logrotate.d/usaspending-api"
         remote_src: true
+
+#===============================  EOF  ===============================#
