@@ -89,9 +89,9 @@
     - name: add datadog label (app_name)
       become: true
       lineinfile:
-        dest: "/etc/datadog-agent/datadog.yml"
+        dest: "/etc/datadog-agent/datadog.yaml"
         regexp: ' env: .*'
-        line: "  env:  usaspending-api-{{ BRANCH }}"
+        line: "  env:  USASpending-{{ BRANCH }}"
 
     - name: ensure dd-agent ownership for datadog directory
       become: true
@@ -130,8 +130,8 @@
         insertafter: "^INTERNAL_IPS = ()"
         line: |
           DATADOG_TRACE = {
-              'DEFAULT_SERVICE': 'USASpending-api-Sandbox',
-              'TAGS': {'env': 'usaspending-api-{{ BRANCH }}'},
+            'DEFAULT_SERVICE': 'API,
+            'TAGS': {},
           }
         state: present
 
