@@ -150,6 +150,15 @@
         - { regexp: '\s*STATIC_URL =.*',
             line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}{{ BRANCH }}/'" }
 
+        - { regexp: '^CFDA_BUCKET_NAME =.*',
+            line: "CFDA_BUCKET_NAME = '{{ CFDA_BUCKET_NAME }}'" }
+
+        - { regexp: '^CFDA_REGION =.*',
+            line: "CFDA_REGION = '{{ CFDA_REGION }}'" }
+
+        - { regexp: '^CFDA_FILE_PATH =.*',
+            line: "CFDA_FILE_PATH = '{{ CFDA_FILE_PATH }}'" }
+
     - name: turn debug off in production or staging
       when: BRANCH == 'master' or BRANCH == 'stg'
       lineinfile:
