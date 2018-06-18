@@ -2,6 +2,8 @@
 # Installs Jenkins dependencies. 
 # This playbook is for BUILD-Jenkkins 
 
+# NOTE - This is not an implemented playbook; it has not been used to build our current Jenkins instance.
+
 ---
 - hosts: "{{ HOST }}"
 
