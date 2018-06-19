@@ -17,11 +17,16 @@
 
     - name: pull repo - change ownership to /home/ec2-user.ssh/
       become: true
-      file: path=/home/ec2-user/.ssh/ owner=ec2-user recurse=yes
+      file: 
+        path: /home/ec2-user/.ssh/
+        owner: ec2-user
+        recurse: yes
 
     - name: pull repo - change mode for the id_rsa_broker_config
-      become: true 
-      shell: chmod 400 /home/ec2-user/.ssh/id_rsa_broker_config
+      become: true
+      file: 
+        path: /home/ec2-user/.ssh/id_rsa_broker_config
+        mode: 0400
 
     - name: pull repo - checkout backend from git
       become: true
