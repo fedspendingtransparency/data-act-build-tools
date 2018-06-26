@@ -6,6 +6,8 @@
   vars:
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
 
+    ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
+
     ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
@@ -31,7 +33,7 @@
   tasks:
     
     - name: Load variables from config repo
-      include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
+      include_vars: /{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml
 
   # /etc/nginx/nginx.conf
 

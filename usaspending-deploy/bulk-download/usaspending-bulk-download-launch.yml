@@ -9,7 +9,7 @@
   vars:
 # Bulk Vars Options: sandbox, dev, staging, prod
 
-    BULK_VARS_PREFIX: "{{ BULK_VARS_PREFIX }}"
+    ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
     CONFIG_HOME: "/data-act/config"
     CODE_HOME: "/data-act/backend"
 
@@ -19,7 +19,7 @@
   tasks:  
 
     - name: Load variables from config repo
-      include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
+      include_vars: /{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml
 
 # usaspending_api/settings.py (for running the actual generate download command)
 
