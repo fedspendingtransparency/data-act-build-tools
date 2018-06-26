@@ -40,6 +40,9 @@
         - { regexp: "^BULK_DOWNLOAD_AWS_REGION =.*", 
             line:   "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'" }
 
+        - { regexp: '^USASPENDING_AWS_REGION =.*',
+            line: "USASPENDING_AWS_REGION = '{{ USASPENDING_AWS_REGION }}'" }
+
     - name: set ES_HOSTNAME
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
