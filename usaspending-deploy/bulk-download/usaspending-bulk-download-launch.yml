@@ -3,8 +3,7 @@
 
 # NOTE: This should run after usaspending-api-image.yml
 
-# Required: {{ BULK_VARS_PREFIX }}, the prefix to the .yml with bulk download vars 
-#           AND = the path to the DB URL, either dev or sandbox
+# Required: {{ ANSIBLE_VARS_ENV }}, the prefix to the .yml with ansible vars 
 
   vars:
 # Bulk Vars Options: sandbox, dev, staging, prod
@@ -49,10 +48,10 @@
 
     - name: download secrets from S3 bucket
       become: true
-      shell: "aws s3 cp s3://da-config/usaspending/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
+      shell: "aws s3 cp s3://da-config/usaspending/{{ ANSIBLE_VARS_ENV }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
     - name: load secrets (DB_SOURCE)
-      include_vars: /etc/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml
+      include_vars: /etc/{{ ANSIBLE_VARS_ENV }}-usaspending-api-secrets.yml
 
 # config/filebeat/filebeat.yml
 
@@ -68,7 +67,7 @@
       replace:
         dest: "/etc/filebeat/filebeat.yml"
         regexp: 'index: filebeat'
-        replace: "index: usaspending-bd-{{ BULK_VARS_PREFIX }}"
+        replace: "index: usaspending-bd-{{ ANSIBLE_VARS_ENV }}"
 
 
 # Start Worker
