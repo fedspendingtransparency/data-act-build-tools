@@ -6,6 +6,8 @@
   vars:
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
 
+    ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
+
     ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
