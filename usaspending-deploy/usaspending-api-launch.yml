@@ -31,7 +31,7 @@
   tasks:
     
     - name: Load variables from config repo
-      include_vars: /{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BULK_VARS_PREFIX }}.yml
+      include_vars: /{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml
 
   # /etc/nginx/nginx.conf
 
