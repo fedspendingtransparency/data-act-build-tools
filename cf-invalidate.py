@@ -6,13 +6,9 @@ import time
 # Set arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', nargs='?', const='staging', default='staging', type=str)
-parser.add_argument('--prf', nargs='?', const='default', default='default', type=str)
 args = parser.parse_args()
 
-
-# Create Cloudfront client based on specified profile
-session = boto3.Session(profile_name=args.prf)
-client = session.client('cloudfront', region_name='us-east-1')
+client = boto3.client('cloudfront')
 
 # Get distribution Id
 response = client.list_distributions()
