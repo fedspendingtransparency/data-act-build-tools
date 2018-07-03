@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 # Create Cloudfront client based on specified profile
 session = boto3.Session(profile_name=args.prf)
-client = session.client('cloudfront')
+client = session.client('cloudfront', region_name='us-east-1')
 
 # Get distribution Id
 response = client.list_distributions()
