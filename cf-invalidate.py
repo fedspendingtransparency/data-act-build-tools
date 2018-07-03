@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--env', nargs='?', const='staging', default='staging', type=str)
 args = parser.parse_args()
 
-client = boto3.client('cloudfront')
+client = boto3.client('cloudfront', region_name='us-east-1')
 
 # Get distribution Id
 response = client.list_distributions()
