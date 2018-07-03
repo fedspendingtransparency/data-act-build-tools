@@ -1,18 +1,22 @@
 import boto3
 import argparse
 import time
+import os
 
 # Usage - python invalidate.py --url 'www.example.com'
-
-# REQUIRED - AWS Profile/Key 
-PROFILE_VAR = 'cf-invalidation'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--url', required=True, type=str)
 args = parser.parse_args()
 url = args.url
 
-session = boto3.Session(profile_name=PROFILE_VAR)
+session = boto3.Session (
+	aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+	aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+	region_name='us-east-1',
+# REQUIRED - AWS Profile/Key 
+	profile_name=os.environ['AWS_PROFILE'])
+
 client = session.client('cloudfront')
 
 # Get distribution ID
