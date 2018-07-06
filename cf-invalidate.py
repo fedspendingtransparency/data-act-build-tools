@@ -13,7 +13,8 @@ client = boto3.client(
 	'cloudfront', 
 	aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
 	aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-	region_name='us-east-1'
+	region_name='us-east-1',
+	profile_name='cf-invalidation'
 )
 
 # Get distribution Id
