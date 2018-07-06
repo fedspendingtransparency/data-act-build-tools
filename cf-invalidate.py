@@ -9,13 +9,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--env', nargs='?', const='staging', default='staging', type=str)
 args = parser.parse_args()
 
-client = boto3.client(
-	'cloudfront', 
+session = boto3.Session (
 	aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
 	aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
 	region_name='us-east-1',
-	profile_name='cf-invalidation'
-)
+# REQUIRED - AWS Profile/Key 
+	profile_name='cf-invalidation')
+
+client = session.client('cloudfront')
 
 # Get distribution Id
 response = client.list_distributions()
