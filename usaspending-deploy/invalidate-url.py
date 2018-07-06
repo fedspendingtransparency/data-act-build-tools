@@ -15,7 +15,7 @@ session = boto3.Session (
 	aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
 	region_name='us-east-1',
 # REQUIRED - AWS Profile/Key 
-	profile_name=os.environ['AWS_PROFILE'])
+	profile_name='cf-invalidation')
 
 client = session.client('cloudfront')
 
