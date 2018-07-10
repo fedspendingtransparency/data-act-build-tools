@@ -12,7 +12,7 @@ def deploy():
     # This tf_var file is expected to be copied from an external source
     tfvar_file   = 'usaspending-bulk-download-vars.tf.json'
 
-    tf_exec_path = '/terraform/terraform'
+    tf_exec_path = '/opt/terraform'
     tf_file      = 'usaspending-deploy.tf'
 
     # Set connection
