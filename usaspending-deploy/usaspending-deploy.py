@@ -140,8 +140,8 @@ def deploy():
         update_terraform_user_data('prod')  
 
         # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
+        real_time_command([tf_exec_path, 'plan', '-input=false'])
+        real_time_command([tf_exec_path, 'apply', '-input=false'])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
