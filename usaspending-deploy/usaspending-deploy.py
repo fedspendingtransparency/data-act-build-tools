@@ -141,7 +141,7 @@ def deploy():
 
         # Run Terraform plan and apply
         real_time_command([tf_exec_path, 'plan', '-input=false'])
-        real_time_command([tf_exec_path, 'apply', '-input=false'])
+        real_time_command([tf_exec_path, 'apply', '-input=false', '-auto-approve'])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
