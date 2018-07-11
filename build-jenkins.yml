@@ -79,6 +79,15 @@
         - wheel
         - virtualenv-clone
 
+    - name: Install pip3.5 packages
+      become: true
+      pip: 
+        name: "{{ item }}"
+        state: present
+        executable: pip3.5
+      with_items:
+        - boto3
+        
     - name: Create /opt/terraform directory
       become: true
       file: 
