@@ -73,11 +73,6 @@
       with_items:
         - awscli
         - boto
-        - boto3
-        - sh
-        - python-packer
-        - wheel
-        - virtualenv-clone
 
     - name: Install pip3.5 packages
       become: true
@@ -87,6 +82,10 @@
         executable: pip3.5
       with_items:
         - boto3
+        - sh
+        - python-packer
+        - wheel
+        - virtualenv-clone
         
     - name: Create /opt/terraform directory
       become: true
