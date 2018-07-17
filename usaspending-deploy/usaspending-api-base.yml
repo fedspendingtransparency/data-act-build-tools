@@ -96,7 +96,8 @@
 
     - name: Install New Relic Infrastructure
       become: true
-      yum: name=newrelic-infra
+      yum: 
+        name: newrelic-infra
 
     - name: install filebeat (from filebeat repo)
       become: true
