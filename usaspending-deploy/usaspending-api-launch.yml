@@ -134,18 +134,6 @@
         - { regexp: '^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*', 
             line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'" }
 
-        - { regexp: '^BULK_DOWNLOAD_AWS_REGION =.*', 
-            line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'" }
-
-        - { regexp: '^CSV_S3_BUCKET_NAME =.*',
-            line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'" }
-
-        - { regexp: '^CSV_SQS_QUEUE_NAME =.*', 
-            line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'" }
-
-        - { regexp: '^CSV_AWS_REGION =.*', 
-            line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'" }
-
         - { regexp: '\s*ES_HOSTNAME\*=.*',
             line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'" }
 
