@@ -30,18 +30,15 @@
       with_items:
         - { regexp: "^IS_LOCAL =.*", 
             line:   "IS_LOCAL = False" }
+
+        - { regexp: '^USASPENDING_AWS_REGION =.*',
+            line: "USASPENDING_AWS_REGION = '{{ USASPENDING_AWS_REGION }}'" }
             
         - { regexp: "^BULK_DOWNLOAD_S3_BUCKET_NAME =.*", 
             line:   "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
         - { regexp: "^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*", 
             line:   "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'" }
-
-        - { regexp: "^BULK_DOWNLOAD_AWS_REGION =.*", 
-            line:   "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'" }
-
-        - { regexp: '^USASPENDING_AWS_REGION =.*',
-            line: "USASPENDING_AWS_REGION = '{{ USASPENDING_AWS_REGION }}'" }
 
     - name: set ES_HOSTNAME
       lineinfile:
