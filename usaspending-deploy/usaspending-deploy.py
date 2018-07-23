@@ -141,6 +141,7 @@ def deploy():
         update_terraform_user_data('prod')  
 
         # Run Terraform plan and apply
+        real_time_command([tf_exec_path, 'init', '.'])
         real_time_command([tf_exec_path, 'plan', '--input=false'])
         real_time_command([tf_exec_path, 'apply', '--input=false', '--auto-approve'])
 

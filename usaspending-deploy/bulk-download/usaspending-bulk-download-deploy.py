@@ -67,6 +67,7 @@ def deploy():
     update_tf_ami(current_api_ami, tfvar_file)
 
     # Run Terraform plan and apply
+    real_time_command([tf_exec_path, 'init', '.'])
     real_time_command([tf_exec_path, 'plan', "--input=false"])
     real_time_command([tf_exec_path, 'apply', "--input=false", "--auto-approve"])
 
