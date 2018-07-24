@@ -91,7 +91,7 @@ def deploy():
     # Build New AMI (Packer)
         print('**************************************************************************')
         print(' Building new AMI via Packer. This can take a while...')
-        packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable', '-debug'])
+        packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
         ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
         new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
         print('Done. New AMI created: ' + new_instance_ami)
