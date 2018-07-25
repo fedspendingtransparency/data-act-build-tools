@@ -2,32 +2,6 @@ provider "aws" {
     region = "${var.aws_region}"
 }
 
-// terraform state file setup
-resource "aws_s3_bucket" "terraform-state-storage-s3" {
-  bucket = "terraform-remote-state-files/usaspending-sandbox/"
- 
-  versioning {
-    enabled = true
-  }
-
-  lifecycle {
-    prevent_destroy = true
-  }
-
-  tags {
-    Name = "S3 Remote Terraform State Store"
-  }      
-}
-
-terraform {
-  backend “s3” {
-  encrypt = true
-  bucket = "terraform-remote-state-files/usaspending-sandbox/"
-  region = us-gov-west-1
-  key = /var/lib/jenkins/workspace/USASpending-Sandbox-Pipeline/tools/usaspending-deploy/
-  }
-}
-
 resource "aws_autoscaling_group" "api-asg" {
   name = "${var.api_name_prefix}_ASG_${lookup(var.aws_amis, var.aws_region)}"
   max_size = "${var.api_asg_max}"
