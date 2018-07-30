@@ -16,8 +16,8 @@ def deploy():
     # set paths
     packer_file = 'broker-packer.json'
     tfvar_file = 'broker-vars.tf.json'
-    packer_exec_path = '/packer/packerio'
-    tf_exec_path = '/terraform/terraform'
+    packer_exec_path = '/opt/packer/packerio'
+    tf_exec_path = '/opt/terraform/terraform'
 
     parser = argparse.ArgumentParser()
 
@@ -105,8 +105,9 @@ def deploy():
         update_lc_ami(ami_id, tfvar_file, deploy_env)
 
         #Run terraform
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
+        real_time_command([tf_exec_path, 'init', '.'])
+        real_time_command([tf_exec_path, 'plan', "--input=false"])     
+        real_time_command([tf_exec_path, 'apply', "--input=false", "--auto-approve"])
 
     elif optionsDict["prod"]:
         #For prod, we don't build a new artifact, we just run terraform against the current staging AMI
@@ -117,8 +118,9 @@ def deploy():
         update_lc_ami(staging_ami, tfvar_file, deploy_env)
         print(staging_ami)
         #Run terraform
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
+        real_time_command([tf_exec_path, 'init', '.'])
+        real_time_command([tf_exec_path, 'plan', "--input=false"])     
+        real_time_command([tf_exec_path, 'apply', "--input=false", "--auto-approve"])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
