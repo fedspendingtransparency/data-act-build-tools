@@ -31,6 +31,19 @@
         url: "https://pkg.jenkins.io/redhat-stable/jenkins.repo"
         dest: "/etc/yum.repos.d/jenkins.repo"
 
+    - name: Setup Docker repo
+      become: true
+      get_url:
+        url: "https://download.docker.com/linux/centos/docker-ce.repo"
+        dest: "/etc/yum.repos.d/docker-ce.repo"
+
+    - name: Install dependencies for docker
+      become: true
+      yum: name={{ item }}
+      with_items:
+        - http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.42-1.gitad8f0f7.el7.noarch.rpm
+        - http://mirror.centos.org/centos/7/extras/x86_64/Packages/pigz-2.3.3-1.el7.centos.x86_64.rpm
+
     - name: Import jenkins key 
       become: true
       rpm_key:
@@ -63,6 +76,8 @@
         - vim
         - telnet
         - jenkins
+        - yum-utils
+        - docker-ce
 
     - name: Install all pip packages
       become: true
@@ -100,10 +115,6 @@
         src: https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip
         dest: /opt/terraform
         remote_src: yes
-
-    # - name: Execute terraform (terraform init)
-    #   become: true
-    #   shell: /opt/terraform/terraform init /var/lib/jenkins/workspace/USASpending-Sandbox-Pipeline/tools/usaspending-deploy/
 
     - name: Create /opt/packer directory
       become: true
