@@ -1,8 +1,11 @@
-# Base Ansible to run on a fresh RHEL7 install.
-# Installs Broker API/Validator dependencies that are mutal across environments.
+#============================ Broker-BASE-Playbook  ============================#
 
-# TODO: This does not include newrelic infrastructure setup
-# This does not include the necessary certs and RDS keys
+#===============================  Notes  ================================#
+#  - Base Ansible playbook to run on a fresh RHEL7 install               #
+#  - Installs API dependencies that are mutal across environments.       #
+#  - This does not include the necessary certs & RDS keys to run the API #
+#  -                                                                     #
+#========================================================================#
 
 ---
 - hosts: "{{ HOST }}"
@@ -30,7 +33,6 @@
       with_items:
         - git
         - python-pip
-        - ansible
         - mlocate
         - vim
         - telnet
@@ -50,6 +52,13 @@
         - pcre.x86_64
         - pcre-devel.x86_64
 
+    - name: install ansible-2.4.2.0 package via pip
+      become: true
+      pip: 
+        name: ansible
+        version: 2.4.2.0
+        executable: pip3.5
+
     - name: setsebool command
       shell: setsebool -P httpd_can_network_connect=1
       become: true
@@ -57,19 +66,25 @@
     - name: install nginx (from nginx repo)
       become: true
       yum: 
-        name=http://nginx.org/packages/mainline/centos/7/x86_64/RPMS/nginx-1.13.8-1.el7_4.ngx.x86_64.rpm
+        name: http://nginx.org/packages/mainline/centos/7/x86_64/RPMS/nginx-1.13.8-1.el7_4.ngx.x86_64.rpm
 
     - name: install aws cli pip package
       become: true
-      pip: name=awscli executable=pip
-
-    - name: install New Relic APM
+      pip: 
+        name: awscli
+        executable: pip
+      
+    - name: install NewRelic APM
       become: true
-      pip: name=newrelic executable=pip3.5
+      pip: 
+        name: newrelic
+        executable: pip3.5
 
-    - name: Download New Relic Infrastructure
+    - name: download NewRelic Infrastructure
       become: true
-      shell: curl -o /etc/yum.repos.d/newrelic-infra.repo https://download.newrelic.com/infrastructure_agent/linux/yum/el/7/x86_64/newrelic-infra.repo
+      get_url:
+        url: "https://download.newrelic.com/infrastructure_agent/linux/yum/el/7/x86_64/newrelic-infra.repo"
+        dest: /etc/yum.repos.d/newrelic-infra.repo
 
     - name: Update cache for New Relic Infrastructure
       become: true
@@ -77,23 +92,39 @@
 
     - name: Install New Relic Infrastructure
       become: true
-      yum: name=newrelic-infra
+      yum: 
+        name: newrelic-infra
 
     - name: install filebeat (from filebeat repo)
       become: true
       yum: 
-        name=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
+        name: https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
 
-    - name: show timestamp in history (root)
+    - name: Show timestamp in history (root)
       become: true
-      shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+      lineinfile: 
+        dest: /root/.bash_profile
+        line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
+        state: present
 
-    - name: show timestamp in history (ec2-user)
-      shell: echo 'export HISTTIMEFORMAT="%d/%m/%y %T "' >> ~/.bash_profile
+    - name: Show timestamp in history (ec2-user)
+      lineinfile: 
+        dest: /home/ec2-user/.bash_profile
+        line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
+        state: present
 
-    - name: colorize (root)
+    - name: Colorize (root)
       become: true
-      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+      lineinfile: 
+        dest: /root/.bash_profile
+        line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
+        state: present
 
-    - name: colorize (ec2-user)
-      shell: echo 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"' >> ~/.bash_profile
+    - name: Colorize (ec2-user)
+      lineinfile:
+        dest: /home/ec2-user/.bash_profile
+        line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
+        state: present
+
+#====================================  EOF  ====================================# 
+
