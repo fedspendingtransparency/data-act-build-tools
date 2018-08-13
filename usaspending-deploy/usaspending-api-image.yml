@@ -67,19 +67,31 @@
 
     - name: install python packages based on requirements.txt
       become: true 
-      pip: chdir="{{ REQ_DIR }}" requirements="requirements.txt" executable=pip3.5
+      pip:
+        chdir: "{{ REQ_DIR }}"
+        requirements: requirements.txt
+        executable: pip3.5
 
     - name: install python packages based on caching_requirements.txt
       become: true 
-      pip: chdir="{{ REQ_DIR }}" requirements="caching_requirements.txt" executable=pip3.5
+      pip:
+        chdir: "{{ REQ_DIR }}"
+        requirements: caching_requirements.txt
+        executable: pip3.5
 
     - name: install python packages based on server_requirements.txt
       become: true
-      pip: chdir="{{ REQ_DIR }}" requirements="server_requirements.txt" executable=pip3.5
+      pip:
+        chdir: "{{ REQ_DIR }}"
+        requirements: server_requirements.txt
+        executable: pip3.5
 
     - name: install python packages based on legacy_requirements.txt
       become: true
-      pip: chdir="{{ REQ_DIR }}" requirements="legacy_requirements.txt" executable=pip2
+      pip:
+        chdir: "{{ REQ_DIR }}"
+        requirements: legacy_requirements.txt
+        executable: pip2
 
     - name: ensure the correct directory structure for tmp nginx files
       become: true
