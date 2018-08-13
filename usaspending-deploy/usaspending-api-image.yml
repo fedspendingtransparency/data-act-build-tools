@@ -47,11 +47,17 @@
 
     - name: assign ownership of api to ec2-user
       become: true
-      file: path=/data-act owner=ec2-user recurse=yes
+      file:
+        path: /data-act/ 
+        owner: ec2-user
+        recurse: yes
 
     - name: assign ownership of tmp to ec2-user
       become: true
-      file: path=/tmp owner=ec2-user recurse=yes
+      file:
+        path: /tmp
+        owner: ec2-user
+        recurse: yes
   
 #===============================  Install PIP Packages  ===============================#
 
@@ -89,7 +95,7 @@
       lineinfile: 
         dest: /home/ec2-user/.bashrc
         line: "cd {{ CODE_HOME }}"
-        insertafter: EOF 
+        insertafter: EOF
 
 #===============================  Configure DataDog Key  ===============================#
 
