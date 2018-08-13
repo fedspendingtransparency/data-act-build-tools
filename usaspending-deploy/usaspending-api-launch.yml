@@ -131,8 +131,8 @@
         insertafter: "^INTERNAL_IPS = ()"
         line: |
           DATADOG_TRACE = {
-            'DEFAULT_SERVICE': 'API,
-            'TAGS': {},
+            'DEFAULT_SERVICE': 'API',
+            'TAGS': {'env': 'usaspending-api-{{ BRANCH }}'},
           }
         state: present
 
@@ -147,23 +147,14 @@
         - { regexp: "^IS_LOCAL =.*", 
             line:   "IS_LOCAL = False" }
 
+        - { regexp: '^USASPENDING_AWS_REGION =.*',
+            line: "USASPENDING_AWS_REGION = '{{ USASPENDING_AWS_REGION }}'" }
+
         - { regexp: '^BULK_DOWNLOAD_S3_BUCKET_NAME =.*',
             line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
         - { regexp: '^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*', 
             line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'" }
-
-        - { regexp: '^BULK_DOWNLOAD_AWS_REGION =.*', 
-            line: "BULK_DOWNLOAD_AWS_REGION = '{{ CSV_AWS_REGION }}'" }
-
-        - { regexp: '^CSV_S3_BUCKET_NAME =.*',
-            line: "CSV_S3_BUCKET_NAME = '{{ CSV_S3_BUCKET_NAME }}'" }
-
-        - { regexp: '^CSV_SQS_QUEUE_NAME =.*', 
-            line: "CSV_SQS_QUEUE_NAME = '{{ CSV_SQS_QUEUE_NAME }}'" }
-
-        - { regexp: '^CSV_AWS_REGION =.*', 
-            line: "CSV_AWS_REGION = '{{ CSV_AWS_REGION }}'" }
 
         - { regexp: '\s*ES_HOSTNAME\*=.*',
             line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'" }
@@ -173,6 +164,15 @@
 
         - { regexp: '\s*STATIC_URL =.*',
             line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}{{ BRANCH }}/'" }
+
+        - { regexp: '^CFDA_BUCKET_NAME =.*',
+            line: "CFDA_BUCKET_NAME = '{{ CFDA_BUCKET_NAME }}'" }
+
+        - { regexp: '^CFDA_REGION =.*',
+            line: "CFDA_REGION = '{{ CFDA_REGION }}'" }
+
+        - { regexp: '^CFDA_FILE_PATH =.*',
+            line: "CFDA_FILE_PATH = '{{ CFDA_FILE_PATH }}'" }
 
     - name: turn debug off in production or staging
       when: BRANCH == 'master' or BRANCH == 'stg'
@@ -241,7 +241,7 @@
         
 #===============================  Filebeat Configuration  ===============================#
 
-    - name: copy filebeat.yml config to it's home dir
+    - name: copy filebeat config
       become: true
       copy:
         src:  "{{ CONFIG_HOME }}/deploy/elk/usaspending_api_filebeat.yml"
