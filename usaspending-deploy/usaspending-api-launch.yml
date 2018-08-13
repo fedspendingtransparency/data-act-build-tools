@@ -15,7 +15,6 @@
 
   vars:
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
-    ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
 
@@ -31,10 +30,12 @@
     PROD_CACHE_TIMEOUT: None
     NONPROD_CACHE_TIMEOUT: 600
 
+    ansible_python_interpreter: "/usr/bin/python"
+
   tasks:
-    
+
     - name: Load variables from config repo
-      include_vars: /{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml
+      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
 
 #===============================  Nginx Config  ===============================#
 
@@ -74,8 +75,8 @@
       become: true
       shell: " aws s3 cp s3://da-config/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
-    - name: load secrets 
-      include_vars: /etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml
+    - name: load secrets
+      include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
 
     - name: add DB_SOURCE to uswgi ini
       become: true
@@ -132,7 +133,7 @@
         line: |
           DATADOG_TRACE = {
             'DEFAULT_SERVICE': 'API',
-            'TAGS': {'env': 'usaspending-api-{{ BRANCH }}'},
+            'TAGS': {'env': 'USASpending-{{ BRANCH }}'},
           }
         state: present
 
@@ -302,6 +303,6 @@
     - name: output the statuses 
       become: true
       debug: 
-        msg="{{ status.stdout }}"
+        msg: "{{ status.stdout }}"
 
 #===============================  EOF  ===============================#
