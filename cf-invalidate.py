@@ -1,21 +1,17 @@
 import boto3
 import argparse
 import time
-import os
 
 
 # Set arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', nargs='?', const='staging', default='staging', type=str)
+parser.add_argument('--prf', nargs='?', const='default', default='default', type=str)
 args = parser.parse_args()
 
-session = boto3.Session (
-	aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-	aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-	region_name='us-east-1',
-# REQUIRED - AWS Profile/Key 
-	profile_name='cf-invalidation')
 
+# Create Cloudfront client based on specified profile
+session = boto3.Session(profile_name=args.prf)
 client = session.client('cloudfront')
 
 # Get distribution Id

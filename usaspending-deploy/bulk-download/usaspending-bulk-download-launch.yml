@@ -3,12 +3,13 @@
 
 # NOTE: This should run after usaspending-api-image.yml
 
-# Required: {{ ANSIBLE_VARS_ENV }}, the prefix to the .yml with ansible vars 
+# Required: {{ BULK_VARS_PREFIX }}, the prefix to the .yml with bulk download vars 
+#           AND = the path to the DB URL, either dev or sandbox
 
   vars:
 # Bulk Vars Options: sandbox, dev, staging, prod
 
-    ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
+    BULK_VARS_PREFIX: "{{ BULK_VARS_PREFIX }}"
     CONFIG_HOME: "/data-act/config"
     CODE_HOME: "/data-act/backend"
 
@@ -18,7 +19,7 @@
   tasks:  
 
     - name: Load variables from config repo
-      include_vars: /{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml
+      include_vars: /{{ CONFIG_HOME }}/deploy/{{ BULK_VARS_PREFIX }}-bulk-download-vars-ansible.yml
 
 # usaspending_api/settings.py (for running the actual generate download command)
 
@@ -30,15 +31,15 @@
       with_items:
         - { regexp: "^IS_LOCAL =.*", 
             line:   "IS_LOCAL = False" }
-
-        - { regexp: '^USASPENDING_AWS_REGION =.*',
-            line: "USASPENDING_AWS_REGION = '{{ USASPENDING_AWS_REGION }}'" }
             
         - { regexp: "^BULK_DOWNLOAD_S3_BUCKET_NAME =.*", 
             line:   "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
         - { regexp: "^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*", 
             line:   "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'" }
+
+        - { regexp: "^BULK_DOWNLOAD_AWS_REGION =.*", 
+            line:   "BULK_DOWNLOAD_AWS_REGION = '{{ BULK_DOWNLOAD_AWS_REGION }}'" }
 
     - name: set ES_HOSTNAME
       lineinfile:
@@ -48,10 +49,10 @@
 
     - name: download secrets from S3 bucket
       become: true
-      shell: "aws s3 cp s3://da-config/usaspending/{{ ANSIBLE_VARS_ENV }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
+      shell: "aws s3 cp s3://da-config/usaspending/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
     - name: load secrets (DB_SOURCE)
-      include_vars: /etc/{{ ANSIBLE_VARS_ENV }}-usaspending-api-secrets.yml
+      include_vars: /etc/{{ BULK_VARS_PREFIX }}-usaspending-api-secrets.yml
 
 # config/filebeat/filebeat.yml
 
@@ -67,7 +68,7 @@
       replace:
         dest: "/etc/filebeat/filebeat.yml"
         regexp: 'index: filebeat'
-        replace: "index: usaspending-bd-{{ ANSIBLE_VARS_ENV }}"
+        replace: "index: usaspending-bd-{{ BULK_VARS_PREFIX }}"
 
 
 # Start Worker
