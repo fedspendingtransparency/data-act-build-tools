@@ -7,10 +7,11 @@
   user: ec2-user
 
   vars:
-    BRANCH: "{{ BRANCH }}"
+    BRANCH: "datadog-config"
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git   
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
+    ansible_python_interpreter: "/usr/bin/python"
 
   tasks:
 
@@ -105,7 +106,7 @@
     - name: set starting directory to CODE_HOME
       become: true
       lineinfile: 
-        dest: /home/ec2-user/.bashrc
+        dest: "/home/ec2-user/.bashrc"
         line: "cd {{ CODE_HOME }}"
         insertafter: EOF
 
@@ -118,18 +119,18 @@
     - name: load datadog_key var
       include_vars: /etc/datadog_key.yml
 
-    - name: add Datadog license key to datadog.yml
+    - name: add Datadog license key to datadog.yaml
       become: true
       lineinfile:
-        dest: "/data-act/config/deploy/datadog.yml"
+        dest: "/data-act/config/deploy/datadog.yaml"
         regexp: '\s*api_key: .*'
         line: "api_key: {{ DD_KEY }}"
 
     - name: copy datadog.yml to it's home location
       become: true
       copy: 
-        src: "/data-act/config/deploy/datadog.yml"
-        dest: "/etc/datadog-agent/datadog.yml"
+        src: "/data-act/config/deploy/datadog.yaml"
+        dest: "/etc/datadog-agent/datadog.yaml"
 
 #===============================  Logrotate  ===============================#
 
