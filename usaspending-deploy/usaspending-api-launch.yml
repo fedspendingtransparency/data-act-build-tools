@@ -1,19 +1,23 @@
+#===============================  USASPENDING-API-LAUNCH PLAYBOOK  ===============================#
+
+#===============================  Notes  ===============================#
+#  - Branch options: sandbox, dev, stg, master, used for filebeat index #
+#  - 'envs' used for filebeat to translate                              #
+#  - You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL           #
+#=======================================================================#
+
+
 ---
 - hosts: "{{ HOST }}"
 
-# You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL
+  become_method: sudo
+  user: ec2-user
 
   vars:
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
-
-    ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
-
-    ## Branch options: sandbox, dev, stg, master
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
 
-    ## Used only for filebeat: 'envs' is used to translate
-    ## BRANCH options above into filebeat.yml index
     envs:
       master: {env_long: prod, env_short: prod}
       stg: {env_long: staging, env_short: stg}
@@ -26,16 +30,14 @@
     PROD_CACHE_TIMEOUT: None
     NONPROD_CACHE_TIMEOUT: 600
 
-  become_method: sudo
-
-  user: ec2-user
+    ansible_python_interpreter: "/usr/bin/python"
 
   tasks:
-    
-    - name: Load variables from config repo
-      include_vars: /{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml
 
-  # /etc/nginx/nginx.conf
+    - name: Load variables from config repo
+      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
+
+#===============================  Nginx Config  ===============================#
 
     - name: set nginx configuration path to SSL
       set_fact:
@@ -60,7 +62,7 @@
         dest: "/etc/nginx/nginx.conf"
         remote_src: true
 
-# config/uwsgi.ini
+#===============================  uwsgi_db.ini Setup  ===============================#
 
     - name: duplicate config file to uwsgi_db.ini
       become: true
@@ -73,8 +75,8 @@
       become: true
       shell: " aws s3 cp s3://da-config/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
-    - name: load secrets 
-      include_vars: /etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml
+    - name: load secrets
+      include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
 
     - name: add DB_SOURCE to uswgi ini
       become: true
@@ -84,13 +86,23 @@
       become: true
       shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
-# New Relic Settings
+#===============================  DataDog Configuration  ===============================#
 
-    - name: add newrelic label (app_name)
+    - name: add datadog label (app_name)
+      become: true
       lineinfile:
-        dest: "{{ CODE_HOME }}/config/newrelic.ini"
-        regexp: '\s*app_name =.*'
-        line: "app_name = usaspending-api-{{ BRANCH }}"
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: ' env: .*'
+        line: "  env:  USASpending-{{ BRANCH }}"
+
+    - name: ensure dd-agent ownership for datadog directory
+      become: true
+      file: 
+        path: "/etc/datadog-agent/"
+        state: directory
+        owner: dd-agent
+        group: dd-agent
+        recurse: yes
         
     - name: add single-interpreter to uwsgi_db.ini
       become: true
@@ -105,16 +117,27 @@
         dest: "{{ CODE_HOME }}/config/supervisord.conf"
         section: "program:uwsgi"
         option: command
-        value: "newrelic-admin run-program uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
-        
-    - name: modify supervisord configuration (environment)
-      ini_file:
-        dest: "{{ CODE_HOME }}/config/supervisord.conf"
-        section: "program:uwsgi"
-        option: environment
-        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE={{ CODE_HOME }}/config/newrelic.ini"
+        value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
 
- # usaspending_api/settings.py
+    - name: add datadog configuration (1)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        insertafter: "^    'django.contrib.postgres',\n"
+        line: "    'ddtrace.contrib.django',"
+        state: present
+
+    - name: add datadog configuration (2)
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        insertafter: "^INTERNAL_IPS = ()"
+        line: |
+          DATADOG_TRACE = {
+            'DEFAULT_SERVICE': 'API',
+            'TAGS': {'env': 'USASpending-{{ BRANCH }}'},
+          }
+        state: present
+
+#===============================  usaspending_api/settings.py  ===============================#
  
     - name: add settings.py env vars (bulk/baby download, regions, static asset url, elasticsearch)
       lineinfile:
@@ -207,7 +230,7 @@
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
 
- # SSL Certificates
+#===============================  SSL Certs  ===============================#
 
     - name: copy public.pem from S3 Bucket
       become: true 
@@ -217,7 +240,7 @@
       become: true 
       shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
         
- # config/filebeat/filebeat.yml
+#===============================  Filebeat Configuration  ===============================#
 
     - name: copy filebeat config
       become: true
@@ -233,7 +256,7 @@
         regexp: 'index: filebeat'
         replace: "index: usaspending-api-{{ vars['envs'][BRANCH]['env_short'] }}"
 
-# setup supervisord.service
+#===============================  Setup supervisord.service  ===============================#
 
     - name: make supervisord.service directory
       become: true
@@ -257,28 +280,29 @@
         src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
         dest: "/usr/lib/systemd/system/supervisord.service"
 
- # start/stop services
+#===============================  Enable and Restart Services  ===============================#
 
-    - name: enable newrelic-infra service
+    - name: enable & restart datadog-agent service
       become: true
-      shell: systemctl enable newrelic-infra
+      shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
 
-    - name: restart newrelic-infra service
+    - name: enable & restart filebeat service
       become: true
-      shell: systemctl restart newrelic-infra
+      shell: "systemctl enable filebeat && systemctl restart filebeat"
 
-    - name: enable filebeat service
+    - name: enable & restart supervisord.service
       become: true
-      shell: systemctl enable filebeat
+      shell: "systemctl enable supervisord && systemctl restart supervisord"
 
-    - name: restart filebeat
+    - name: check status of all services
       become: true
-      shell: systemctl restart filebeat
+      command: "systemctl status supervisord -l && systemctl status datadog-agent -l && systemctl status filebeat"
+      register: status
+      ignore_errors: yes
 
-    - name: enable supervisord.service
+    - name: output the statuses 
       become: true
-      shell: systemctl enable supervisord
+      debug: 
+        msg: "{{ status.stdout }}"
 
-    - name: restart supervisord
-      become: true
-      shell: systemctl restart supervisord
+#===============================  EOF  ===============================#
