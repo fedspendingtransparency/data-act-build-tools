@@ -101,6 +101,12 @@
         name: ddtrace
         executable: pip3.5
 
+    - name: install blinker package (req for DataDog)
+      become: true
+      pip:
+        name: blinker
+        executable: pip3.5
+
     - name: install filebeat (from filebeat repo)
       become: true
       yum: 

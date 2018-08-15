@@ -138,29 +138,26 @@
         group: dd-agent
         recurse: yes
 
-# THE FOLLOWING SETTINGS NEED MORE WORK (FLASK)
-
-    # - name: add datadog configuration (1)
-    #   lineinfile:
-    #     dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-    #     insertafter: "^    'django.contrib.postgres',\n"
-    #     line: "    'ddtrace.contrib.django',"
-    #     state: present
-
-    # - name: add datadog configuration (2)
-    #   lineinfile:
-    #     dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-    #     insertafter: "^INTERNAL_IPS = ()"
-    #     line: |
-    #       DATADOG_TRACE = {
-    #         'DEFAULT_SERVICE': 'API',
-    #         'TAGS': {'env': 'Broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}'},
-    #       }
-    #     state: present
-
 ###### Broker-API ######
 
+    - name: Modify app.py for broker (1)
+      when: APP == "broker"
+      lineinfile: 
+        dest: "/data-act/backend/dataactbroker/app.py"
+        insertafter: "^import os.path\n"
+        line: "\nimport blinker as _\nfrom flask import Flask\nfrom ddtrace import tracer\nfrom ddtrace.contrib.flask import TraceMiddleware"
+        state: present
+
+    - name: Modify app.py for broker (2)
+      when: APP == "broker"
+      lineinfile: 
+        dest: "/data-act/backend/dataactbroker/app.py"
+        insertafter: "^    \"\"\"runs the application\"\"\"\n"
+        line: "    traced_app = TraceMiddleware(flask_app, tracer, service='my-flask-app', distributed_tracing=False)\n"
+        state: present
+
     - name: add single-interpreter to uwsgi.ini for broker-api
+      when: APP == "broker"
       become: true
       ini_file:
         dest: "/data-act/backend/dataactbroker/config/uwsgi.ini"
@@ -169,15 +166,57 @@
         value: true
         
     - name: modify supervisord configuration -- append ddtrace-run uwsgi to 'command' for uwsgi
+      when: APP == "broker"
       ini_file:
         dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
         section: "program:uwsgi"
         option: command
         value: "ddtrace-run uwsgi --ini /data-act/backend/dataactbroker/config/uwsgi.ini --socket :3030 --stats /tmp/stats.socket"
 
+    - name: modify app-name in the app.py
+      when: APP == "broker"
+      become: true
+      lineinfile:
+        dest: "/data-act/backend/dataactbroker/app.py"
+        regexp: "service=\"my-flask-app\""
+        line: "service=Broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
+
 ###### Broker-Validator ######
 
+    - name: Modify app.py for Validator (1)
+      when: APP == "validator"
+      lineinfile: 
+        dest: "/data-act/backend/dataactvalidator/health_check.py"
+        insertafter: "^import csv\n"
+        line: "\nimport blinker as _\nfrom flask import Flask\nfrom ddtrace import tracer\nfrom ddtrace.contrib.flask import TraceMiddleware"
+        state: present
+
+    - name: Modify app.py for Validator (2)
+      when: APP == "validator"
+      lineinfile: 
+        dest: "/data-act/backend/dataactvalidator/health_check.py"
+        insertafter: "^    \"\"\"Run the application.\"\"\"\n"
+        line: "    traced_app = TraceMiddleware(app, tracer, service='my-flask-app', distributed_tracing=False)\n"
+        state: present
+
+    - name: Modify health_check.py for Validator (1)
+      when: APP == "validator"
+      lineinfile: 
+        dest: "/data-act/backend/dataactvalidator/health_check.py"
+        insertafter: "^import logging\n"
+        line: "import blinker as _\nfrom ddtrace import tracer\nfrom ddtrace.contrib.flask import TraceMiddleware\n"
+        state: present
+
+    - name: Modify health_check.py for Validator (2)
+      when: APP == "validator"
+      lineinfile: 
+        dest: "/data-act/backend/dataactvalidator/health_check.py"
+        insertafter: "^    \"\"\"Run the application.\"\"\"\n"
+        line: "    traced_app = TraceMiddleware(flask_app, tracer, service='my-flask-app', distributed_tracing=False)\n"
+        state: present
+
     - name: modify supervisord configuration -- append ddtrace-run to 'command' for data_act_validator_app
+      when: APP == "validator"
       ini_file:
         dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
         section: "program:data_act_validator_app"
@@ -185,6 +224,7 @@
         value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/app.py"
 
     - name: modify supervisord configuration -- append ddtrace-run to 'command' for data_act_validator_health_check
+      when: APP == "validator"
       ini_file:
         dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
         section: "program:data_act_validator_health_check"
