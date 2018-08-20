@@ -179,7 +179,7 @@
       lineinfile:
         dest: "/data-act/backend/dataactbroker/app.py"
         regexp: "service=\"my-flask-app\""
-        line: "service=Broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
+        line: "service=broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
 
 ###### Broker-Validator ######
 
