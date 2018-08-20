@@ -7,7 +7,7 @@
   user: ec2-user
 
   vars:
-    BRANCH: "datadog-config"
+    BRANCH: "master"
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git   
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
