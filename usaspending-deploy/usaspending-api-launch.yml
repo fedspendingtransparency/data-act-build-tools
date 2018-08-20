@@ -93,7 +93,7 @@
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: ' env: .*'
-        line: "  env:  USASpending-{{ BRANCH }}"
+        line: "  env:  usaspending-{{ BRANCH }}"
 
     - name: ensure dd-agent ownership for datadog directory
       become: true
