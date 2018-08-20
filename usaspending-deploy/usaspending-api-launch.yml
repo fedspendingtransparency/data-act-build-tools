@@ -17,6 +17,7 @@
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
+    ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
 
     envs:
       master: {env_long: prod, env_short: prod}
@@ -35,7 +36,7 @@
   tasks:
 
     - name: Load variables from config repo
-      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
+      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml"
 
 #===============================  Nginx Config  ===============================#
 
@@ -93,7 +94,7 @@
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: ' env: .*'
-        line: "  env:  usaspending-{{ BRANCH }}"
+        line: "  env:  usaspending-api-{{ ANSIBLE_VARS_ENV }}"
 
     - name: ensure dd-agent ownership for datadog directory
       become: true
@@ -133,7 +134,7 @@
         line: |
           DATADOG_TRACE = {
             'DEFAULT_SERVICE': 'API',
-            'TAGS': {'env': 'usaspending-{{ BRANCH }}'},
+            'TAGS': {'env': 'usaspending-api-{{ ANSIBLE_VARS_ENV }}'},
           }
         state: present
 
