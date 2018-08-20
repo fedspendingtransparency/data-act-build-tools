@@ -127,7 +127,7 @@
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: ' env: .*'
-        line: "  env:  Broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
+        line: "  env:  broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
 
     - name: ensure dd-agent ownership for datadog directory
       become: true
