@@ -133,7 +133,7 @@
         line: |
           DATADOG_TRACE = {
             'DEFAULT_SERVICE': 'API',
-            'TAGS': {'env': 'USASpending-{{ BRANCH }}'},
+            'TAGS': {'env': 'usaspending-{{ BRANCH }}'},
           }
         state: present
 
