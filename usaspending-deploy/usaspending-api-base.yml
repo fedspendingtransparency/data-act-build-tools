@@ -24,14 +24,16 @@
 
     - name: install EPEL and IUS repos
       become: true
-      yum: name={{ item }}
+      yum:
+        name: "{{ item }}"
       with_items:
         - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
         - https://centos7.iuscommunity.org/ius-release.rpm
 
     - name: install base dependencies
       become: true
-      yum: name={{ item }}
+      yum: 
+        name: "{{ item }}"
       with_items:
         - gcc
         - gcc-c++
@@ -83,22 +85,15 @@
     - name: add datadog repository
       become: true
       yum_repository:
-        name: Datadog
+        name: datadog-agent.repo
         description: Datadog Repository 
         baseurl: "https://yum.datadoghq.com/stable/6/x86_64/"
         gpgkey: "https://yum.datadoghq.com/DATADOG_RPM_KEY.public"
-      
-    - name: clean yum meta-data
-      become: true
-      command: "yum clean metadata"
-      args: 
-        warn: no
 
     - name: install datadog agent 
       become: true
       yum:
         name: datadog-agent
-        state: present
 
     - name: install ddtrace package
       become: true
@@ -116,25 +111,21 @@
       lineinfile: 
         dest: /root/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
-        state: present
 
     - name: Show timestamp in history (ec2-user)
       lineinfile: 
         dest: /home/ec2-user/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
-        state: present
 
     - name: Colorize (root)
       become: true
       lineinfile: 
         dest: /root/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
-        state: present
 
     - name: Colorize (ec2-user)
       lineinfile:
         dest: /home/ec2-user/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
-        state: present
 
 #====================================  EOF  ====================================# 

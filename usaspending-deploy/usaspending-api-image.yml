@@ -11,7 +11,7 @@
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git   
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
-    ansible_python_interpreter: "/usr/bin/python"
+    ansible_python_interpreter: /usr/bin/python
 
   tasks:
 
@@ -33,7 +33,7 @@
       git: 
         repo: "{{ REPO }}"
         version: "{{ BRANCH }}"
-        dest: "/data-act/backend" 
+        dest: /data-act/backend 
         accept_hostkey: true 
         force: yes
     
@@ -41,10 +41,10 @@
       become: true
       git: 
         repo: "git@github.com:fedspendingtransparency/usaspending-config.git"
-        dest: "/data-act/config"
+        dest: /data-act/config
         accept_hostkey: true 
         force: yes 
-        key_file: "/home/ec2-user/.ssh/id_rsa_usaspending_config"
+        key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
 
     - name: assign ownership of api to ec2-user
       become: true
@@ -106,7 +106,7 @@
     - name: set starting directory to CODE_HOME
       become: true
       lineinfile: 
-        dest: "/home/ec2-user/.bashrc"
+        dest: /home/ec2-user/.bashrc
         line: "cd {{ CODE_HOME }}"
         insertafter: EOF
 
@@ -122,23 +122,23 @@
     - name: add Datadog license key to datadog.yaml
       become: true
       lineinfile:
-        dest: "/data-act/config/deploy/datadog.yaml"
-        regexp: '\s*api_key: .*'
+        dest: /data-act/config/deploy/datadog.yaml
+        regexp: '\s*api_key: INSERT_WITH_ANSIBLE*'
         line: "api_key: {{ DD_KEY }}"
 
     - name: copy datadog.yml to it's home location
       become: true
       copy: 
-        src: "/data-act/config/deploy/datadog.yaml"
-        dest: "/etc/datadog-agent/datadog.yaml"
+        src: /data-act/config/deploy/datadog.yaml
+        dest: /etc/datadog-agent/datadog.yaml
 
 #===============================  Logrotate  ===============================#
 
     - name: move logrotate into nightly cron
       become: true
       copy:
-        src:  "/data-act/config/deploy/elk/usaspending-api.logrotate"
-        dest: "/etc/logrotate.d/usaspending-api"
+        src:  /data-act/config/deploy/elk/usaspending-api.logrotate
+        dest: /etc/logrotate.d/usaspending-api
         remote_src: true
 
 #===============================  EOF  ===============================#

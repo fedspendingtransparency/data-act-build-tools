@@ -36,7 +36,7 @@
   tasks:
 
     - name: Load variables from config repo
-      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml"
+      include_vars: {{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml
 
 #===============================  Nginx Config  ===============================#
 
@@ -60,7 +60,7 @@
       become: true
       copy:
         src:  "{{ nginx_path }}"
-        dest: "/etc/nginx/nginx.conf"
+        dest: /etc/nginx/nginx.conf
         remote_src: true
 
 #===============================  uwsgi_db.ini Setup  ===============================#
@@ -74,7 +74,7 @@
 
     - name: download secrets from S3 bucket
       become: true
-      shell: " aws s3 cp s3://da-config/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
+      shell: "aws s3 cp s3://da-config/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
     - name: load secrets
       include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
@@ -92,14 +92,14 @@
     - name: add datadog label (app_name)
       become: true
       lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: ' env: .*'
+        dest: /etc/datadog-agent/datadog.yaml
+        regexp: "  env: INSERT_WITH_ANSIBLE"
         line: "  env:  usaspending-api-{{ ANSIBLE_VARS_ENV }}"
 
     - name: ensure dd-agent ownership for datadog directory
       become: true
       file: 
-        path: "/etc/datadog-agent/"
+        path: /etc/datadog-agent/
         state: directory
         owner: dd-agent
         group: dd-agent
@@ -125,7 +125,6 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         insertafter: "^    'django.contrib.postgres',\n"
         line: "    'ddtrace.contrib.django',"
-        state: present
 
     - name: add datadog configuration (2)
       lineinfile:
@@ -136,7 +135,6 @@
             'DEFAULT_SERVICE': 'API',
             'TAGS': {'env': 'usaspending-api-{{ ANSIBLE_VARS_ENV }}'},
           }
-        state: present
 
 #===============================  usaspending_api/settings.py  ===============================#
  
@@ -247,13 +245,13 @@
       become: true
       copy:
         src:  "{{ CONFIG_HOME }}/deploy/elk/usaspending_api_filebeat.yml"
-        dest: "/etc/filebeat/filebeat.yml"
+        dest: /etc/filebeat/filebeat.yml
         remote_src: true
 
     - name: update filebeat config to set correct index
       become: true
       replace:
-        dest: "/etc/filebeat/filebeat.yml"
+        dest: /etc/filebeat/filebeat.yml
         regexp: 'index: filebeat'
         replace: "index: usaspending-api-{{ vars['envs'][BRANCH]['env_short'] }}"
 
@@ -279,7 +277,7 @@
       copy:
         remote_src: true
         src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
-        dest: "/usr/lib/systemd/system/supervisord.service"
+        dest: /usr/lib/systemd/system/supervisord.service
 
 #===============================  Enable and Restart Services  ===============================#
 
