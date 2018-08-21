@@ -36,7 +36,7 @@
   tasks:
 
     - name: Load variables from config repo
-      include_vars: {{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml
+      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml"
 
 #===============================  Nginx Config  ===============================#
 
@@ -93,7 +93,7 @@
       become: true
       lineinfile:
         dest: /etc/datadog-agent/datadog.yaml
-        regexp: "  env: INSERT_WITH_ANSIBLE"
+        regexp: "  env: .*"
         line: "  env:  usaspending-api-{{ ANSIBLE_VARS_ENV }}"
 
     - name: ensure dd-agent ownership for datadog directory

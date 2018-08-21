@@ -85,7 +85,7 @@
     - name: add datadog repository
       become: true
       yum_repository:
-        name: datadog-agent.repo
+        name: datadog-agent
         description: Datadog Repository 
         baseurl: "https://yum.datadoghq.com/stable/6/x86_64/"
         gpgkey: "https://yum.datadoghq.com/DATADOG_RPM_KEY.public"

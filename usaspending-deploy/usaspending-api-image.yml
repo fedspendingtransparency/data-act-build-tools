@@ -123,7 +123,7 @@
       become: true
       lineinfile:
         dest: /data-act/config/deploy/datadog.yaml
-        regexp: '\s*api_key: INSERT_WITH_ANSIBLE*'
+        regexp: '\s*api_key: .*'
         line: "api_key: {{ DD_KEY }}"
 
     - name: copy datadog.yml to it's home location
