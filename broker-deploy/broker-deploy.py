@@ -21,7 +21,6 @@ def deploy():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-schemasandbox", "--schemasandbox", action="store_true", help="Runs deploy for schemasandbox")
     parser.add_argument("-sbx", "--sandbox", action="store_true", help="Runs deploy for sandbox")
     parser.add_argument("-dev", "--dev", action="store_true", help="Runs deploy for dev")
     parser.add_argument("-stg", "--staging", action="store_true", help="Runs deploy for staging")
@@ -35,11 +34,8 @@ def deploy():
             noArgs = False
 
     if noArgs:
-        print ("No environment specified. Please include an argument: --schemasandbox, --sandbox, --dev, --staging, --prod")
+        print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, --prod")
         sys.exit(1)
-
-    if optionsDict["schemasandbox"]:
-        deploy_env = 'schemasandbox'
 
     if optionsDict["sandbox"]:
         deploy_env = 'sandbox'
@@ -56,7 +52,7 @@ def deploy():
     tfvar_file = deploy_env + '-variables.tf.json'
     packer_file = deploy_env + '-packer.json'
 
-    if optionsDict["sandbox"] or optionsDict["schemasandbox"] or optionsDict["dev"] or optionsDict["staging"]:
+    if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
         # Retrieve current Base app AMI (where type=app and current=true)
         print('Retrieving current base app AMI...')
@@ -140,9 +136,10 @@ def get_running_instance(deploy_env='na', component='Validator'):
 
 def get_current_base_ami():
     base_ami = conn.get_all_images(filters={
-        "tag:current" : "True",
+        # "tag:current" : "True",
         "tag:base" : "True",
-        "tag:type" : "Application"
+        "tag:type" : "Application",
+        "tag:monitoringtool" : "datadog"
         })[0].id
 
     return base_ami
