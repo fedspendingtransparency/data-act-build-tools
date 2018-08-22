@@ -152,7 +152,7 @@
       lineinfile: 
         dest: "/data-act/backend/dataactbroker/app.py"
         insertafter: "^    \"\"\"runs the application\"\"\"\n"
-        line: "    traced_app = TraceMiddleware(flask_app, tracer, service=broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}, distributed_tracing=False)\n"
+        line: "    traced_app = TraceMiddleware(flask_app, tracer, service=broker-api-{{ vars['envs'][BRANCH]['env_long'] }}, distributed_tracing=False)\n"
 
     - name: add single-interpreter to uwsgi.ini for broker-api
       when: APP == "broker"
@@ -185,7 +185,7 @@
       lineinfile: 
         dest: "/data-act/backend/dataactvalidator/app.py"
         insertafter: "^    \"\"\"Run the application.\"\"\"\n"
-        line: "    traced_app = TraceMiddleware(app, tracer, service=validator-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}, distributed_tracing=False)\n"
+        line: "    traced_app = TraceMiddleware(app, tracer, service=broker-val-{{ vars['envs'][BRANCH]['env_long'] }}, distributed_tracing=False)\n"
 
     - name: modify health_check.py to install the 'Blinker' middleware (req for Datadog)
       when: APP == "validator"
@@ -199,7 +199,7 @@
       lineinfile: 
         dest: "/data-act/backend/dataactvalidator/health_check.py"
         insertafter: "^    \"\"\"Run the application.\"\"\"\n"
-        line: "    traced_app = TraceMiddleware(flask_app, tracer, service=validator-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}, distributed_tracing=False)\n"
+        line: "    traced_app = TraceMiddleware(flask_app, tracer, service=broker-val-{{ vars['envs'][BRANCH]['env_long'] }}, distributed_tracing=False)\n"
 
     - name: modify supervisord to add 'ddtrace-run' under "program:data_act_validator_app"
       when: APP == "validator"
@@ -283,16 +283,5 @@
     - name: enable & restart supervisord.service
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
-
-    - name: check status of all services
-      become: true
-      command: "systemctl status supervisord -l && systemctl status datadog-agent -l && systemctl status filebeat -l"
-      register: status
-      ignore_errors: yes
-
-    - name: output the statuses 
-      become: true
-      debug: 
-        msg: "{{ status.stdout }}"
 
 #===============================  EOF  ===============================#
