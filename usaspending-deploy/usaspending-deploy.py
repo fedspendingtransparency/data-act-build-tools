@@ -72,9 +72,9 @@ def deploy():
         # Get Base AMI, Update Packer file
         print('Retrieving base AMI...')
         base_ami = conn.get_all_images(filters={
-            "tag:current" : "True", 
-            "tag:base"    : "True", 
-            "tag:type"    : "USASpending-API"
+            "tag:current"           : "True", 
+            "tag:base"              : "True", 
+            "tag:type"              : "USASpending-API"
             })[0].id
         print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
         update_packer_spec(packer_file, base_ami, deploy_env)
