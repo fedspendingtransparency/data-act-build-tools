@@ -17,6 +17,7 @@
 
     APP: "{{ APP }}"
     BRANCH: "{{ BRANCH }}"
+    ansible_python_interpreter: /usr/bin/python
 
     apps:
       broker: {app_long: broker, app_short: API}
