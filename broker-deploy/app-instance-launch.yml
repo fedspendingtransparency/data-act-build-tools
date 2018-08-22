@@ -28,7 +28,6 @@
       staging: {env_long: staging, domain: 'broker-staging-api.usaspending.gov' }
       dev:     {env_long: dev,     domain: 'broker-dev-api.usaspending.gov' }
       sandbox: {env_long: sandbox, domain: 'broker-sandbox-api.usaspending.gov'}
-      schemasandbox: {env_long: schemasandbox, domain: 'schema-sandbox-api.usaspending.gov'}
 
   tasks:
 
@@ -122,7 +121,7 @@
       
 #===============================  DataDog Configuration  ===============================#
 
-    - name: add datadog label (app_name)
+    - name: add environment name to datadog.yaml
       become: true
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
@@ -140,14 +139,14 @@
 
 ###### Broker-API ######
 
-    - name: modify app.py to install the middleware (req for Datadog)
+    - name: modify app.py to install the middleware 'Blinker' (req for Datadog)
       when: APP == "broker"
       lineinfile: 
         dest: "/data-act/backend/dataactbroker/app.py"
         insertafter: "^import os.path\n"
         line: "\nimport blinker as _\nfrom flask import Flask\nfrom ddtrace import tracer\nfrom ddtrace.contrib.flask import TraceMiddleware"
 
-    - name: modify app.py to create a TraceMiddleware object (req. for Datadog) 
+    - name: modify app.py to create a TraceMiddleware object (req for Datadog) 
       when: APP == "broker"
       lineinfile: 
         dest: "/data-act/backend/dataactbroker/app.py"
@@ -181,7 +180,7 @@
 
 ###### Broker-Validator ######
 
-    - name: modify app.py to install the middleware (req for Datadog)
+    - name: modify app.py to install the middleware 'Blinker' (req for Datadog)
       when: APP == "validator"
       lineinfile: 
         dest: "/data-act/backend/dataactvalidator/app.py"
