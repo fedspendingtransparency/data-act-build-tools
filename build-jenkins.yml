@@ -1,26 +1,30 @@
 #============================  Build Master-jenkins playbook  ============================#
 
-#===============================  Notes  ===============================#
-#  - Base Ansible playbook to run on a fresh RHEL7 install              #
-#                                                                       #
-#=======================================================================#
+#===============================  Notes  ================================#
+#  - Base Ansible playbook to run on a fresh RHEL7 install               #
+#  - Installs Jenkins dependencies that are mutal across environments    #
+#  - This playbook is for Build-Jenkins                                  #
+#  -                                                                     #
+#========================================================================#
 
 ---
 - hosts: "{{ HOST }}"
 
-  become_method: sudo
-
   user: ec2-user
+  become_method: sudo
 
   tasks:
 
-    - name: Upgrade all packages
+    - name: upgrade all yum packages, kernel updates, OS patches
       become: true
-      yum: name=* state=latest
+      yum:
+        name: '*'
+        state: latest
 
-    - name: Install EPEL and IUS repos
+    - name: install EPEL and IUS repos
       become: true
-      yum: name={{ item }}
+      yum:
+        name: "{{ item }}"
       with_items:
         - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
         - https://centos7.iuscommunity.org/ius-release.rpm
@@ -39,7 +43,8 @@
 
     - name: Install dependencies for docker
       become: true
-      yum: name={{ item }}
+      yum: 
+        name: "{{ item }}"
       with_items:
         - http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.42-1.gitad8f0f7.el7.noarch.rpm
         - http://mirror.centos.org/centos/7/extras/x86_64/Packages/pigz-2.3.3-1.el7.centos.x86_64.rpm
@@ -52,9 +57,9 @@
 
     - name: Install base dependencies
       become: true
-      yum: name={{ item }}
+      yum: 
+        name: "{{ item }}"
       with_items:
-        - ansible
         - gcc
         - gcc-c++
         - git
@@ -83,7 +88,6 @@
       become: true
       pip: 
         name: "{{ item }}"
-        state: present
         executable: pip
       with_items:
         - awscli
@@ -93,7 +97,6 @@
       become: true
       pip: 
         name: "{{ item }}"
-        state: present
         executable: pip3.5
       with_items:
         - boto3
@@ -101,6 +104,13 @@
         - python-packer
         - wheel
         - virtualenv-clone
+
+    - name: install ansible-2.4.2.0 package via pip3.5
+      become: true
+      pip: 
+        name: ansible
+        version: 2.4.2.0
+        executable: pip3.5
         
     - name: Create /opt/terraform directory
       become: true
@@ -159,29 +169,25 @@
       lineinfile: 
         dest: /root/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
-        state: present
 
     - name: Show timestamp in history (ec2-user)
       lineinfile: 
         dest: /home/ec2-user/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
-        state: present
 
     - name: Colorize (root)
       become: true
       lineinfile: 
         dest: /root/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
-        state: present
 
     - name: Colorize (ec2-user)
       lineinfile:
         dest: /home/ec2-user/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
-        state: present
 
-    - name: Restart and enable jenkins service
+    - name: Enable and Restart Jenkins service
       become: true
       shell: "systemctl enable jenkins && systemctl restart jenkins"
 
-#====================================  EOF  ====================================# 
+#====================================  EOF  ====================================#
