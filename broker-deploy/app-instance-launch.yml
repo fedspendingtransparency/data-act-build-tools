@@ -115,38 +115,6 @@
       become: true
       file: path=/tmp owner=ec2-user recurse=yes
       
-
-# New Relic Config
-
-    - name: copy nr_key from S3
-      become: true
-      shell: "aws s3 cp s3://da-config/shared/nr_key.yml /etc/nr_key.yml --region us-gov-west-1"
-
-    - name: load nr_key var (NR_KEY)
-      include_vars: /etc/nr_key.yml
-
-    - name: add newrelic license key to newrelic.ini
-      lineinfile:
-        ## Change to config repo and grab one file
-        dest: "/data-act/config/newrelic/newrelic.ini"
-        regexp: '\s*license_key =.*'
-        line: "license_key = {{ NR_KEY }}"
-
-    - name: copy nr_key to newrelic-infra.yml file
-      become: true
-      lineinfile:
-        create: true
-        dest: "/etc/newrelic-infra.yml"
-        line: "license_key: {{ NR_KEY }}"
-        
-    - name: add newrelic label (app_name)
-      lineinfile:
-        dest: "/data-act/config/newrelic/newrelic.ini"
-        regexp: '\s*app_name =.*'
-        line: "app_name = Broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
-
-    ###### New Relic - API ######
-
     - name: add single-interpreter to uwsgi.ini for broker-api
       become: true
       ini_file:
@@ -155,42 +123,42 @@
         option: single-interpreter
         value: true
 
-    - name: modify supervisord configuration -- append newrelic-admin to 'command' for uwsgi
+    - name: modify supervisord configuration -- /tmp/stats.socket
       ini_file:
         dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
         section: "program:uwsgi"
         option: command
-        value: "newrelic-admin run-program uwsgi --ini /data-act/backend/dataactbroker/config/uwsgi.ini --socket :3030 --stats /tmp/stats.socket"
+        value: "uwsgi --ini /data-act/backend/dataactbroker/config/uwsgi.ini --socket :3030 --stats /tmp/stats.socket"
         
-    - name: modify supervisord configuration -- append newrelic-config location to 'environment' for uwsgi
+    - name: modify supervisord configuration -- PYTHONPATH
       ini_file:
         dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
         section: "program:uwsgi"
         option: environment
-        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
+        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend"
 
     ###### New Relic - Validator ######
 
-    - name: modify supervisord configuration -- append newrelic-admin to 'command' for data_act_validator_app
+    - name: modify supervisord configuration -- command (app)
       ini_file:
         dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
         section: "program:data_act_validator_app"
         option: command
-        value: "newrelic-admin run-program /usr/bin/python3.5 /data-act/backend/dataactvalidator/app.py"
+        value: "/usr/bin/python3.5 /data-act/backend/dataactvalidator/app.py"
 
-    - name: modify supervisord configuration -- append newrelic-admin to 'command' for data_act_validator_health_check
+    - name: modify supervisord configuration -- command (hc)
       ini_file:
         dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
         section: "program:data_act_validator_health_check"
         option: command
-        value: "newrelic-admin run-program /usr/bin/python3.5 /data-act/backend/dataactvalidator/health_check.py"
+        value: "/usr/bin/python3.5 /data-act/backend/dataactvalidator/health_check.py"
 
-    - name: modify supervisord configuration -- append newrelic-config location to 'environment' for supervisord
+    - name: modify supervisord configuration -- PYTHONPATH
       ini_file:
         dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
         section: "supervisord"
         option: environment
-        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,NEW_RELIC_CONFIG_FILE=/data-act/config/newrelic/newrelic.ini"
+        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend"
 
 
 # Supervisord Service
@@ -254,14 +222,6 @@
 
 
 # start/stop services
-
-    - name: enable newrelic-infra service
-      become: true
-      shell: systemctl enable newrelic-infra
-
-    - name: restart newrelic-infra service
-      become: true
-      shell: systemctl restart newrelic-infra
 
     - name: enable filebeat service
       become: true
