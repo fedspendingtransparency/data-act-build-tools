@@ -113,20 +113,20 @@
         option: single-interpreter
         value: true
         
-    - name: modify supervisord configuration (start command)
+    - name: add ddtrace to supervisord configuration (start command)
       ini_file:
         dest: "{{ CODE_HOME }}/config/supervisord.conf"
         section: "program:uwsgi"
         option: command
         value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
 
-    - name: add datadog configuration (1)
+    - name: add ddtrace to INSTALLED_APPS in settings.py
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         insertafter: "^    'django.contrib.postgres',\n"
         line: "    'ddtrace.contrib.django',"
 
-    - name: add datadog configuration (2)
+    - name: add ddtrace environment variables to settings.py
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         insertafter: "^INTERNAL_IPS = ()"
@@ -292,16 +292,5 @@
     - name: enable & restart supervisord.service
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
-
-    - name: check status of all services
-      become: true
-      command: "systemctl status supervisord -l && systemctl status datadog-agent -l && systemctl status filebeat"
-      register: status
-      ignore_errors: yes
-
-    - name: output the statuses 
-      become: true
-      debug: 
-        msg: "{{ status.stdout }}"
 
 #===============================  EOF  ===============================#
