@@ -108,24 +108,24 @@
       yum: 
         name: https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
     
-    - name: Show timestamp in history (root)
+    - name: show timestamp in history (root)
       become: true
       lineinfile: 
         dest: /root/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
 
-    - name: Show timestamp in history (ec2-user)
+    - name: show timestamp in history (ec2-user)
       lineinfile: 
         dest: /home/ec2-user/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
 
-    - name: Colorize (root)
+    - name: colorize (root)
       become: true
       lineinfile: 
         dest: /root/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
 
-    - name: Colorize (ec2-user)
+    - name: colorize (ec2-user)
       lineinfile:
         dest: /home/ec2-user/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
