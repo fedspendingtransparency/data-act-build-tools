@@ -129,6 +129,14 @@
         regexp: ' env: .*'
         line: "  env:  broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
 
+    - name: disable datadog apm if env is sandbox or dev
+      become: true
+      when: BRANCH == "development" or ANSIBLE_VARS_ENV == "sandbox"
+      lineinfile: 
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: "^  enabled: true"
+        line: "  enabled: false"
+
     - name: ensure dd-agent ownership for datadog directory
       become: true
       file: 
@@ -151,8 +159,8 @@
       when: APP == "broker"
       lineinfile: 
         dest: "/data-act/backend/dataactbroker/app.py"
-        insertafter: "^    \"\"\"runs the application\"\"\"\n"
-        line: "    traced_app = TraceMiddleware(flask_app, tracer, service=broker-api-{{ vars['envs'][BRANCH]['env_long'] }}, distributed_tracing=False)\n"
+        regexp: "broker-dd"
+        line: "broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
 
     - name: add single-interpreter to uwsgi.ini for broker-api
       when: APP == "broker"
@@ -173,33 +181,19 @@
 
 ###### Broker-Validator ######
 
-    - name: modify app.py to install the 'Blinker' middleware (req for Datadog)
-      when: APP == "validator"
-      lineinfile: 
-        dest: "/data-act/backend/dataactvalidator/app.py"
-        insertafter: "^import csv\n"
-        line: "\nimport blinker as _\nfrom flask import Flask\nfrom ddtrace import tracer\nfrom ddtrace.contrib.flask import TraceMiddleware"
-
     - name: modify app.py to create a TraceMiddleware object (req. for Datadog)
       when: APP == "validator"
       lineinfile: 
         dest: "/data-act/backend/dataactvalidator/app.py"
-        insertafter: "^    \"\"\"Run the application.\"\"\"\n"
-        line: "    traced_app = TraceMiddleware(app, tracer, service=broker-val-{{ vars['envs'][BRANCH]['env_long'] }}, distributed_tracing=False)\n"
-
-    - name: modify health_check.py to install the 'Blinker' middleware (req for Datadog)
-      when: APP == "validator"
-      lineinfile: 
-        dest: "/data-act/backend/dataactvalidator/health_check.py"
-        insertafter: "^import logging\n"
-        line: "import blinker as _\nfrom ddtrace import tracer\nfrom ddtrace.contrib.flask import TraceMiddleware\n"
+        regexp: "broker-dd"
+        line: "broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
 
     - name: modify health_check.py to create a TraceMiddleware object (req. for Datadog)
       when: APP == "validator"
       lineinfile: 
         dest: "/data-act/backend/dataactvalidator/health_check.py"
-        insertafter: "^    \"\"\"Run the application.\"\"\"\n"
-        line: "    traced_app = TraceMiddleware(flask_app, tracer, service=broker-val-{{ vars['envs'][BRANCH]['env_long'] }}, distributed_tracing=False)\n"
+        regexp: "broker-dd"
+        line: "broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
 
     - name: modify supervisord to add 'ddtrace-run' under "program:data_act_validator_app"
       when: APP == "validator"
