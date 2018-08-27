@@ -102,6 +102,7 @@
       lineinfile: 
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "^  enabled: true"
+        insertafter: "^apm_config:.*"
         line: "  enabled: false"
 
     - name: ensure dd-agent ownership for datadog directory
