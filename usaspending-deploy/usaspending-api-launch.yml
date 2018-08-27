@@ -96,6 +96,15 @@
         regexp: "  env: .*"
         line: "  env:  usaspending-api-{{ ANSIBLE_VARS_ENV }}"
 
+    - name: disable datadog apm if env is sandbox or dev
+      become: true
+      when: BRANCH == "dev" or BRANCH == "sandbox"
+      lineinfile: 
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: "^  enabled: true"
+        insertafter: "^apm_config:.*"
+        line: "  enabled: false"
+
     - name: ensure dd-agent ownership for datadog directory
       become: true
       file: 
