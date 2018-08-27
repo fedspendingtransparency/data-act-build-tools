@@ -96,13 +96,13 @@
         regexp: "  env: .*"
         line: "  env:  usaspending-api-{{ ANSIBLE_VARS_ENV }}"
 
-    - name: enable datadog if environment is prod or staging
+    - name: disable datadog apm if env is sandbox or dev
       become: true
-      when: ANSIBLE_VARS_ENV == "staging" or ANSIBLE_VARS_ENV == "prod"
+      when: ANSIBLE_VARS_ENV == "dev" or ANSIBLE_VARS_ENV == "sandbox"
       lineinfile: 
         dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: "^  enabled: false"
-        line: "  enabled: true"
+        regexp: "^  enabled: true"
+        line: "  enabled: false"
 
     - name: ensure dd-agent ownership for datadog directory
       become: true
