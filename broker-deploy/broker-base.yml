@@ -89,19 +89,6 @@
       become: true
       yum:
         name: datadog-agent
-        state: present
-
-    - name: install ddtrace package
-      become: true
-      pip:
-        name: ddtrace
-        executable: pip3.5
-
-    - name: install blinker package (req for DataDog)
-      become: true
-      pip:
-        name: blinker
-        executable: pip3.5
 
     - name: install filebeat (from filebeat repo)
       become: true
