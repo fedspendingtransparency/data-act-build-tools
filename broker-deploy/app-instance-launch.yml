@@ -163,8 +163,6 @@
         regexp: '\s*service=broker-dd'
         replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
 
-    - name: modify supervisord to add 'ddtrace-run' under "program:data_act_validator_app"
-
     - name: add single-interpreter to uwsgi.ini for broker-api
       when: APP == "broker"
       become: true
