@@ -149,19 +149,21 @@
 
 ###### Broker-API ######
 
-    - name: modify app.py to install the middleware 'Blinker' (req for Datadog)
-      when: APP == "broker"
+    - name: instrument datadog with the application if env is prod or staging
+      when: BRANCH == "master" or BRANCH == "staging"
       lineinfile: 
         dest: "/data-act/backend/dataactbroker/app.py"
-        insertafter: "^import os.path\n"
-        line: "\nimport blinker as _\nfrom flask import Flask\nfrom ddtrace import tracer\nfrom ddtrace.contrib.flask import TraceMiddleware"
+        regexp: "^USE_DATADOG = False"
+        line: "USE_DATADOG = True"
 
-    - name: modify app.py to create a TraceMiddleware object (req for Datadog) 
+    - name: modify app.py to rename the application name (req for Datadog) 
       when: APP == "broker"
-      lineinfile: 
+      replace: 
         dest: "/data-act/backend/dataactbroker/app.py"
-        regexp: "broker-dd"
-        line: "broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
+        regexp: '\s*service=broker-dd'
+        replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
+
+    - name: modify supervisord to add 'ddtrace-run' under "program:data_act_validator_app"
 
     - name: add single-interpreter to uwsgi.ini for broker-api
       when: APP == "broker"
@@ -182,19 +184,19 @@
 
 ###### Broker-Validator ######
 
-    - name: modify app.py to create a TraceMiddleware object (req. for Datadog)
+    - name: modify app.py to rename the application name (req for Datadog)
       when: APP == "validator"
       lineinfile: 
         dest: "/data-act/backend/dataactvalidator/app.py"
         regexp: "broker-dd"
         line: "broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
 
-    - name: modify health_check.py to create a TraceMiddleware object (req. for Datadog)
+    - name: modify health_check.py to rename the application name (req for Datadog)
       when: APP == "validator"
-      lineinfile: 
+      replace: 
         dest: "/data-act/backend/dataactvalidator/health_check.py"
-        regexp: "broker-dd"
-        line: "broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
+        regexp: '\s*service=broker-dd'
+        replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
 
     - name: modify supervisord to add 'ddtrace-run' under "program:data_act_validator_app"
       when: APP == "validator"
