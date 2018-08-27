@@ -11,6 +11,7 @@
     ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
     CONFIG_HOME: "/data-act/config"
     CODE_HOME: "/data-act/backend"
+    ansible_python_interpreter: /usr/bin/python
 
   become_method: sudo  
 
