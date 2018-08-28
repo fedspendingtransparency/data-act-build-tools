@@ -160,7 +160,7 @@
       when: APP == "broker"
       replace: 
         dest: "/data-act/backend/dataactbroker/app.py"
-        regexp: '\s*service=broker-dd'
+        regexp: '\s*service="broker-dd"\s*'
         replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
 
     - name: add single-interpreter to uwsgi.ini for broker-api
@@ -184,16 +184,16 @@
 
     - name: modify app.py to rename the application name (req for Datadog)
       when: APP == "validator"
-      lineinfile: 
+      replace: 
         dest: "/data-act/backend/dataactvalidator/app.py"
-        regexp: "broker-dd"
-        line: "broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
+        regexp: '\s*service="broker-dd"\s*'
+        replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
 
     - name: modify health_check.py to rename the application name (req for Datadog)
       when: APP == "validator"
       replace: 
         dest: "/data-act/backend/dataactvalidator/health_check.py"
-        regexp: '\s*service=broker-dd'
+        regexp: '\s*service="broker-dd"\s*'
         replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
 
     - name: modify supervisord to add 'ddtrace-run' under "program:data_act_validator_app"
