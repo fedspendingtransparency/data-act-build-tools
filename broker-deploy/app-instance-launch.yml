@@ -131,7 +131,7 @@
 
     - name: disable datadog apm if env is sandbox or dev
       become: true
-      when: BRANCH == "development" or ANSIBLE_VARS_ENV == "sandbox"
+      when: BRANCH == "development" or BRANCH == "sandbox"
       lineinfile: 
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "^  enabled: true"
