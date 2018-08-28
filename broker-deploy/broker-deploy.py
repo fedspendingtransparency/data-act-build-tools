@@ -142,9 +142,10 @@ def get_running_instance(deploy_env='na', component='Validator'):
 
 def get_current_base_ami():
     base_ami = conn.get_all_images(filters={
-        "tag:current" : "True",
+        # "tag:current" : "True",
         "tag:base" : "True",
-        "tag:type" : "Application"
+        "tag:type" : "Application",
+        "tag:monitoringtool" : "datadog"
         })[0].id
 
     return base_ami
