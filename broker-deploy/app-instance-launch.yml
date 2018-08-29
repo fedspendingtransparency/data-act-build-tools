@@ -258,11 +258,15 @@
     - name: create app json log if it doesn't exist
       file: 
         path: /data-act/app.json-log
+        owner: ec2-user
+        recurse: yes
         state: touch
 
     - name: create app info log if it doesn't exist
       file: 
         path: /data-act/info.log
+        owner: ec2-user
+        recurse: yes
         state: touch
 
 #===============================  Enable and Restart Services  ===============================#
