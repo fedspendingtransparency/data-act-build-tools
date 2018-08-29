@@ -138,6 +138,27 @@
         insertafter: "^apm_config:.*"
         line: "  enabled: false"
 
+    - name: (API) instrument datadog with the application if env is prod or staging in app.py
+      when: BRANCH == "master" or BRANCH == "staging"
+      lineinfile: 
+        dest: "/data-act/backend/dataactbroker/app.py"
+        regexp: "^USE_DATADOG = False"
+        line: "USE_DATADOG = True"
+
+    - name: (VAL) instrument datadog with the application if env is prod or staging in app.py
+      when: BRANCH == "master" or BRANCH == "staging"
+      lineinfile: 
+        dest: "/data-act/backend/dataactvalidator/app.py"
+        regexp: "^USE_DATADOG = False"
+        line: "USE_DATADOG = True"
+
+    - name: (VAL) instrument datadog with the application if env is prod or staging in health_check.py
+      when: BRANCH == "master" or BRANCH == "staging"
+      lineinfile: 
+        dest: "/data-act/backend/dataactvalidator/health_check.py"
+        regexp: "^USE_DATADOG = False"
+        line: "USE_DATADOG = True"
+
     - name: ensure dd-agent ownership for datadog directory
       become: true
       file: 
@@ -149,21 +170,14 @@
 
 ###### Broker-API ######
 
-    - name: instrument datadog with the application if env is prod or staging
-      when: BRANCH == "master" or BRANCH == "staging"
-      lineinfile: 
-        dest: "/data-act/backend/dataactbroker/app.py"
-        regexp: "^USE_DATADOG = False"
-        line: "USE_DATADOG = True"
-
-    - name: modify app.py to rename the application name (req for Datadog) 
+    - name: modify app.py to rename the application name when 'app = API' 
       when: APP == "broker"
       replace: 
         dest: "/data-act/backend/dataactbroker/app.py"
         regexp: '\s*service="broker-dd"\s*'
         replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
 
-    - name: add single-interpreter to uwsgi.ini for broker-api
+    - name: add single-interpreter to uwsgi.ini when 'app = API'
       when: APP == "broker"
       become: true
       ini_file:
@@ -172,7 +186,7 @@
         option: single-interpreter
         value: true
         
-    - name: modify supervisord configuration -- append ddtrace-run uwsgi to 'command' for uwsgi
+    - name: modify supervisord to add 'ddtrace-run uwsgi' when 'app = API'
       when: APP == "broker"
       ini_file:
         dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
@@ -182,21 +196,21 @@
 
 ###### Broker-Validator ######
 
-    - name: modify app.py to rename the application name (req for Datadog)
+    - name: modify app.py to rename the application name when 'app = VAL'(req for Datadog)
       when: APP == "validator"
       replace: 
         dest: "/data-act/backend/dataactvalidator/app.py"
         regexp: '\s*service="broker-dd"\s*'
         replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
 
-    - name: modify health_check.py to rename the application name (req for Datadog)
+    - name: modify health_check.py to rename the application name when 'app = VAL'
       when: APP == "validator"
       replace: 
         dest: "/data-act/backend/dataactvalidator/health_check.py"
         regexp: '\s*service="broker-dd"\s*'
         replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
 
-    - name: modify supervisord to add 'ddtrace-run' under "program:data_act_validator_app"
+    - name: modify supervisord to add 'ddtrace-run' under 'program:data_act_validator_app' when 'app = VAL'
       when: APP == "validator"
       ini_file:
         dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
@@ -204,7 +218,7 @@
         option: command
         value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/app.py"
 
-    - name: modify supervisord configuration -- append ddtrace-run to 'command' for data_act_validator_health_check
+    - name: modify supervisord to add 'ddtrace-run' under 'program:data_act_validator_health_check' when 'app = VAL'
       when: APP == "validator"
       ini_file:
         dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
