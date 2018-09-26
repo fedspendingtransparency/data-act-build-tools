@@ -14,10 +14,10 @@ def deploy():
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
 
-    tf_exec_path     = '/opt/terraform/terraform'
+    tf_exec_path     = '/terraform/terraform'
     tf_file          = 'usaspending-deploy.tf'
 
-    packer_exec_path = '/opt/packer/packerio'
+    packer_exec_path = '/packer/packerio'
     packer_file      = 'usaspending-packer.json'
     
     # Set connection
@@ -116,9 +116,8 @@ def deploy():
         update_terraform_user_data(deploy_env)    
 
         # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'init', '.'])
-        real_time_command([tf_exec_path, 'plan', "--input=false"])
-        real_time_command([tf_exec_path, 'apply', "--input=false", "--auto-approve"])
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
   ###########################
   #   TF Build - Prod       #
@@ -141,9 +140,8 @@ def deploy():
         update_terraform_user_data('prod')  
 
         # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'init', '.'])
-        real_time_command([tf_exec_path, 'plan', '--input=false'])
-        real_time_command([tf_exec_path, 'apply', '--input=false', '--auto-approve'])
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
     global EXIT_CODE
     if EXIT_CODE != 0:

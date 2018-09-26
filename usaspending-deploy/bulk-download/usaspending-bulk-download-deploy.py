@@ -12,7 +12,7 @@ def deploy():
     # This tf_var file is expected to be copied from an external source
     tfvar_file   = 'usaspending-bulk-download-vars.tf.json'
 
-    tf_exec_path = '/opt/terraform/terraform'
+    tf_exec_path = '/terraform/terraform'
     tf_file      = 'usaspending-deploy.tf'
 
     # Set connection
@@ -67,9 +67,8 @@ def deploy():
     update_tf_ami(current_api_ami, tfvar_file)
 
     # Run Terraform plan and apply
-    real_time_command([tf_exec_path, 'init', '.'])
-    real_time_command([tf_exec_path, 'plan', "--input=false"])
-    real_time_command([tf_exec_path, 'apply', "--input=false", "--auto-approve"])
+    real_time_command([tf_exec_path, 'plan'])
+    real_time_command([tf_exec_path, 'apply'])
 
     global EXIT_CODE
     if EXIT_CODE != 0:

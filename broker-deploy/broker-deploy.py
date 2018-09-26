@@ -16,12 +16,11 @@ def deploy():
     # set paths
     packer_file = 'broker-packer.json'
     tfvar_file = 'broker-vars.tf.json'
-    packer_exec_path = '/opt/packer/packerio'
-    tf_exec_path = '/opt/terraform/terraform'
+    packer_exec_path = '/packer/packerio'
+    tf_exec_path = '/terraform/terraform'
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-schemasandbox", "--schemasandbox", action="store_true", help="Runs deploy for schemasandbox")
     parser.add_argument("-sbx", "--sandbox", action="store_true", help="Runs deploy for sandbox")
     parser.add_argument("-dev", "--dev", action="store_true", help="Runs deploy for dev")
     parser.add_argument("-stg", "--staging", action="store_true", help="Runs deploy for staging")
@@ -35,11 +34,8 @@ def deploy():
             noArgs = False
 
     if noArgs:
-        print ("No environment specified. Please include an argument: --schemasandbox, --sandbox, --dev, --staging, --prod")
+        print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, --prod")
         sys.exit(1)
-
-    if optionsDict["schemasandbox"]:
-        deploy_env = 'schemasandbox'
 
     if optionsDict["sandbox"]:
         deploy_env = 'sandbox'
@@ -56,7 +52,7 @@ def deploy():
     tfvar_file = deploy_env + '-variables.tf.json'
     packer_file = deploy_env + '-packer.json'
 
-    if optionsDict["sandbox"] or optionsDict["schemasandbox"] or optionsDict["dev"] or optionsDict["staging"]:
+    if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
         # Retrieve current Base app AMI (where type=app and current=true)
         print('Retrieving current base app AMI...')
@@ -105,9 +101,8 @@ def deploy():
         update_lc_ami(ami_id, tfvar_file, deploy_env)
 
         #Run terraform
-        real_time_command([tf_exec_path, 'init', '.'])
-        real_time_command([tf_exec_path, 'plan', "--input=false"])     
-        real_time_command([tf_exec_path, 'apply', "--input=false", "--auto-approve"])
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
     elif optionsDict["prod"]:
         #For prod, we don't build a new artifact, we just run terraform against the current staging AMI
@@ -118,9 +113,8 @@ def deploy():
         update_lc_ami(staging_ami, tfvar_file, deploy_env)
         print(staging_ami)
         #Run terraform
-        real_time_command([tf_exec_path, 'init', '.'])
-        real_time_command([tf_exec_path, 'plan', "--input=false"])     
-        real_time_command([tf_exec_path, 'apply', "--input=false", "--auto-approve"])
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
@@ -142,10 +136,9 @@ def get_running_instance(deploy_env='na', component='Validator'):
 
 def get_current_base_ami():
     base_ami = conn.get_all_images(filters={
-        # "tag:current" : "True",
+        "tag:current" : "True",
         "tag:base" : "True",
-        "tag:type" : "Application",
-        "tag:monitoringtool" : "datadog"
+        "tag:type" : "Application"
         })[0].id
 
     return base_ami
