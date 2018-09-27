@@ -175,7 +175,7 @@
             line: "MONTHLY_DOWNLOAD_S3_BUCKET_NAME = '{{ MONTHLY_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
         - { regexp: '\s*STATIC_URL =.*',
-            line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}{{ BRANCH }}/'" }
+            line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'" }
 
         - { regexp: '^CFDA_BUCKET_NAME =.*',
             line: "CFDA_BUCKET_NAME = '{{ CFDA_BUCKET_NAME }}'" }
