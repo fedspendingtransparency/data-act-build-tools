@@ -159,6 +159,9 @@
         - { regexp: '^USASPENDING_AWS_REGION =.*',
             line: "USASPENDING_AWS_REGION = '{{ USASPENDING_AWS_REGION }}'" }
 
+        - { regexp: '^DOWNLOAD_ENV =.*',
+            line: "DOWNLOAD_ENV = '{{ DOWNLOAD_ENV }}'" }
+
         - { regexp: '^BULK_DOWNLOAD_S3_BUCKET_NAME =.*',
             line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
