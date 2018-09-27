@@ -1,46 +1,65 @@
-# Base Ansible to run on a fresh RHEL7 install.
-# Installs Jenkins dependencies. 
-# This playbook is for BUILD-Jenkkins 
+#============================  Build Master-jenkins playbook  ============================#
 
-# NOTE - This is not an implemented playbook; it has not been used to build our current Jenkins instance.
+#===============================  Notes  ================================#
+#  - Base Ansible playbook to run on a fresh RHEL7 install               #
+#  - Installs Jenkins dependencies that are mutal across environments    #
+#  - This playbook is for Build-Jenkins                                  #
+#  -                                                                     #
+#========================================================================#
 
 ---
 - hosts: "{{ HOST }}"
 
-  become_method: sudo
-
   user: ec2-user
+  become_method: sudo
 
   tasks:
 
-    - name: upgrade all packages
+    - name: upgrade all yum packages, kernel updates, OS patches
       become: true
-      yum: name=* state=latest
+      yum:
+        name: '*'
+        state: latest
 
     - name: install EPEL and IUS repos
       become: true
-      yum: name={{ item }}
+      yum:
+        name: "{{ item }}"
       with_items:
         - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
         - https://centos7.iuscommunity.org/ius-release.rpm
 
-    - name: setup jenkins repo
+    - name: Setup jenkins repo
       become: true
       get_url: 
         url: "https://pkg.jenkins.io/redhat-stable/jenkins.repo"
         dest: "/etc/yum.repos.d/jenkins.repo"
 
-    - name: import jenkins key 
+    - name: Setup Docker repo
+      become: true
+      get_url:
+        url: "https://download.docker.com/linux/centos/docker-ce.repo"
+        dest: "/etc/yum.repos.d/docker-ce.repo"
+
+    - name: Install dependencies for docker
+      become: true
+      yum: 
+        name: "{{ item }}"
+      with_items:
+        - http://mirror.centos.org/centos/7/extras/x86_64/Packages/container-selinux-2.42-1.gitad8f0f7.el7.noarch.rpm
+        - http://mirror.centos.org/centos/7/extras/x86_64/Packages/pigz-2.3.3-1.el7.centos.x86_64.rpm
+
+    - name: Import jenkins key 
       become: true
       rpm_key:
         state: present
         key: "https://pkg.jenkins.io/redhat-stable/jenkins.io.key"
 
-    - name: install base dependencies
+    - name: Install base dependencies
       become: true
-      yum: name={{ item }}
+      yum: 
+        name: "{{ item }}"
       with_items:
-        - ansible
         - gcc
         - gcc-c++
         - git
@@ -62,59 +81,70 @@
         - vim
         - telnet
         - jenkins
+        - yum-utils
+        - docker-ce
 
-    - name: install all pip packages
+    - name: Install all pip packages
       become: true
       pip: 
         name: "{{ item }}"
-        state: present
         executable: pip
       with_items:
         - awscli
         - boto
+
+    - name: Install pip3.5 packages
+      become: true
+      pip: 
+        name: "{{ item }}"
+        executable: pip3.5
+      with_items:
         - boto3
         - sh
         - python-packer
         - wheel
         - virtualenv-clone
 
-    - name: create /opt/terraform directory
+    - name: install ansible-2.4.2.0 package via pip3.5
+      become: true
+      pip: 
+        name: ansible
+        version: 2.4.2.0
+        executable: pip3.5
+        
+    - name: Create /opt/terraform directory
       become: true
       file: 
         path: /opt/terraform
         state: directory
         mode: 0755
 
-    - name: download and unarchive terraform_0.6.16_linux_amd64.zip
+    - name: Download and unarchive terraform_0.11.7_linux_amd64.zip
       become: true
       unarchive:
-        src: https://releases.hashicorp.com/terraform/0.11.5/terraform_0.11.5_linux_amd64.zip
+        src: https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip
         dest: /opt/terraform
         remote_src: yes
 
-    - name: execute terraform
-      become: true
-      shell: /opt/terraform/terraform init /opt/terraform/
-
-    - name: create /opt/packer directory
+    - name: Create /opt/packer directory
       become: true
       file: 
         path: /opt/packer
         state: directory
         mode: 0755
 
-    - name: download and unarchive packer_1.2.3_linux_amd64.zip
+    - name: Download and unarchive packer_1.2.4_linux_amd64.zip
       become: true
       unarchive:
-        src: https://releases.hashicorp.com/packer/1.2.3/packer_1.2.3_linux_amd64.zip
+        src: https://releases.hashicorp.com/packer/1.2.4/packer_1.2.4_linux_amd64.zip
         dest: /opt/packer
         remote_src: yes
 
-    - name: rename packer to packerio
+    - name: Rename packer to packerio
       become: true
       shell: "mv /opt/packer/packer /opt/packer/packerio"
 
-    - name: setup symbolic link
+    - name: Setup symbolic link
       become: true
       file: 
         src: /opt/packer/packerio
@@ -123,45 +153,41 @@
         group: root
         state: link
 
-    - name: load symlink var
+    - name: Load symlink variable
       become: true
       stat: 
         path: /usr/sbin/packerio
       register: pack
 
-    - name: check symbolic link
+    - name: Check symbolic link exists
       debug: 
         msg="Path exists and is a symlink"
       when: pack.stat.islnk is defined and pack.stat.islnk
 
-    - name: show timestamp in history (root)
+    - name: Show timestamp in history (root)
       become: true
       lineinfile: 
         dest: /root/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
-        state: present
 
-    - name: show timestamp in history (ec2-user)
+    - name: Show timestamp in history (ec2-user)
       lineinfile: 
         dest: /home/ec2-user/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
-        state: present
 
-    - name: colorize (root)
+    - name: Colorize (root)
       become: true
       lineinfile: 
         dest: /root/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
-        state: present
 
-    - name: colorize (ec2-user)
+    - name: Colorize (ec2-user)
       lineinfile:
         dest: /home/ec2-user/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
-        state: present
 
-    - name: restart and enable jenkins service
+    - name: Enable and Restart Jenkins service
       become: true
       shell: "systemctl enable jenkins && systemctl restart jenkins"
 
-      
+#====================================  EOF  ====================================#
