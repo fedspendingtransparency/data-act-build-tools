@@ -50,7 +50,7 @@
         regexp: '\s*user.*;'
         line: 'user ec2-user;'
 
-    - name: update/add server name to nginx config
+    - name: add server name to nginx config
       replace:
         dest: "{{ nginx_path }}"
         regexp: '\s*server_name.*;'
