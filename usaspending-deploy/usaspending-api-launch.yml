@@ -63,7 +63,7 @@
         replace: "\n        server_name  {{ DOMAIN }};"
         after: 'default_server;'
 
-    - name: add server name to nginx config
+    - name: add server name to nginx config for redirect
       lineinfile:
         dest: "{{ nginx_path }}"
         regexp: '\s*return.*;'
