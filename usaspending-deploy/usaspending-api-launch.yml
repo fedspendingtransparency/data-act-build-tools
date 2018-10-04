@@ -52,10 +52,9 @@
 
     - name: add server name to nginx config
       replace:
-        dest: "{{ nginx_path }}"
-        regexp: '\s*server_name.*;'
-        replace: "\n        server_name  {{ DOMAIN }};"
-        after: 'default_server;'
+        path: "{{ nginx_path }}"
+        regexp: '\s+server_name  .*;'
+        replace: "\n\t\tserver_name  {{ DOMAIN }};"
 
     - name: copy nginx config
       become: true
