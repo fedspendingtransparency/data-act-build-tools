@@ -53,7 +53,7 @@
     - name: add server name to nginx config
       replace:
         path: "{{ nginx_path }}"
-        regexp: '\s+server_name  .*;'
+        regexp: '^\s*server_name .*;'
         replace: "\n\t\tserver_name  {{ DOMAIN }};"
 
     - name: copy nginx config
