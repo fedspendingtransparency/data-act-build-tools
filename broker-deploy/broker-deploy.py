@@ -41,7 +41,7 @@ def deploy():
         deploy_env = 'sandbox'
 
     if optionsDict["dev"]:
-        deploy_env = 'dev'
+        deploy_env = 'development'
 
     if optionsDict["staging"]:
         deploy_env = 'staging'
@@ -50,7 +50,7 @@ def deploy():
         deploy_env = 'prod'
 
     tfvar_file = deploy_env + '-variables.tf.json'
-    packer_file = deploy_env + '-packer.json'
+    packer_file = 'broker-packer.json'
 
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
@@ -61,7 +61,7 @@ def deploy():
 
         # Insert current Base app AMI into packer file
         print('Updating Packer file with current base app AMI ' + current_base_ami + '...')
-        update_packer_spec(packer_file, current_base_ami)
+        update_packer_spec(packer_file, current_base_ami, deploy_env)
         print('Done.')
 
         # Retrieve current App Instance AMIs
@@ -172,12 +172,14 @@ def real_time_command(command_to_run):
 
     return total_output
 
-def update_packer_spec(packer_file='packer.json', current_base_ami=''):
+def update_packer_spec(packer_file='packer.json', current_base_ami='', environment):
     packer_json = open(packer_file, "r")
     packer_data = json.load(packer_json)
     packer_json.close()
 
     packer_data['builders'][0]['source_ami'] = current_base_ami
+    packer_data['builders'][0]['tags']['environment'] = environment
+    packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={} HOST=local'".format(environment)
 
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
