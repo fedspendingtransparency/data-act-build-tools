@@ -16,8 +16,8 @@ def deploy():
     # set paths
     packer_file = 'broker-packer.json'
     tfvar_file = 'broker-vars.tf.json'
-    packer_exec_path = '/packer/packerio'
-    tf_exec_path = '/terraform/terraform'
+    packer_exec_path = 'packer'
+    tf_exec_path = 'terraform'
 
     parser = argparse.ArgumentParser()
 
@@ -50,7 +50,6 @@ def deploy():
         deploy_env = 'prod'
 
     tfvar_file = deploy_env + '-variables.tf.json'
-    packer_file = 'broker-packer.json'
 
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
