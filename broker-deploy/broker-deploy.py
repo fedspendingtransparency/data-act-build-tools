@@ -9,8 +9,9 @@ from subprocess import Popen, PIPE, STDOUT, call
 
 EXIT_CODE = 0
 # set global boto connection
+print('here')
 conn = boto.ec2.connect_to_region(region_name='us-gov-west-1')
-
+print('there')
 def deploy():
 
     # set paths
@@ -77,6 +78,7 @@ def deploy():
         ami_id = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
         print('Done. Packer AMI created: '+ami_id)
 
+        exit()
         # Set current=False tag for old App AMIs
         if current_app_amis:
             print('Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, current_app_amis)) )
@@ -164,14 +166,14 @@ def real_time_command(command_to_run):
             if '-machine-readable' in command_to_run:
                 output = output[output.rfind(',') + 1:]
             print(output.strip())
-            
+
     rc = process.poll()
     global EXIT_CODE
     EXIT_CODE += rc
 
     return total_output
 
-def update_packer_spec(packer_file='packer.json', current_base_ami='', environment):
+def update_packer_spec(packer_file, current_base_ami, environment):
     packer_json = open(packer_file, "r")
     packer_data = json.load(packer_json)
     packer_json.close()
@@ -179,7 +181,7 @@ def update_packer_spec(packer_file='packer.json', current_base_ami='', environme
     packer_data['builders'][0]['source_ami'] = current_base_ami
     packer_data['builders'][0]['tags']['environment'] = environment
     packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={} HOST=local'".format(environment)
-
+    print(packer_data)
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
     packer_json.close()
