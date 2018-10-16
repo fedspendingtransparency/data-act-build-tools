@@ -1,22 +1,15 @@
-#============================ USASpending-BASE-Playbook  ============================#
-
-#===============================  Notes  ================================#
-#  - Base Ansible playbook to run on a fresh RHEL7 install               #
-#  - Installs API dependencies that are mutal across environments.       #
-#  - This does not include the necessary certs & RDS keys to run the API #
-#  -                                                                     #
-#========================================================================#
+# Base Ansible to run on a fresh RHEL7 install.
+# Installs Broker API/Validator dependencies that are mutal across environments.
+# This does not include the necessary certs and RDS keys
 
 ---
-- hosts: "{{ HOST }}"
-
+- hosts: all
   become_method: sudo
-
-  user: ec2-user
+  remote_user: ec2-user
 
   tasks:
 
-    - name: upgrade all yum packages, kernel updates, OS patches
+    - name: upgrade all yum packages
       become: true
       yum:
         name: '*'
@@ -127,5 +120,3 @@
       lineinfile:
         dest: /home/ec2-user/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
-
-#====================================  EOF  ====================================# 
