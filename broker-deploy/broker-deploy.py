@@ -9,9 +9,7 @@ from subprocess import Popen, PIPE, STDOUT, call
 
 EXIT_CODE = 0
 # set global boto connection
-print('here')
 conn = boto.ec2.connect_to_region(region_name='us-gov-west-1')
-print('there')
 def deploy():
 
     # set paths
@@ -42,7 +40,7 @@ def deploy():
         deploy_env = 'sandbox'
 
     if optionsDict["dev"]:
-        deploy_env = 'development'
+        deploy_env = 'dev'
 
     if optionsDict["staging"]:
         deploy_env = 'staging'
@@ -78,7 +76,6 @@ def deploy():
         ami_id = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
         print('Done. Packer AMI created: '+ami_id)
 
-        exit()
         # Set current=False tag for old App AMIs
         if current_app_amis:
             print('Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, current_app_amis)) )
@@ -179,8 +176,12 @@ def update_packer_spec(packer_file, current_base_ami, environment):
     packer_json.close()
 
     packer_data['builders'][0]['source_ami'] = current_base_ami
+    if (deploy_env == 'dev'):
+        environment = 'development'
+
     packer_data['builders'][0]['tags']['environment'] = environment
-    packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={} HOST=local'".format(environment)
+    packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
+     "BRANCH={} HOST=local".format(environment) ]
     print(packer_data)
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
