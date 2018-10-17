@@ -176,7 +176,7 @@ def update_packer_spec(packer_file, current_base_ami, environment):
     packer_json.close()
 
     packer_data['builders'][0]['source_ami'] = current_base_ami
-    if (deploy_env == 'dev'):
+    if (environment == 'dev'):
         environment = 'development'
 
     packer_data['builders'][0]['tags']['environment'] = environment
