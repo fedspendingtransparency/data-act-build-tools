@@ -4,6 +4,8 @@
   become_method: sudo
 
   vars:
+  
+    ansible_python_interpreter: /usr/bin/python
 
     APP: "{{ APP }}"
     BRANCH: "{{ BRANCH }}"
@@ -18,7 +20,6 @@
       staging: {env_long: staging, domain: 'broker-staging-api.usaspending.gov' }
       dev:     {env_long: dev,     domain: 'broker-dev-api.usaspending.gov' }
       sandbox: {env_long: sandbox, domain: 'broker-sandbox-api.usaspending.gov'}
-      schemasandbox: {env_long: schemasandbox, domain: 'schema-sandbox-api.usaspending.gov'}
 
   tasks:
 
