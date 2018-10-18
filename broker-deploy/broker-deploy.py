@@ -182,7 +182,6 @@ def update_packer_spec(packer_file, current_base_ami, environment):
     packer_data['builders'][0]['tags']['environment'] = environment
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
-    print(packer_data)
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
     packer_json.close()
