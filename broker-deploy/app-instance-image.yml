@@ -43,6 +43,7 @@
     - name: pull repo - checkout build-tools repo from git
       become: true
       git: repo=git@github.com:fedspendingtransparency/data-act-build-tools.git
+           version=one-packer-file
            dest=/data-act/build-tools
            accept_hostkey=true
            force=yes
