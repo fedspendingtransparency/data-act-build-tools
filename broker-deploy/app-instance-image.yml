@@ -40,6 +40,14 @@
            force=yes
            key_file="/home/ec2-user/.ssh/id_rsa_broker_config"
 
+    - name: pull repo - checkout build-tools repo from git
+      become: true
+      git: repo=git@github.com:fedspendingtransparency/data-act-build-tools.git
+           dest=/data-act/build-tools
+           accept_hostkey=true
+           force=yes
+           key_file="/home/ec2-user/.ssh/id_rsa_broker_config"
+
     - name: pull repo - assign ownership of api dir to ec2-user
       become: true
       file: path=/data-act owner=ec2-user recurse=yes
