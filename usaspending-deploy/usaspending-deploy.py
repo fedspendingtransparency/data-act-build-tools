@@ -126,7 +126,7 @@ def deploy():
         # to a custom file/variable ...
         shutil.rmtree(deploy_env, ignore_errors=True)
         os.mkdir(deploy_env)
-        shutil.copy(TF_FILE,    deploy_env)
+        shutil.copy(tf_file,    deploy_env)
         shutil.copy(tfvar_file, deploy_env)
 
         # Add new AMI to Terraform variables
@@ -136,12 +136,12 @@ def deploy():
         update_terraform_user_data(deploy_env, deploy_env + '/' + tfvar_file)
 
         # Run Terraform plan and apply
-        real_time_command([TF_EXEC_PATH, 'init',  '-input=false',
+        real_time_command([tf_exec_path, 'init',  '-input=false',
                            '-backend-config=bucket='+tf_state_s3_bucket,
                            '-backend-config=key='+tf_state_s3_path,
                            '-backend-config=region='+tf_aws_region])
-        real_time_command([TF_EXEC_PATH, 'plan',  '-input=false', '-out=' + tf_plan_file])
-        real_time_command([TF_EXEC_PATH, 'apply', '-input=false', tf_plan_file])
+        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_plan_file])
+        real_time_command([tf_exec_path, 'apply', '-input=false', tf_plan_file])
 
   ###########################
   #   TF Build - Prod       #
