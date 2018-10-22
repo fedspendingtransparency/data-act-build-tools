@@ -182,10 +182,6 @@ def update_packer_spec(packer_file, current_base_ami, environment):
     packer_data['builders'][0]['tags']['environment'] = environment
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
-    
-    if environment == 'staging':
-        packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
-         "BRANCH={} HOST=local".format('fix/hotfix-broken-submissions') ]
         
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
