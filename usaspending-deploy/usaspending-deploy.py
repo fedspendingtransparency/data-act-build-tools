@@ -15,12 +15,14 @@ def deploy():
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
 
+    tf_exec_path     = 'terraform'
     tf_exec_path     = '/terraform/latest/terraform'
-    tf_file          = 'usaspending-deploy.tf'
+    #tf_file          = 'usaspending-deploy.tf'
 
+    # packer_exec_path = 'packer'
     packer_exec_path = '/packer/packerio'
     packer_file      = 'usaspending-packer.json'
-    
+
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
     conn = boto.ec2.connect_to_region(region_name='us-gov-west-1')
@@ -28,17 +30,17 @@ def deploy():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--sandbox", 
-        action="store_true", 
+    parser.add_argument("--sandbox",
+        action="store_true",
         help="Runs deploy for sandbox")
-    parser.add_argument("--dev", 
-        action="store_true", 
+    parser.add_argument("--dev",
+        action="store_true",
         help="Runs deploy for dev")
-    parser.add_argument("--staging", 
-        action="store_true", 
+    parser.add_argument("--staging",
+        action="store_true",
         help="Runs deploy for staging")
-    parser.add_argument("--prod", 
-        action="store_true", 
+    parser.add_argument("--prod",
+        action="store_true",
         help="Runs deploy for prod")
     args = parser.parse_args()
     optionsDict = vars(args)
@@ -68,13 +70,21 @@ def deploy():
     if optionsDict["staging"]:
         deploy_env = 'staging'
 
+    tfvar_json = open(tfvar_file, "r")
+    tfvar_data = json.load(tfvar_json)
+    tfvar_json.close()
+    tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
+    tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
+    tf_aws_region = tfvar_data['variable']['aws_region']['default']
+
+
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
         # Get Base AMI, Update Packer file
         print('Retrieving base AMI...')
         base_ami = conn.get_all_images(filters={
-            "tag:current"           : "True", 
-            "tag:base"              : "True", 
+            "tag:current"           : "True",
+            "tag:base"              : "True",
             "tag:type"              : "USASpending-API"
             })[0].id
         print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
@@ -82,10 +92,10 @@ def deploy():
         print('Done.')
 
     # Get Old AMIs, for setting current=False after new one is created
-        old_instance_amis = conn.get_all_images(filters={ 
-            "tag:current" : "True", 
-            "tag:base"    : "False", 
-            "tag:type"    : "USASpending-API", 
+        old_instance_amis = conn.get_all_images(filters={
+            "tag:current" : "True",
+            "tag:base"    : "False",
+            "tag:type"    : "USASpending-API",
             "tag:environment" : deploy_env
             })
 
@@ -123,7 +133,7 @@ def deploy():
         update_tf_ami(new_instance_ami, deploy_env + '/' + tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data(deploy_env, deploy_env + '/' + tfvar_file)    
+        update_terraform_user_data(deploy_env, deploy_env + '/' + tfvar_file)
 
         # Run Terraform plan and apply
         real_time_command([TF_EXEC_PATH, 'init',  '-input=false',
@@ -135,15 +145,15 @@ def deploy():
 
   ###########################
   #   TF Build - Prod       #
-  ###########################        
+  ###########################
 
     elif optionsDict["prod"]:
 
         # Get current Staging AMI
         staging_ami = conn.get_all_images(filters={
-            "tag:current"     : "True", 
-            "tag:base"        : "False", 
-            "tag:type"        : "USASpending-API", 
+            "tag:current"     : "True",
+            "tag:base"        : "False",
+            "tag:type"        : "USASpending-API",
             "tag:environment" : "staging"
             })[0].id
 
@@ -151,7 +161,7 @@ def deploy():
         update_tf_ami(staging_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data('prod')  
+        update_terraform_user_data('prod')
 
         # Run Terraform plan and apply
         real_time_command([tf_exec_path, 'plan'])
@@ -180,7 +190,7 @@ def real_time_command(command_to_run):
             if '-machine-readable' in command_to_run:
                 output = output[output.rfind(',') + 1:]
             print(output.strip())
-            
+
     rc = process.poll()
     global EXIT_CODE
     EXIT_CODE += rc
