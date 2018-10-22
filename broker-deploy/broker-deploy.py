@@ -16,7 +16,7 @@ def deploy():
     packer_file = 'broker-packer.json'
     tfvar_file = 'broker-vars.tf.json'
     packer_exec_path = '/packer/packerio'
-    tf_exec_path = '/terraform/terraform'
+    tf_exec_path = '/terraform/latest/terraform'
 
     parser = argparse.ArgumentParser()
 
@@ -99,8 +99,13 @@ def deploy():
         update_lc_ami(ami_id, tfvar_file, deploy_env)
 
         #Run terraform
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
+        real_time_command([TF_EXEC_PATH, 'init',  '-input=false',
+                   '-backend-config=bucket='+tf_state_s3_bucket,
+                   '-backend-config=key='+tf_state_s3_path,
+                   '-backend-config=region='+tf_aws_region])
+
+        real_time_command([TF_EXEC_PATH, 'plan',  '-input=false', '-out=' + tf_plan_file])
+        real_time_command([TF_EXEC_PATH, 'apply', '-input=false', tf_plan_file])
 
     elif optionsDict["prod"]:
         #For prod, we don't build a new artifact, we just run terraform against the current staging AMI
