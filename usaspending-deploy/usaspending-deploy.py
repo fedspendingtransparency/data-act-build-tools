@@ -14,7 +14,7 @@ def deploy():
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
 
-    tf_exec_path     = '/terraform/terraform'
+    tf_exec_path     = '/terraform/latest/terraform'
     tf_file          = 'usaspending-deploy.tf'
 
     packer_exec_path = '/packer/packerio'
@@ -107,17 +107,30 @@ def deploy():
 
   ###########################
   #   TF Build - NonProd    #
-  ###########################    
+  ###########################
+        print('**************************************************************************')
+        print(' Running terraform... ')
+        # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
+        # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
+        # to a custom file/variable ...
+        shutil.rmtree(deploy_env, ignore_errors=True)
+        os.mkdir(deploy_env)
+        shutil.copy(TF_FILE,    deploy_env)
+        shutil.copy(tfvar_file, deploy_env)
 
         # Add new AMI to Terraform variables
-        update_tf_ami(new_instance_ami, tfvar_file)
+        update_tf_ami(new_instance_ami, deploy_env + '/' + tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data(deploy_env)    
+        update_terraform_user_data(deploy_env, deploy_env + '/' + tfvar_file)    
 
         # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
+        real_time_command([TF_EXEC_PATH, 'init',  '-input=false',
+                           '-backend-config=bucket='+tf_state_s3_bucket,
+                           '-backend-config=key='+tf_state_s3_path,
+                           '-backend-config=region='+tf_aws_region])
+        real_time_command([TF_EXEC_PATH, 'plan',  '-input=false', '-out=' + tf_plan_file])
+        real_time_command([TF_EXEC_PATH, 'apply', '-input=false', tf_plan_file])
 
   ###########################
   #   TF Build - Prod       #
