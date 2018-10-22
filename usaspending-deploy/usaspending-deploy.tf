@@ -2,6 +2,10 @@ provider "aws" {
     region = "${var.aws_region}"
 }
 
+terraform {
+  backend "s3" {}
+}
+
 resource "aws_autoscaling_group" "api-asg" {
   name = "${var.api_name_prefix}_ASG_${lookup(var.aws_amis, var.aws_region)}"
   max_size = "${var.api_asg_max}"
