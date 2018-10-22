@@ -140,8 +140,8 @@ def deploy():
                            '-backend-config=bucket='+tf_state_s3_bucket,
                            '-backend-config=key='+tf_state_s3_path,
                            '-backend-config=region='+tf_aws_region])
-        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_plan_file])
-        real_time_command([tf_exec_path, 'apply', '-input=false', tf_plan_file])
+        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
+        real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
 
   ###########################
   #   TF Build - Prod       #
