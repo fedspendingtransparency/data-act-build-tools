@@ -141,7 +141,7 @@ def deploy():
         update_tf_ami(new_instance_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data(deploy_env, tfvar_file)
+        update_terraform_user_data(deploy_env)
         
 
         # Run Terraform plan and apply
