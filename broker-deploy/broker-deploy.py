@@ -40,7 +40,7 @@ def deploy():
         deploy_env = 'sandbox'
 
     if optionsDict["dev"]:
-        deploy_env = 'development'
+        deploy_env = 'dev'
 
     if optionsDict["staging"]:
         deploy_env = 'staging'
@@ -177,6 +177,10 @@ def update_packer_spec(packer_file, current_base_ami, environment):
 
     packer_data['builders'][0]['source_ami'] = current_base_ami
     packer_data['builders'][0]['tags']['environment'] = environment
+    
+    # dev branch is called development
+    if (environment == "dev"):
+        environment = "development"
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
         
