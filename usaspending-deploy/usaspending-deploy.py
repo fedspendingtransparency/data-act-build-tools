@@ -134,7 +134,7 @@ def deploy():
         os.mkdir(deploy_env)
         shutil.copy(tf_file,    deploy_env)
         shutil.copy(tfvar_file, deploy_env)
-        shutil.cupy(startup_script, deploy_env)
+        shutil.copy(startup_script, deploy_env)
         os.chdir(deploy_env)
 
         # Add new AMI to Terraform variables
