@@ -69,13 +69,19 @@ def deploy():
 
     if optionsDict["staging"]:
         deploy_env = 'staging'
+        
+    if optionsDict["prod"]:
+        deploy_env = 'prod'
 
     tfvar_json = open(tfvar_file, "r")
     tfvar_data = json.load(tfvar_json)
     tfvar_json.close()
+    
+    #initialize variables needed to deploy terraform 
     tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
     tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
+    startup_script = "usaspending-start-{}.sh".format(deploy_env)
 
 
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
@@ -128,14 +134,15 @@ def deploy():
         os.mkdir(deploy_env)
         shutil.copy(tf_file,    deploy_env)
         shutil.copy(tfvar_file, deploy_env)
+        shutil.cupy(startup_script, deploy_env)
+        os.chdir(deploy_env)
 
         # Add new AMI to Terraform variables
-        update_tf_ami(new_instance_ami, deploy_env + '/' + tfvar_file)
+        update_tf_ami(new_instance_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data(deploy_env, deploy_env + '/' + tfvar_file)
+        update_terraform_user_data(deploy_env, tfvar_file)
         
-        os.chdir(deploy_env)
 
         # Run Terraform plan and apply
         real_time_command([tf_exec_path, 'init',  '-input=false',
@@ -150,6 +157,7 @@ def deploy():
   ###########################
 
     elif optionsDict["prod"]:
+        deploy_env = "prod"
 
         # Get current Staging AMI
         staging_ami = conn.get_all_images(filters={
