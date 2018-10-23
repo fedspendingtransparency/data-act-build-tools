@@ -5,6 +5,7 @@ import os
 import json
 import argparse
 import sys
+import shutil
 from subprocess import Popen, PIPE, STDOUT, call
 
 EXIT_CODE = 0
