@@ -62,51 +62,51 @@ def deploy():
 
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
-        # # Retrieve current Base app AMI (where type=app and current=true)
-        # print('Retrieving current base app AMI...')
-        #
-        # current_base_ami = get_current_base_ami()
-        #
-        # # Insert current Base app AMI into packer file
-        # print('Updating Packer file with current base app AMI ' + current_base_ami + '...')
-        # update_packer_spec(packer_file, current_base_ami, deploy_env)
-        # print('Done.')
-        #
-        # # Retrieve current App Instance AMIs
-        # print('Retrieving current app instance AMI(s)...')
-        # current_app_amis = get_current_app_instance_amis(deploy_env)
-        #
-        # print('Done. Current app instance AMI(s): '+ '\n'.join(map(str, current_app_amis)) )
-        #
-        # # Build new app instance AMI via Packer
-        # print('**************************************************************************')
-        # print('Buiding new app instance AMI via Packer. This may take a few minutes...')
-        # packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
-        # ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
-        # ami_id = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
-        # print('Done. Packer AMI created: '+ami_id)
-        #
-        # # Set current=False tag for old App AMIs
-        # if current_app_amis:
-        #     print('Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, current_app_amis)) )
-        #     update_ami_tags(current_app_amis)
-        #     print('Done.')
-        # else:
-        #     print('No matching old AMIs. Skipping tag update...')
-        #
-        # # Confirm app instance that was created is now only current=True tagged AMI
-        # if ami_id == conn.get_all_images(filters={
-        #     "tag:current" : "True",
-        #     "tag:base" : "False",
-        #     "tag:type" : "Application",
-        #     "tag:environment" : deploy_env
-        #     })[0].id:
-        #     print('Success! Packer AMI id matches current tagged AMI.')
-        # else:
-        #     print('Something went wrong. Packer AMI: '+ami_id+'; Tagged AMI: '+conn.get_all_images(filters={"tag:current" : "True", "tag:base" : "False", "tag:type" : "Application", "tag:environment" : deploy_env})[0].id)
-        #
+        # Retrieve current Base app AMI (where type=app and current=true)
+        print('Retrieving current base app AMI...')
+
+        current_base_ami = get_current_base_ami()
+
+        # Insert current Base app AMI into packer file
+        print('Updating Packer file with current base app AMI ' + current_base_ami + '...')
+        update_packer_spec(packer_file, current_base_ami, deploy_env)
+        print('Done.')
+
+        # Retrieve current App Instance AMIs
+        print('Retrieving current app instance AMI(s)...')
+        current_app_amis = get_current_app_instance_amis(deploy_env)
+
+        print('Done. Current app instance AMI(s): '+ '\n'.join(map(str, current_app_amis)) )
+
+        # Build new app instance AMI via Packer
+        print('**************************************************************************')
+        print('Buiding new app instance AMI via Packer. This may take a few minutes...')
+        packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
+        ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
+        ami_id = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
+        print('Done. Packer AMI created: '+ami_id)
+
+        # Set current=False tag for old App AMIs
+        if current_app_amis:
+            print('Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, current_app_amis)) )
+            update_ami_tags(current_app_amis)
+            print('Done.')
+        else:
+            print('No matching old AMIs. Skipping tag update...')
+
+        # Confirm app instance that was created is now only current=True tagged AMI
+        if ami_id == conn.get_all_images(filters={
+            "tag:current" : "True",
+            "tag:base" : "False",
+            "tag:type" : "Application",
+            "tag:environment" : deploy_env
+            })[0].id:
+            print('Success! Packer AMI id matches current tagged AMI.')
+        else:
+            print('Something went wrong. Packer AMI: '+ami_id+'; Tagged AMI: '+conn.get_all_images(filters={"tag:current" : "True", "tag:base" : "False", "tag:type" : "Application", "tag:environment" : deploy_env})[0].id)
+
         #Add new AMI id to terraform variables
-        update_lc_ami("ami-047ee465", tfvar_file, deploy_env)
+        update_lc_ami(ami_id, tfvar_file, deploy_env)
 
         print('**************************************************************************')
         print(' Running terraform... ')
