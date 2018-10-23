@@ -15,7 +15,7 @@ def deploy():
     tfvar_file   = 'usaspending-bulk-download-vars.tf.json'
 
     tf_exec_path = '/terraform/latest/terraform'
-    tf_file      = 'usaspending-deploy.tf'
+    tf_file      = 'usaspending-bulk-download-deploy.tf'
 
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
