@@ -49,6 +49,14 @@ def deploy():
         deploy_env = 'prod'
 
     tfvar_file = deploy_env + '-variables.tf.json'
+    tfvar_json = open(tfvar_file, "r")
+    tfvar_data = json.load(tfvar_json)
+    tfvar_json.close()
+
+    #initialize variables needed to deploy terraform
+    tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
+    tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
+    tf_aws_region = tfvar_data['variable']['aws_region']['default']
 
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
@@ -98,14 +106,24 @@ def deploy():
         #Add new AMI id to terraform variables
         update_lc_ami(ami_id, tfvar_file, deploy_env)
 
-        #Run terraform
-        real_time_command([TF_EXEC_PATH, 'init',  '-input=false',
-                   '-backend-config=bucket='+tf_state_s3_bucket,
-                   '-backend-config=key='+tf_state_s3_path,
-                   '-backend-config=region='+tf_aws_region])
-
-        real_time_command([TF_EXEC_PATH, 'plan',  '-input=false', '-out=' + tf_plan_file])
-        real_time_command([TF_EXEC_PATH, 'apply', '-input=false', tf_plan_file])
+        print('**************************************************************************')
+        print(' Running terraform... ')
+        # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
+        # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
+        # to a custom file/variable ...
+        shutil.rmtree(deploy_env, ignore_errors=True)
+        os.mkdir(deploy_env)
+        shutil.copy(tf_file,    deploy_env)
+        shutil.copy(tfvar_file, deploy_env)
+        shutil.copy(startup_script, deploy_env)
+        os.chdir(deploy_env)
+        # Run Terraform plan and apply
+        real_time_command([tf_exec_path, 'init',  '-input=false',
+                           '-backend-config=bucket='+tf_state_s3_bucket,
+                           '-backend-config=key='+tf_state_s3_path,
+                           '-backend-config=region='+tf_aws_region])
+        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
+        real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
 
     elif optionsDict["prod"]:
         #For prod, we don't build a new artifact, we just run terraform against the current staging AMI
@@ -115,9 +133,24 @@ def deploy():
         # Update terraform variables with staging ami_id
         update_lc_ami(staging_ami, tfvar_file, deploy_env)
         print(staging_ami)
-        #Run terraform
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
+        print('**************************************************************************')
+        print(' Running terraform... ')
+        # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
+        # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
+        # to a custom file/variable ...
+        shutil.rmtree(deploy_env, ignore_errors=True)
+        os.mkdir(deploy_env)
+        shutil.copy(tf_file,    deploy_env)
+        shutil.copy(tfvar_file, deploy_env)
+        shutil.copy(startup_script, deploy_env)
+        os.chdir(deploy_env)
+        # Run Terraform plan and apply
+        real_time_command([tf_exec_path, 'init',  '-input=false',
+                           '-backend-config=bucket='+tf_state_s3_bucket,
+                           '-backend-config=key='+tf_state_s3_path,
+                           '-backend-config=region='+tf_aws_region])
+        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
+        real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
@@ -181,10 +214,10 @@ def update_packer_spec(packer_file, current_base_ami, environment):
     packer_json.close()
 
     packer_data['builders'][0]['source_ami'] = current_base_ami
+    packer_data['builders'][0]['tags']['environment'] = environment
+
     if (environment == 'dev'):
         environment = 'development'
-
-    packer_data['builders'][0]['tags']['environment'] = environment
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
     packer_json = open(packer_file, "w+")

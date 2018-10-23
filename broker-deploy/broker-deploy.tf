@@ -5,6 +5,10 @@ provider "aws" {
     region = "${var.aws_region}"
 }
 
+terraform {
+  backend "s3" {}
+}
+
 resource "aws_autoscaling_group" "api-asg" {
   name = "${aws_launch_configuration.api-lc.name}"
   max_size = "${var.api_asg_max}"
@@ -16,7 +20,7 @@ resource "aws_autoscaling_group" "api-asg" {
   launch_configuration = "${aws_launch_configuration.api-lc.name}"
   load_balancers = ["${var.api_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
-    
+
   tag = {
       key = "Name"
       value = "${var.api_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
@@ -37,7 +41,7 @@ resource "aws_autoscaling_group" "api-asg" {
       value = "${var.env_tag}"
       propagate_at_launch = "true"
   }
-  
+
   lifecycle {
     create_before_destroy = true
   }
@@ -54,7 +58,7 @@ resource "aws_autoscaling_group" "val-asg" {
   launch_configuration = "${aws_launch_configuration.val-lc.name}"
   load_balancers = ["${var.val_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
-    
+
   tag = {
       key = "Name"
       value = "${var.val_name_prefix}_${lookup(var.aws_amis, var.aws_region)}"
@@ -75,7 +79,7 @@ resource "aws_autoscaling_group" "val-asg" {
       value = "${var.env_tag}"
       propagate_at_launch = "true"
   }
-  
+
   lifecycle {
     create_before_destroy = true
   }
