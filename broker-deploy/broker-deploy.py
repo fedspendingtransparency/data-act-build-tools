@@ -176,10 +176,11 @@ def update_packer_spec(packer_file, current_base_ami, environment):
     packer_json.close()
 
     packer_data['builders'][0]['source_ami'] = current_base_ami
-    if environment == 'dev':
-        environment = 'development'
-
     packer_data['builders'][0]['tags']['environment'] = environment
+    
+    # dev branch is called development
+    if (environment == "dev"):
+        environment = "development"
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
         
