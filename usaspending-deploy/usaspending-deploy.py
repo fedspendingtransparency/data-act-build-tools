@@ -134,6 +134,8 @@ def deploy():
 
         # Update Terraform User Data
         update_terraform_user_data(deploy_env, deploy_env + '/' + tfvar_file)
+        
+        os.chdir(deploy_env)
 
         # Run Terraform plan and apply
         real_time_command([tf_exec_path, 'init',  '-input=false',
