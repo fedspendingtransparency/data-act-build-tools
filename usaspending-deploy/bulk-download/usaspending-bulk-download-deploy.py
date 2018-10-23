@@ -4,6 +4,7 @@ import json
 import argparse
 import sys
 import shutil
+import os
 from subprocess import Popen, PIPE
 
 EXIT_CODE = 0
