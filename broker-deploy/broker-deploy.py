@@ -117,7 +117,6 @@ def deploy():
         os.mkdir(deploy_env)
         shutil.copy(tf_file,    deploy_env)
         shutil.copy(tfvar_file, deploy_env)
-        shutil.copy(startup_script, deploy_env)
         os.chdir(deploy_env)
         # Run Terraform plan and apply
         real_time_command([tf_exec_path, 'init',  '-input=false',
@@ -144,7 +143,6 @@ def deploy():
         os.mkdir(deploy_env)
         shutil.copy(tf_file,    deploy_env)
         shutil.copy(tfvar_file, deploy_env)
-        shutil.copy(startup_script, deploy_env)
         os.chdir(deploy_env)
         # Run Terraform plan and apply
         real_time_command([tf_exec_path, 'init',  '-input=false',
