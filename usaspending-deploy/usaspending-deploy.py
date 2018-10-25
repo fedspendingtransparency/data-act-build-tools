@@ -5,7 +5,6 @@ import os
 import json
 import argparse
 import sys
-import shutil
 from subprocess import Popen, PIPE, STDOUT, call
 
 EXIT_CODE = 0
@@ -18,7 +17,6 @@ def deploy():
     tf_exec_path     = '/terraform/latest/terraform'
     tf_file          = 'usaspending-deploy.tf'
 
-    # packer_exec_path = 'packer'
     packer_exec_path = '/packer/packerio'
     packer_file      = 'usaspending-packer.json'
 
@@ -68,20 +66,6 @@ def deploy():
 
     if optionsDict["staging"]:
         deploy_env = 'staging'
-
-    if optionsDict["prod"]:
-        deploy_env = 'prod'
-
-    tfvar_json = open(tfvar_file, "r")
-    tfvar_data = json.load(tfvar_json)
-    tfvar_json.close()
-
-    #initialize variables needed to deploy terraform
-    tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
-    tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
-    tf_aws_region = tfvar_data['variable']['aws_region']['default']
-    startup_script = "usaspending-start-{}.sh".format(deploy_env)
-
 
     if optionsDict["prod"]:
         deploy_env = 'prod'
@@ -210,11 +194,10 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
     packer_json.close()
 
     packer_data['builders'][0]['source_ami'] = base_ami
-    packer_data['builders'][0]['tags']['environment'] = environment
 
-    if (environment == "staging"):
-        environment = "stg"
-    packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={}'".format(environment)
+    if environment == 'dev' or environment == 'sandbox':
+        packer_data['builders'][0]['tags']['environment'] = environment
+        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={} HOST=local'".format(environment)
 
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
