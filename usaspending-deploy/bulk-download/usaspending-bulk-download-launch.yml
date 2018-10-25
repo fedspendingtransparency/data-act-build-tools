@@ -1,5 +1,5 @@
 ---
-- hosts: "{{ HOST }}"
+- hosts: "localhost"
 
 # NOTE: This should run after usaspending-api-image.yml
 
