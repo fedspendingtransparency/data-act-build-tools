@@ -64,7 +64,6 @@ def deploy():
 
         # Retrieve current Base app AMI (where type=app and current=true)
         print('Retrieving current base app AMI...')
-
         current_base_ami = get_current_base_ami()
 
         # Insert current Base app AMI into packer file
@@ -108,49 +107,29 @@ def deploy():
         #Add new AMI id to terraform variables
         update_lc_ami(ami_id, tfvar_file, deploy_env)
 
-        print('**************************************************************************')
-        print(' Running terraform... ')
-        # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
-        # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
-        # to a custom file/variable ...
-        shutil.rmtree(deploy_env, ignore_errors=True)
-        os.mkdir(deploy_env)
-        shutil.copy(tf_file,    deploy_env)
-        shutil.copy(tfvar_file, deploy_env)
-        os.chdir(deploy_env)
-        # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'init',  '-input=false',
-                           '-backend-config=bucket='+tf_state_s3_bucket,
-                           '-backend-config=key='+tf_state_s3_path,
-                           '-backend-config=region='+tf_aws_region])
-        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
-        real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
-
     elif optionsDict["prod"]:
         #For prod, we don't build a new artifact, we just run terraform against the current staging AMI
-        deploy_env = 'prod'
-        # get current staging AMI
         staging_ami = conn.get_all_images(filters={"tag:current" : "True", "tag:base" : "False", "tag:type" : "Application", "tag:environment" : "staging"})[0].id
         # Update terraform variables with staging ami_id
         update_lc_ami(staging_ami, tfvar_file, deploy_env)
-        print(staging_ami)
-        print('**************************************************************************')
-        print(' Running terraform... ')
-        # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
-        # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
-        # to a custom file/variable ...
-        shutil.rmtree(deploy_env, ignore_errors=True)
-        os.mkdir(deploy_env)
-        shutil.copy(tf_file,    deploy_env)
-        shutil.copy(tfvar_file, deploy_env)
-        os.chdir(deploy_env)
-        # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'init',  '-input=false',
-                           '-backend-config=bucket='+tf_state_s3_bucket,
-                           '-backend-config=key='+tf_state_s3_path,
-                           '-backend-config=region='+tf_aws_region])
-        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
-        real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
+        
+    print('**************************************************************************')
+    print(' Running terraform... ')
+    # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
+    # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
+    # to a custom file/variable ...
+    shutil.rmtree(deploy_env, ignore_errors=True)
+    os.mkdir(deploy_env)
+    shutil.copy(tf_file,    deploy_env)
+    shutil.copy(tfvar_file, deploy_env)
+    os.chdir(deploy_env)
+    # Run Terraform plan and apply
+    real_time_command([tf_exec_path, 'init',  '-input=false',
+                       '-backend-config=bucket='+tf_state_s3_bucket,
+                       '-backend-config=key='+tf_state_s3_path,
+                       '-backend-config=region='+tf_aws_region])
+    real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
+    real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
