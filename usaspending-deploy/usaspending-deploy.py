@@ -69,45 +69,45 @@ def deploy():
 
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
-  #       # Get Base AMI, Update Packer file
-  #       print('Retrieving base AMI...')
-  #       base_ami = conn.get_all_images(filters={
-  #           "tag:current"           : "True",
-  #           "tag:base"              : "True",
-  #           "tag:type"              : "USASpending-API"
-  #           })[0].id
-  #       print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
-  #       update_packer_spec(packer_file, base_ami, deploy_env)
-  #       print('Done.')
-  #
-  #   # Get Old AMIs, for setting current=False after new one is created
-  #       old_instance_amis = conn.get_all_images(filters={
-  #           "tag:current" : "True",
-  #           "tag:base"    : "False",
-  #           "tag:type"    : "USASpending-API",
-  #           "tag:environment" : deploy_env
-  #           })
-  #
-  #   # Build New AMI (Packer)
-  #       print('**************************************************************************')
-  #       print(' Building new AMI via Packer. This can take a while...')
-  #       packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
-  #       ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
-  #       new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
-  #       print('Done. New AMI created: ' + new_instance_ami)
-  #
-  #
-  #   # Set current=False tag for old AMIs
-  #       if old_instance_amis:
-  #           print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
-  #           update_ami_tags(old_instance_amis)
-  #           print('Done.')
-  #       else:
-  #           print('No matching old AMIs. Skipping tag update...')
-  #
-  # ###########################
-  # #   TF Build - NonProd    #
-  # ###########################
+        # Get Base AMI, Update Packer file
+        print('Retrieving base AMI...')
+        base_ami = conn.get_all_images(filters={
+            "tag:current"           : "True",
+            "tag:base"              : "True",
+            "tag:type"              : "USASpending-API"
+            })[0].id
+        print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
+        update_packer_spec(packer_file, base_ami, deploy_env)
+        print('Done.')
+
+    # Get Old AMIs, for setting current=False after new one is created
+        old_instance_amis = conn.get_all_images(filters={
+            "tag:current" : "True",
+            "tag:base"    : "False",
+            "tag:type"    : "USASpending-API",
+            "tag:environment" : deploy_env
+            })
+
+    # Build New AMI (Packer)
+        print('**************************************************************************')
+        print(' Building new AMI via Packer. This can take a while...')
+        packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
+        ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
+        new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
+        print('Done. New AMI created: ' + new_instance_ami)
+
+
+    # Set current=False tag for old AMIs
+        if old_instance_amis:
+            print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
+            update_ami_tags(old_instance_amis)
+            print('Done.')
+        else:
+            print('No matching old AMIs. Skipping tag update...')
+
+  ###########################
+  #   TF Build - NonProd    #
+  ###########################
 
         # Add new AMI to Terraform variables
         update_tf_ami("ami-ae148ecf", tfvar_file)
