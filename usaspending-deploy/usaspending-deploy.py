@@ -82,7 +82,6 @@ def deploy():
 
 
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
-
         # Get Base AMI, Update Packer file
         print('Retrieving base AMI...')
         base_ami = conn.get_all_images(filters={
@@ -118,9 +117,11 @@ def deploy():
             print('Done.')
         else:
             print('No matching old AMIs. Skipping tag update...')
-
+  ###########################
+  #   TF Build - NonProd    #
+  ###########################
         # Add new AMI to Terraform variables
-        update_tf_ami(new_instance_ami, tfvar_file)
+        update_tf_ami("ami-ae148ecf", tfvar_file)
 
     elif optionsDict["prod"]:
         # Get current Staging AMI
