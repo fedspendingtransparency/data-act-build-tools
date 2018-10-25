@@ -3,6 +3,8 @@ from boto import ec2
 import json
 import argparse
 import sys
+import shutil
+import os
 from subprocess import Popen, PIPE
 
 EXIT_CODE = 0
@@ -12,8 +14,8 @@ def deploy():
     # This tf_var file is expected to be copied from an external source
     tfvar_file   = 'usaspending-bulk-download-vars.tf.json'
 
-    tf_exec_path = '/terraform/terraform'
-    tf_file      = 'usaspending-deploy.tf'
+    tf_exec_path = '/terraform/latest/terraform'
+    tf_file      = 'usaspending-bulk-download-deploy.tf'
 
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
@@ -54,6 +56,15 @@ def deploy():
 
     if optionsDict["staging"] or optionsDict["prod"]: # both pull staging AMI
         deploy_env = 'staging'
+        
+    tfvar_json = open(tfvar_file, "r")
+    tfvar_data = json.load(tfvar_json)
+    tfvar_json.close()
+    
+    #initialize variables needed to deploy terraform 
+    tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
+    tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
+    tf_aws_region = tfvar_data['variable']['aws_region']['default']
 
     # Get previously created API AMI (created by usaspending-deploy.py)
     current_api_ami = conn.get_all_images(filters={
@@ -66,10 +77,25 @@ def deploy():
     # Add API AMI to Terraform variables
     update_tf_ami(current_api_ami, tfvar_file)
 
-    # Run Terraform plan and apply
-    real_time_command([tf_exec_path, 'plan'])
-    real_time_command([tf_exec_path, 'apply'])
+    print('**************************************************************************')
+    print(' Running terraform... ')
+    # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
+    # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
+    # to a custom file/variable ...
+    shutil.rmtree(deploy_env, ignore_errors=True)
+    os.mkdir(deploy_env)
+    shutil.copy(tf_file,    deploy_env)
+    shutil.copy(tfvar_file, deploy_env)
+    os.chdir(deploy_env)
 
+    # Run Terraform plan and apply
+    real_time_command([tf_exec_path, 'init',  '-input=false',
+                       '-backend-config=bucket='+tf_state_s3_bucket,
+                       '-backend-config=key='+tf_state_s3_path,
+                       '-backend-config=region='+tf_aws_region])
+    real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
+    real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
+    
     global EXIT_CODE
     if EXIT_CODE != 0:
         print('Exiting with a code of {}'.format(EXIT_CODE))

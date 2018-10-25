@@ -5,6 +5,7 @@ import os
 import json
 import argparse
 import sys
+import shutil
 from subprocess import Popen, PIPE, STDOUT, call
 
 EXIT_CODE = 0
@@ -14,12 +15,12 @@ def deploy():
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
 
-    tf_exec_path     = '/terraform/terraform'
+    tf_exec_path     = '/terraform/latest/terraform'
     tf_file          = 'usaspending-deploy.tf'
 
     packer_exec_path = '/packer/packerio'
     packer_file      = 'usaspending-packer.json'
-    
+
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
     conn = boto.ec2.connect_to_region(region_name='us-gov-west-1')
@@ -27,17 +28,17 @@ def deploy():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--sandbox", 
-        action="store_true", 
+    parser.add_argument("--sandbox",
+        action="store_true",
         help="Runs deploy for sandbox")
-    parser.add_argument("--dev", 
-        action="store_true", 
+    parser.add_argument("--dev",
+        action="store_true",
         help="Runs deploy for dev")
-    parser.add_argument("--staging", 
-        action="store_true", 
+    parser.add_argument("--staging",
+        action="store_true",
         help="Runs deploy for staging")
-    parser.add_argument("--prod", 
-        action="store_true", 
+    parser.add_argument("--prod",
+        action="store_true",
         help="Runs deploy for prod")
     args = parser.parse_args()
     optionsDict = vars(args)
@@ -66,29 +67,43 @@ def deploy():
 
     if optionsDict["staging"]:
         deploy_env = 'staging'
+        
+    if optionsDict["prod"]:
+        deploy_env = 'prod'
+
+    tfvar_json = open(tfvar_file, "r")
+    tfvar_data = json.load(tfvar_json)
+    tfvar_json.close()
+    
+    #initialize variables needed to deploy terraform 
+    tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
+    tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
+    tf_aws_region = tfvar_data['variable']['aws_region']['default']
+    startup_script = "usaspending-start-{}.sh".format(deploy_env)
+
 
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
         # Get Base AMI, Update Packer file
         print('Retrieving base AMI...')
         base_ami = conn.get_all_images(filters={
-            "tag:current"           : "True", 
-            "tag:base"              : "True", 
+            "tag:current"           : "True",
+            "tag:base"              : "True",
             "tag:type"              : "USASpending-API"
             })[0].id
         print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
         update_packer_spec(packer_file, base_ami, deploy_env)
         print('Done.')
 
-    # Get Old AMIs, for setting current=False after new one is created
-        old_instance_amis = conn.get_all_images(filters={ 
-            "tag:current" : "True", 
-            "tag:base"    : "False", 
-            "tag:type"    : "USASpending-API", 
+        # Get Old AMIs, for setting current=False after new one is created
+        old_instance_amis = conn.get_all_images(filters={
+            "tag:current" : "True",
+            "tag:base"    : "False",
+            "tag:type"    : "USASpending-API",
             "tag:environment" : deploy_env
             })
 
-    # Build New AMI (Packer)
+        # Build New AMI (Packer)
         print('**************************************************************************')
         print(' Building new AMI via Packer. This can take a while...')
         packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
@@ -97,7 +112,7 @@ def deploy():
         print('Done. New AMI created: ' + new_instance_ami)
 
 
-    # Set current=False tag for old AMIs
+        # Set current=False tag for old AMIs
         if old_instance_amis:
             print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
             update_ami_tags(old_instance_amis)
@@ -105,31 +120,18 @@ def deploy():
         else:
             print('No matching old AMIs. Skipping tag update...')
 
-  ###########################
-  #   TF Build - NonProd    #
-  ###########################    
-
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data(deploy_env)    
+        update_terraform_user_data(deploy_env)
 
-        # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
-
-  ###########################
-  #   TF Build - Prod       #
-  ###########################        
-
-    elif optionsDict["prod"]:
-
+    elif optionsDict["prod"]:        
         # Get current Staging AMI
         staging_ami = conn.get_all_images(filters={
-            "tag:current"     : "True", 
-            "tag:base"        : "False", 
-            "tag:type"        : "USASpending-API", 
+            "tag:current"     : "True",
+            "tag:base"        : "False",
+            "tag:type"        : "USASpending-API",
             "tag:environment" : "staging"
             })[0].id
 
@@ -137,11 +139,27 @@ def deploy():
         update_tf_ami(staging_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data('prod')  
+        update_terraform_user_data(deploy_env)      
+        
+    print('**************************************************************************')
+    print(' Running terraform... ')
+    # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
+    # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
+    # to a custom file/variable ...
+    shutil.rmtree(deploy_env, ignore_errors=True)
+    os.mkdir(deploy_env)
+    shutil.copy(tf_file,    deploy_env)
+    shutil.copy(tfvar_file, deploy_env)
+    shutil.copy(startup_script, deploy_env)
+    os.chdir(deploy_env)
 
-        # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'plan'])
-        real_time_command([tf_exec_path, 'apply'])
+    # Run Terraform plan and apply
+    real_time_command([tf_exec_path, 'init',  '-input=false',
+                       '-backend-config=bucket='+tf_state_s3_bucket,
+                       '-backend-config=key='+tf_state_s3_path,
+                       '-backend-config=region='+tf_aws_region])
+    real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
+    real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
@@ -166,7 +184,7 @@ def real_time_command(command_to_run):
             if '-machine-readable' in command_to_run:
                 output = output[output.rfind(',') + 1:]
             print(output.strip())
-            
+
     rc = process.poll()
     global EXIT_CODE
     EXIT_CODE += rc
