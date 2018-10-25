@@ -183,7 +183,7 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
 
     if environment == 'dev' or environment == 'sandbox':
         packer_data['builders'][0]['tags']['environment'] = environment
-        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={} HOST=local'".format(environment)
+        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={}'".format(environment)
 
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
