@@ -121,7 +121,7 @@ def deploy():
   #   TF Build - NonProd    #
   ###########################
         # Add new AMI to Terraform variables
-        update_tf_ami("ami-ae148ecf", tfvar_file)
+        update_tf_ami(new_instance_ami, tfvar_file)
 
     elif optionsDict["prod"]:
         # Get current Staging AMI
