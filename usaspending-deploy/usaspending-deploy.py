@@ -15,11 +15,9 @@ def deploy():
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
 
-    # tf_exec_path     = 'terraform'
     tf_exec_path     = '/terraform/latest/terraform'
     tf_file          = 'usaspending-deploy.tf'
 
-    # packer_exec_path = 'packer'
     packer_exec_path = '/packer/packerio'
     packer_file      = 'usaspending-packer.json'
 
@@ -97,7 +95,7 @@ def deploy():
         update_packer_spec(packer_file, base_ami, deploy_env)
         print('Done.')
 
-    # Get Old AMIs, for setting current=False after new one is created
+        # Get Old AMIs, for setting current=False after new one is created
         old_instance_amis = conn.get_all_images(filters={
             "tag:current" : "True",
             "tag:base"    : "False",
@@ -105,7 +103,7 @@ def deploy():
             "tag:environment" : deploy_env
             })
 
-    # Build New AMI (Packer)
+        # Build New AMI (Packer)
         print('**************************************************************************')
         print(' Building new AMI via Packer. This can take a while...')
         packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
@@ -114,7 +112,7 @@ def deploy():
         print('Done. New AMI created: ' + new_instance_ami)
 
 
-    # Set current=False tag for old AMIs
+        # Set current=False tag for old AMIs
         if old_instance_amis:
             print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
             update_ami_tags(old_instance_amis)
@@ -122,53 +120,13 @@ def deploy():
         else:
             print('No matching old AMIs. Skipping tag update...')
 
-  ###########################
-  #   TF Build - NonProd    #
-  ###########################
-        print('**************************************************************************')
-        print(' Running terraform... ')
-        # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
-        # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
-        # to a custom file/variable ...
-        shutil.rmtree(deploy_env, ignore_errors=True)
-        os.mkdir(deploy_env)
-        shutil.copy(tf_file,    deploy_env)
-        shutil.copy(tfvar_file, deploy_env)
-        shutil.copy(startup_script, deploy_env)
-        os.chdir(deploy_env)
-
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
 
         # Update Terraform User Data
         update_terraform_user_data(deploy_env)
-        
-
-        # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'init',  '-input=false',
-                           '-backend-config=bucket='+tf_state_s3_bucket,
-                           '-backend-config=key='+tf_state_s3_path,
-                           '-backend-config=region='+tf_aws_region])
-        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
-        real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
-
-  ###########################
-  #   TF Build - Prod       #
-  ###########################
 
     elif optionsDict["prod"]:        
-        print('**************************************************************************')
-        print(' Running terraform... ')
-        # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
-        # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
-        # to a custom file/variable ...
-        shutil.rmtree(deploy_env, ignore_errors=True)
-        os.mkdir(deploy_env)
-        shutil.copy(tf_file,    deploy_env)
-        shutil.copy(tfvar_file, deploy_env)
-        shutil.copy(startup_script, deploy_env)
-        os.chdir(deploy_env)
-
         # Get current Staging AMI
         staging_ami = conn.get_all_images(filters={
             "tag:current"     : "True",
@@ -181,15 +139,27 @@ def deploy():
         update_tf_ami(staging_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data(deploy_env)
+        update_terraform_user_data(deploy_env)      
+        
+    print('**************************************************************************')
+    print(' Running terraform... ')
+    # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
+    # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
+    # to a custom file/variable ...
+    shutil.rmtree(deploy_env, ignore_errors=True)
+    os.mkdir(deploy_env)
+    shutil.copy(tf_file,    deploy_env)
+    shutil.copy(tfvar_file, deploy_env)
+    shutil.copy(startup_script, deploy_env)
+    os.chdir(deploy_env)
 
-        # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'init',  '-input=false',
-                           '-backend-config=bucket='+tf_state_s3_bucket,
-                           '-backend-config=key='+tf_state_s3_path,
-                           '-backend-config=region='+tf_aws_region])
-        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
-        real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
+    # Run Terraform plan and apply
+    real_time_command([tf_exec_path, 'init',  '-input=false',
+                       '-backend-config=bucket='+tf_state_s3_bucket,
+                       '-backend-config=key='+tf_state_s3_path,
+                       '-backend-config=region='+tf_aws_region])
+    real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
+    real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
