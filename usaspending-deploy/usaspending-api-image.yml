@@ -1,14 +1,14 @@
 #===============================  USASPENDING-API-IMAGE PLAYBOOK  ===============================#
 
 ---
-- hosts: "{{ HOST }}"
+- hosts: all
 
   become_method: sudo
-  user: ec2-user
+  remote_user: ec2-user
 
   vars:
     BRANCH: "master"
-    REPO: https://github.com/fedspendingtransparency/usaspending-api.git   
+    REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
     ansible_python_interpreter: /usr/bin/python
@@ -30,26 +30,35 @@
 
     - name: checkout backend from git
       become: true
-      git: 
+      git:
         repo: "{{ REPO }}"
         version: "{{ BRANCH }}"
-        dest: /data-act/backend 
-        accept_hostkey: true 
+        dest: "{{ CODE_HOME }}"
+        accept_hostkey: true
         force: yes
-    
+
     - name: checkout usaspending-config from git
       become: true
-      git: 
+      git:
         repo: "git@github.com:fedspendingtransparency/usaspending-config.git"
         dest: /data-act/config
-        accept_hostkey: true 
-        force: yes 
+        accept_hostkey: true
+        force: yes
         key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
+
+    - name: pull repo - checkout build-tools repo from git
+      become: true
+      git:
+         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
+         dest: /data-act/build-tools
+         accept_hostkey: true
+         force: yes
+         key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
 
     - name: assign ownership of api to ec2-user
       become: true
       file:
-        path: /data-act/ 
+        path: /data-act/
         owner: ec2-user
         recurse: yes
 
@@ -59,44 +68,40 @@
         path: /tmp
         owner: ec2-user
         recurse: yes
-  
+
 #===============================  Install PIP Packages  ===============================#
 
     - name: update pip
-      become: true 
-      shell: pip3.5 install --upgrade pip 
+      become: true
+      shell: pip3.5 install --upgrade pip
 
     - name: install python packages based on requirements.txt
-      become: true 
+      become: true
       pip:
-        chdir: "{{ REQ_DIR }}"
-        requirements: requirements.txt
+        requirements: "{{ REQ_DIR }}/requirements.txt"
         executable: pip3.5
 
     - name: install python packages based on caching_requirements.txt
-      become: true 
+      become: true
       pip:
-        chdir: "{{ REQ_DIR }}"
-        requirements: caching_requirements.txt
+        requirements: "{{ REQ_DIR }}/caching_requirements.txt"
         executable: pip3.5
 
     - name: install python packages based on server_requirements.txt
       become: true
       pip:
-        chdir: "{{ REQ_DIR }}"
-        requirements: server_requirements.txt
+        requirements: "{{ REQ_DIR }}/server_requirements.txt"
         executable: pip3.5
 
     - name: install python packages based on legacy_requirements.txt
       become: true
       pip:
-        chdir: "{{ REQ_DIR }}"
-        requirements: legacy_requirements.txt
+        requirements: "{{ REQ_DIR }}/legacy_requirements.txt"
         executable: pip2
 
     - name: ensure the correct directory structure for tmp nginx files
       become: true
-      file: 
+      file:
         path: /var/lib/nginx/tmp
         state: directory
         owner: ec2-user
@@ -105,7 +110,7 @@
 
     - name: set starting directory to CODE_HOME
       become: true
-      lineinfile: 
+      lineinfile:
         dest: /home/ec2-user/.bashrc
         line: "cd {{ CODE_HOME }}"
         insertafter: EOF
@@ -113,24 +118,24 @@
 #===============================  Configure DataDog Key  ===============================#
 
     - name: copy datadog_key from S3
-      become: true 
-      shell: "aws s3 cp s3://da-config/shared/datadog_key.yml /etc/ --region us-gov-west-1"
+      shell: "aws s3 cp s3://da-config/shared/datadog_key /data-act/config/ --region us-gov-west-1"
 
-    - name: load datadog_key var
-      include_vars: /etc/datadog_key.yml
+    - name: save the contents of datadog_key file
+      shell: cat "/data-act/config/datadog_key"
+      register: dd_key
 
     - name: add Datadog license key to datadog.yaml
-      become: true
       lineinfile:
         dest: /data-act/config/deploy/datadog.yaml
         regexp: '\s*api_key: .*'
-        line: "api_key: {{ DD_KEY }}"
+        line: "api_key: {{ dd_key.stdout }}"
 
     - name: copy datadog.yml to it's home location
       become: true
-      copy: 
+      copy:
         src: /data-act/config/deploy/datadog.yaml
         dest: /etc/datadog-agent/datadog.yaml
+        remote_src: true
 
 #===============================  Logrotate  ===============================#
 
