@@ -112,6 +112,7 @@ def deploy():
             print('Done.')
         else:
             print('No matching old AMIs. Skipping tag update...')
+
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
 
@@ -149,7 +150,6 @@ def deploy():
                        '-backend-config=region='+tf_aws_region])
     real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
     real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
-
     global EXIT_CODE
     if EXIT_CODE != 0:
         print('Exiting with a code of {}'.format(EXIT_CODE))
