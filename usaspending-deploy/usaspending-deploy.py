@@ -51,10 +51,6 @@ def deploy():
         print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, or --prod")
         sys.exit(1)
 
-  ###########################
-  #      Packer Build       #
-  ###########################
-
   # Sandbox, dev, and staging are all built the same way: packer, then create TF resources
   # Prod pulls the same staging AMI that packer creates, and alters the launch config/AWS names
 
@@ -109,7 +105,6 @@ def deploy():
         new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
         print('Done. New AMI created: ' + new_instance_ami)
 
-
         # Set current=False tag for old AMIs
         if old_instance_amis:
             print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
@@ -117,9 +112,6 @@ def deploy():
             print('Done.')
         else:
             print('No matching old AMIs. Skipping tag update...')
-  ###########################
-  #   TF Build - NonProd    #
-  ###########################
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
 
