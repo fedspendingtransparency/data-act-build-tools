@@ -110,7 +110,7 @@ def deploy():
   ###########################
 
         # Add new AMI to Terraform variables
-        update_tf_ami("ami-ae148ecf", tfvar_file)
+        update_tf_ami("ami-e6158f87", tfvar_file)
 
         # Update Terraform User Data
         update_terraform_user_data(deploy_env)
