@@ -5,7 +5,6 @@ import os
 import json
 import argparse
 import sys
-import shutil
 from subprocess import Popen, PIPE, STDOUT, call
 
 EXIT_CODE = 0
@@ -15,11 +14,9 @@ def deploy():
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
 
-    # tf_exec_path     = 'terraform'
-    tf_exec_path     = '/terraform/latest/terraform'
+    tf_exec_path     = '/terraform/terraform'
     tf_file          = 'usaspending-deploy.tf'
 
-    # packer_exec_path = 'packer'
     packer_exec_path = '/packer/packerio'
     packer_file      = 'usaspending-packer.json'
 
@@ -70,20 +67,6 @@ def deploy():
     if optionsDict["staging"]:
         deploy_env = 'staging'
 
-    if optionsDict["prod"]:
-        deploy_env = 'prod'
-
-    tfvar_json = open(tfvar_file, "r")
-    tfvar_data = json.load(tfvar_json)
-    tfvar_json.close()
-
-    #initialize variables needed to deploy terraform
-    tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
-    tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
-    tf_aws_region = tfvar_data['variable']['aws_region']['default']
-    startup_script = "usaspending-start-{}.sh".format(deploy_env)
-
-
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
 
         # Get Base AMI, Update Packer file
@@ -125,17 +108,6 @@ def deploy():
   ###########################
   #   TF Build - NonProd    #
   ###########################
-        print('**************************************************************************')
-        print(' Running terraform... ')
-        # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
-        # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
-        # to a custom file/variable ...
-        shutil.rmtree(deploy_env, ignore_errors=True)
-        os.mkdir(deploy_env)
-        shutil.copy(tf_file,    deploy_env)
-        shutil.copy(tfvar_file, deploy_env)
-        shutil.copy(startup_script, deploy_env)
-        os.chdir(deploy_env)
 
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
@@ -143,31 +115,15 @@ def deploy():
         # Update Terraform User Data
         update_terraform_user_data(deploy_env)
 
-
         # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'init',  '-input=false',
-                           '-backend-config=bucket='+tf_state_s3_bucket,
-                           '-backend-config=key='+tf_state_s3_path,
-                           '-backend-config=region='+tf_aws_region])
-        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
-        real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
   ###########################
   #   TF Build - Prod       #
   ###########################
 
     elif optionsDict["prod"]:
-        print('**************************************************************************')
-        print(' Running terraform... ')
-        # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
-        # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
-        # to a custom file/variable ...
-        shutil.rmtree(deploy_env, ignore_errors=True)
-        os.mkdir(deploy_env)
-        shutil.copy(tf_file,    deploy_env)
-        shutil.copy(tfvar_file, deploy_env)
-        shutil.copy(startup_script, deploy_env)
-        os.chdir(deploy_env)
 
         # Get current Staging AMI
         staging_ami = conn.get_all_images(filters={
@@ -181,15 +137,11 @@ def deploy():
         update_tf_ami(staging_ami, tfvar_file)
 
         # Update Terraform User Data
-        update_terraform_user_data(deploy_env)
+        update_terraform_user_data('prod')
 
         # Run Terraform plan and apply
-        real_time_command([tf_exec_path, 'init',  '-input=false',
-                           '-backend-config=bucket='+tf_state_s3_bucket,
-                           '-backend-config=key='+tf_state_s3_path,
-                           '-backend-config=region='+tf_aws_region])
-        real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
-        real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
+        real_time_command([tf_exec_path, 'plan'])
+        real_time_command([tf_exec_path, 'apply'])
 
     global EXIT_CODE
     if EXIT_CODE != 0:
@@ -228,11 +180,10 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
     packer_json.close()
 
     packer_data['builders'][0]['source_ami'] = base_ami
-    packer_data['builders'][0]['tags']['environment'] = environment
 
-    if (environment == "staging"):
-        environment = "stg"
-    packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={}'".format(environment)
+    if environment == 'dev' or environment == 'sandbox':
+        packer_data['builders'][0]['tags']['environment'] = environment
+        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={} HOST=local'".format(environment)
 
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
