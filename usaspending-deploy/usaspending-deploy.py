@@ -14,7 +14,6 @@ def deploy():
 
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
-    # tf_exec_path     = 'terraform'
     tf_exec_path     = '/terraform/latest/terraform'
     tf_file          = 'usaspending-deploy.tf'
 
