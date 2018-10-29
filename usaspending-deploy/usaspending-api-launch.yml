@@ -6,12 +6,10 @@
 #  - You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL           #
 #=======================================================================#
 
-
 ---
-- hosts: "{{ HOST }}"
-
-  become_method: sudo
+- hosts: "localhost"
   user: ec2-user
+  become_method: sudo
 
   vars:
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"

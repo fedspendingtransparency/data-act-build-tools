@@ -14,7 +14,6 @@ def deploy():
 
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
-
     tf_exec_path     = '/terraform/latest/terraform'
     tf_file          = 'usaspending-deploy.tf'
 
@@ -52,10 +51,6 @@ def deploy():
         print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, or --prod")
         sys.exit(1)
 
-  ###########################
-  #      Packer Build       #
-  ###########################
-
   # Sandbox, dev, and staging are all built the same way: packer, then create TF resources
   # Prod pulls the same staging AMI that packer creates, and alters the launch config/AWS names
 
@@ -67,15 +62,15 @@ def deploy():
 
     if optionsDict["staging"]:
         deploy_env = 'staging'
-        
+
     if optionsDict["prod"]:
         deploy_env = 'prod'
 
     tfvar_json = open(tfvar_file, "r")
     tfvar_data = json.load(tfvar_json)
     tfvar_json.close()
-    
-    #initialize variables needed to deploy terraform 
+
+    #initialize variables needed to deploy terraform
     tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
     tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
@@ -83,7 +78,6 @@ def deploy():
 
 
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
-
         # Get Base AMI, Update Packer file
         print('Retrieving base AMI...')
         base_ami = conn.get_all_images(filters={
@@ -111,7 +105,6 @@ def deploy():
         new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
         print('Done. New AMI created: ' + new_instance_ami)
 
-
         # Set current=False tag for old AMIs
         if old_instance_amis:
             print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
@@ -123,10 +116,7 @@ def deploy():
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
 
-        # Update Terraform User Data
-        update_terraform_user_data(deploy_env)
-
-    elif optionsDict["prod"]:        
+    elif optionsDict["prod"]:
         # Get current Staging AMI
         staging_ami = conn.get_all_images(filters={
             "tag:current"     : "True",
@@ -138,9 +128,9 @@ def deploy():
         # Add new AMI to Terraform variables
         update_tf_ami(staging_ami, tfvar_file)
 
-        # Update Terraform User Data
-        update_terraform_user_data(deploy_env)      
-        
+    # Update Terraform User Data
+    update_terraform_user_data(deploy_env)
+
     print('**************************************************************************')
     print(' Running terraform... ')
     # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
@@ -160,7 +150,6 @@ def deploy():
                        '-backend-config=region='+tf_aws_region])
     real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
     real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
-
     global EXIT_CODE
     if EXIT_CODE != 0:
         print('Exiting with a code of {}'.format(EXIT_CODE))
@@ -198,11 +187,13 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
     packer_json.close()
 
     packer_data['builders'][0]['source_ami'] = base_ami
+    packer_data['builders'][0]['tags']['environment'] = environment
 
-    if environment == 'dev' or environment == 'sandbox':
-        packer_data['builders'][0]['tags']['environment'] = environment
-        packer_data['provisioners'][0]['extra_arguments'] = "--extra-vars 'BRANCH={} HOST=local'".format(environment)
-
+    if environment == 'staging':
+        environment = 'stg'    
+    packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
+     "BRANCH={} HOST=local".format(environment) ]
+    
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
     packer_json.close()
