@@ -131,7 +131,7 @@
         regexp: '\s*api_key: .*'
         line: "api_key: {{ dd_key.stdout }}"
 
-    - name: copy datadog.yml to it's home location
+    - name: copy datadog.yml to its home location
       become: true
       copy:
         src: /data-act/config/deploy/datadog.yaml
