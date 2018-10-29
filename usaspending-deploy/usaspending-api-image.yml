@@ -50,7 +50,6 @@
       become: true
       git:
          repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
-         version: remote-packer
          dest: /data-act/build-tools
          accept_hostkey: true
          force: yes
