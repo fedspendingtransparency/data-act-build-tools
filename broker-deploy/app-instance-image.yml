@@ -1,4 +1,4 @@
-#===============================  BROKER-API-IMAGE PLAYBOOK  ===============================#
+# ========================= BROKER-API-IMAGE PLAYBOOK =========================#
 
 ---
 - hosts: all
@@ -12,7 +12,7 @@
 
   tasks:
 
-#======================== Copy Git Credentials from S3 Bucket ========================#
+    # ===================== Copy Git Creds from S3 Bucket =====================#
 
     - name: pull repo - copy broker git credentials from S3 Bucket
       become: true
@@ -25,10 +25,11 @@
 
     - name: change ownership of /home/ec2-user.ssh/
       become: true
-      file: 
+      file:
         path: /home/ec2-user/.ssh/
         owner: ec2-user
-        recurse: yes
+        group: ec2-user
+        recurse: "yes"
 
     - name: change mode for the id_rsa_broker_config
       become: true
@@ -36,53 +37,53 @@
         path: /home/ec2-user/.ssh/id_rsa_broker_config
         mode: 0400
 
-#======================== Git Checkout ========================#
+    # ========================= Git Checkout ========================#
 
     - name: checkout backend from git
       become: true
       git:
         repo: "{{ REPO }}"
         version: "{{ BRANCH }}"
-        dest: "/data-act/backend" 
-        accept_hostkey: true 
-        force: yes
+        dest: "/data-act/backend"
+        accept_hostkey: true
+        force: "yes"
 
     - name: checkout broker config from git
       become: true
       git:
-        repo: "git@github.com:fedspendingtransparency/data-act-broker-config.git"
-        dest: "/data-act/config"
-        accept_hostkey: true 
-        force: yes 
-        key_file: "/home/ec2-user/.ssh/id_rsa_broker_config"
+        repo: git@github.com:fedspendingtransparency/data-act-broker-config.git
+        dest: /data-act/config
+        accept_hostkey: true
+        force: "yes"
+        key_file: /home/ec2-user/.ssh/id_rsa_broker_config
 
     - name: checkout build-tools repo from git
       become: true
       git:
-        repo: "git@github.com:fedspendingtransparency/data-act-build-tools.git"
-        dest: "/data-act/build-tools"
-        accept_hostkey: true 
-        force: yes 
-        key_file: "/home/ec2-user/.ssh/id_rsa_broker_config"
+        repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
+        dest: /data-act/build-tools
+        accept_hostkey: true
+        force: "yes"
+        key_file: /home/ec2-user/.ssh/id_rsa_broker_config
 
     - name: assign ownership of api to ec2-user
       become: true
       file:
-        path: /data-act/ 
+        path: /data-act/
         owner: ec2-user
-        recurse: yes
+        recurse: "yes"
 
     - name: assign ownership of tmp to ec2-user
       become: true
       file:
         path: /tmp
         owner: ec2-user
-        recurse: yes
+        recurse: "yes"
 
-#======================== Install PIP Packages ========================#
+    # ======================== Install PIP Packages ========================#
 
     - name: install backend packages based on requirements.txt
-      become: true 
+      become: true
       pip:
         chdir: /data-act/backend
         requirements: requirements.txt
@@ -102,7 +103,7 @@
         requirements: legacy_requirements.txt
         executable: pip2
 
-#======================== Configure DataDog Key ========================#
+    # ======================== Configure DataDog Key ========================#
 
     - name: copy datadog_key from S3
       become: true
@@ -125,8 +126,8 @@
 
     - name: copy datadog.yml to it's home location
       become: true
-      copy: 
+      copy:
         src: /data-act/config/datadog/datadog.yaml
         dest: /etc/datadog-agent/datadog.yaml
 
-#======================== EOF ========================#
+# ======================== EOF ========================#

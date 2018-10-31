@@ -1,9 +1,9 @@
-#========================  BROKER-API-LAUNCH PLAYBOOK  ========================#
+# ========================= BROKER-API-LAUNCH PLAYBOOK ========================#
 
-#===============================  Notes  ===============================#
-#  - 'envs' used for filebeat to translate                              #
-#  - You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL           #
-#=======================================================================#
+# =============================  Notes  =============================#
+#  - 'envs' used for filebeat to translate                           #
+#  - You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL        #
+# ===================================================================#
 
 ---
 - hosts: "localhost"
@@ -22,27 +22,27 @@
 
     # Domains are used for SSL cert identification
     envs:
-      master:  {env_long: prod,    domain: 'broker-api.usaspending.gov' }
-      staging: {env_long: staging, domain: 'broker-staging-api.usaspending.gov' }
-      dev:     {env_long: dev,     domain: 'broker-dev-api.usaspending.gov' }
+      master: {env_long: prod, domain: 'broker-api.usaspending.gov'}
+      staging: {env_long: staging, domain: 'broker-staging-api.usaspending.gov'}
+      dev: {env_long: dev, domain: 'broker-dev-api.usaspending.gov'}
       sandbox: {env_long: sandbox, domain: 'broker-sandbox-api.usaspending.gov'}
 
   tasks:
 
-#======================== Configs ========================#
+    # ===================== Configs =====================#
     - name: copy core config
       copy:
-        src:  "/data-act/config/backend/config.yml"
+        src: "/data-act/config/backend/config.yml"
         dest: "/data-act/backend/dataactcore/config.yml"
         remote_src: true
 
     - name: copy environmental config
       copy:
-        src:  "/data-act/config/backend/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
+        src: "/data-act/config/backend/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
         dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
         remote_src: true
 
-#======================== Filebeat Configuration ========================#
+    # ===================== Filebeat Configuration =====================#
 
     - name: copy filebeat config
       become: true
@@ -67,7 +67,7 @@
         regexp: 'index: placeholder'
         replace: "index: broker-val-{{ vars['envs'][BRANCH]['env_long'] }}"
 
-#======================== Nginx Config ========================#
+    # ===================== Nginx Config =====================#
 
     - name: copy broker nginx config
       when: APP == "broker"
@@ -94,7 +94,7 @@
         region: us-gov-west-1
         mode: get
 
-#======================== SSL Certs (not used for Validator) ========================#
+    # ===================== SSL Certs (not used for Validator) =====================#
 
     - name: copy public.pem from S3 Bucket
       when: APP == "broker"
@@ -130,7 +130,7 @@
         path: /etc/cert.key
         owner: ec2-user
 
-#======================== DataDog Configuration ========================#
+    # ===================== DataDog Configuration =====================#
 
     - name: add environment name to datadog.yaml
       become: true
@@ -142,7 +142,7 @@
     - name: disable datadog apm if env is sandbox or dev
       become: true
       when: BRANCH == "development" or BRANCH == "sandbox"
-      lineinfile: 
+      lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "^  enabled: true"
         insertafter: "^apm_config:.*"
@@ -150,39 +150,39 @@
 
     - name: (API) instrument datadog with the application if env is prod or staging in app.py
       when: BRANCH == "master" or BRANCH == "staging"
-      lineinfile: 
+      lineinfile:
         dest: "/data-act/backend/dataactbroker/app.py"
         regexp: "^USE_DATADOG = False"
         line: "USE_DATADOG = True"
 
     - name: (VAL) instrument datadog with the application if env is prod or staging in app.py
       when: BRANCH == "master" or BRANCH == "staging"
-      lineinfile: 
+      lineinfile:
         dest: "/data-act/backend/dataactvalidator/app.py"
         regexp: "^USE_DATADOG = False"
         line: "USE_DATADOG = True"
 
     - name: (VAL) instrument datadog with the application if env is prod or staging in health_check.py
       when: BRANCH == "master" or BRANCH == "staging"
-      lineinfile: 
+      lineinfile:
         dest: "/data-act/backend/dataactvalidator/health_check.py"
         regexp: "^USE_DATADOG = False"
         line: "USE_DATADOG = True"
 
     - name: ensure dd-agent ownership for datadog directory
       become: true
-      file: 
+      file:
         path: "/etc/datadog-agent/"
         state: directory
         owner: dd-agent
         group: dd-agent
-        recurse: yes
+        recurse: "yes"
 
-###### Broker-API ######
+    ###### Broker-API ######
 
-    - name: modify app.py to rename the application name when 'app = API' 
+    - name: modify app.py to rename the application name when 'app = API'
       when: APP == "broker"
-      replace: 
+      replace:
         dest: "/data-act/backend/dataactbroker/app.py"
         regexp: '\s*service="broker-dd"\s*'
         replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
@@ -195,7 +195,7 @@
         section: "uwsgi"
         option: single-interpreter
         value: true
-        
+
     - name: modify supervisord to add 'ddtrace-run uwsgi' when 'app = API'
       when: APP == "broker"
       ini_file:
@@ -204,18 +204,18 @@
         option: command
         value: "ddtrace-run uwsgi --ini /data-act/backend/dataactbroker/config/uwsgi.ini --socket :3030 --stats /tmp/stats.socket"
 
-###### Broker-Validator ######
+    ###### Broker-Validator ######
 
     - name: modify app.py to rename the application name when 'app = VAL'(req for Datadog)
       when: APP == "validator"
-      replace: 
+      replace:
         dest: "/data-act/backend/dataactvalidator/app.py"
         regexp: '\s*service="broker-dd"\s*'
         replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
 
     - name: modify health_check.py to rename the application name when 'app = VAL'
       when: APP == "validator"
-      replace: 
+      replace:
         dest: "/data-act/backend/dataactvalidator/health_check.py"
         regexp: '\s*service="broker-dd"\s*'
         replace: " service=\"broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}\""
@@ -236,7 +236,7 @@
         option: command
         value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/health_check.py"
 
-#======================== Setup supervisord.service ========================#
+    # ===================== Setup supervisord.service =====================#
 
     - name: make supervisord.service directory
       become: true
@@ -265,7 +265,7 @@
       become: true
       copy:
         remote_src: true
-        src:  /data-act/config/supervisord.service/supervisord.service
+        src: /data-act/config/supervisord.service/supervisord.service
         dest: /usr/lib/systemd/system/supervisord.service
 
     - name: modify supervisord configuration to add ENV variable
@@ -275,23 +275,23 @@
         option: environment
         value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,env={{ vars['envs'][BRANCH]['env_long'] }}"
 
-#======================== Logging ========================#
+    # ===================== Logging =====================#
 
     - name: create app json log if it doesn't exist
       become: true
-      file: 
+      file:
         path: /data-act/app.json-log
         owner: ec2-user
         state: touch
 
     - name: create app info log if it doesn't exist
       become: true
-      file: 
+      file:
         path: /data-act/info.log
         owner: ec2-user
         state: touch
 
-#======================== Enable and Restart Services ========================#
+    # ===================== Enable and Restart Services =====================#
 
     - name: enable & restart datadog-agent service
       become: true
@@ -305,4 +305,4 @@
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
 
-#======================== EOF ========================#
+# ===================== EOF =====================#
