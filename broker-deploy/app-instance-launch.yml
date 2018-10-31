@@ -1,15 +1,12 @@
-#===============================  BROKER-API-LAUNCH PLAYBOOK  ===============================#
+#========================  BROKER-API-LAUNCH PLAYBOOK  ========================#
 
 #===============================  Notes  ===============================#
-#  - Branch options: sandbox, dev, stg, master, used for filebeat index #
 #  - 'envs' used for filebeat to translate                              #
 #  - You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL           #
 #=======================================================================#
 
-
 ---
-- hosts: "{{ HOST }}"
-
+- hosts: "localhost"
   user: ec2-user
   become_method: sudo
 
@@ -32,8 +29,7 @@
 
   tasks:
 
-#===============================  Configs  ===============================#
-
+#======================== Configs ========================#
     - name: copy core config
       copy:
         src:  "/data-act/config/backend/config.yml"
@@ -46,7 +42,7 @@
         dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
         remote_src: true
 
-#===============================  Filebeat Configuration  ===============================#
+#======================== Filebeat Configuration ========================#
 
     - name: copy filebeat config
       become: true
@@ -71,7 +67,7 @@
         regexp: 'index: placeholder'
         replace: "index: broker-val-{{ vars['envs'][BRANCH]['env_long'] }}"
 
-#===============================  Nginx Config  ===============================#
+#======================== Nginx Config ========================#
 
     - name: copy broker nginx config
       when: APP == "broker"
@@ -91,20 +87,34 @@
 
     - name: download secrets from S3 bucket
       become: true
-      shell: "aws s3 cp s3://da-config/broker/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml /data-act/backend/dataactcore/ --region us-gov-west-1"
+      aws_s3:
+        bucket: da-config
+        object: /broker/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml
+        dest: /data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml
+        region: us-gov-west-1
+        mode: get
 
-
-#===============================  SSL Certs (not used for Validator) ===============================# 
+#======================== SSL Certs (not used for Validator) ========================#
 
     - name: copy public.pem from S3 Bucket
       when: APP == "broker"
       become: true
-      shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
+      aws_s3:
+        bucket: usaspending-ssl
+        object: /{{ vars['envs'][BRANCH]['domain'] }}/public.pem
+        dest: /etc/cert.pem
+        region: us-gov-west-1
+        mode: get
 
     - name: copy private.pem from S3 Bucket
       when: APP == "broker"
       become: true
-      shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/private.pem /etc/cert.key --region us-gov-west-1"
+      aws_s3:
+        bucket: usaspending-ssl
+        object: /{{ vars['envs'][BRANCH]['domain'] }}/private.pem
+        dest: /etc/cert.key
+        region: us-gov-west-1
+        mode: get
 
     - name: assign ownership of cert.pem to ec2-user
       when: APP == "broker"
@@ -119,8 +129,8 @@
       file:
         path: /etc/cert.key
         owner: ec2-user
-      
-#===============================  DataDog Configuration  ===============================#
+
+#======================== DataDog Configuration ========================#
 
     - name: add environment name to datadog.yaml
       become: true
@@ -226,8 +236,7 @@
         option: command
         value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/health_check.py"
 
-
-#===============================  Setup supervisord.service  ===============================#
+#======================== Setup supervisord.service ========================#
 
     - name: make supervisord.service directory
       become: true
@@ -248,7 +257,7 @@
       when: APP == 'validator'
       become: true
       replace:
-        dest: "/data-act/config/supervisord.service/supervisord.service"
+        dest: /data-act/config/supervisord.service/supervisord.service
         regexp: 'ExecStart=/bin/supervisord.*'
         replace: "ExecStart=/bin/supervisord -c /data-act/backend/dataactvalidator/config/supervisord.conf"
 
@@ -266,8 +275,7 @@
         option: environment
         value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,env={{ vars['envs'][BRANCH]['env_long'] }}"
 
-
-#===============================  Logging  ===============================#
+#======================== Logging ========================#
 
     - name: create app json log if it doesn't exist
       become: true
@@ -283,7 +291,7 @@
         owner: ec2-user
         state: touch
 
-#===============================  Enable and Restart Services  ===============================#
+#======================== Enable and Restart Services ========================#
 
     - name: enable & restart datadog-agent service
       become: true
@@ -297,4 +305,4 @@
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
 
-#===============================  EOF  ===============================#
+#======================== EOF ========================#

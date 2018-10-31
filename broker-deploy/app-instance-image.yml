@@ -1,9 +1,8 @@
 #===============================  BROKER-API-IMAGE PLAYBOOK  ===============================#
 
 ---
-- hosts: "{{ HOST }}"
-
-  user: ec2-user
+- hosts: all
+  remote_user: ec2-user
   become_method: sudo
 
   vars:
@@ -13,11 +12,16 @@
 
   tasks:
 
-#=============================== Copy Git Credentials from S3 Bucket ===============================#
+#======================== Copy Git Credentials from S3 Bucket ========================#
 
-    - name: copy broker git credentials from S3 Bucket
+    - name: pull repo - copy broker git credentials from S3 Bucket
       become: true
-      shell: "aws s3 cp s3://da-config/broker/id_rsa_broker_config /home/ec2-user/.ssh/id_rsa_broker_config --region us-gov-west-1"
+      aws_s3:
+        bucket: da-config
+        object: /id_rsa_broker_config
+        dest: /home/ec2-user/.ssh/id_rsa_broker_config
+        region: us-gov-west-1
+        mode: get
 
     - name: change ownership of /home/ec2-user.ssh/
       become: true
@@ -32,7 +36,7 @@
         path: /home/ec2-user/.ssh/id_rsa_broker_config
         mode: 0400
 
-#===============================  Git Checkout  ===============================#
+#======================== Git Checkout ========================#
 
     - name: checkout backend from git
       become: true
@@ -42,7 +46,7 @@
         dest: "/data-act/backend" 
         accept_hostkey: true 
         force: yes
-           
+
     - name: checkout broker config from git
       become: true
       git:
@@ -51,7 +55,16 @@
         accept_hostkey: true 
         force: yes 
         key_file: "/home/ec2-user/.ssh/id_rsa_broker_config"
-      
+
+    - name: checkout build-tools repo from git
+      become: true
+      git:
+        repo: "git@github.com:fedspendingtransparency/data-act-build-tools.git"
+        dest: "/data-act/build-tools"
+        accept_hostkey: true 
+        force: yes 
+        key_file: "/home/ec2-user/.ssh/id_rsa_broker_config"
+
     - name: assign ownership of api to ec2-user
       become: true
       file:
@@ -65,8 +78,8 @@
         path: /tmp
         owner: ec2-user
         recurse: yes
-    
-#===============================  Install PIP Packages  ===============================#
+
+#======================== Install PIP Packages ========================#
 
     - name: install backend packages based on requirements.txt
       become: true 
@@ -89,11 +102,16 @@
         requirements: legacy_requirements.txt
         executable: pip2
 
-#===============================  Configure DataDog Key  ===============================#
+#======================== Configure DataDog Key ========================#
 
     - name: copy datadog_key from S3
-      become: true 
-      shell: "aws s3 cp s3://da-config/shared/datadog_key.yml /etc/ --region us-gov-west-1"
+      become: true
+      aws_s3:
+        bucket: da-config
+        object: /shared/datadog_key.yml
+        dest: /etc/datadog_key.yml
+        region: us-gov-west-1
+        mode: get
 
     - name: load datadog_key var
       include_vars: /etc/datadog_key.yml
@@ -111,4 +129,4 @@
         src: /data-act/config/datadog/datadog.yaml
         dest: /etc/datadog-agent/datadog.yaml
 
-#===============================  EOF  ===============================#
+#======================== EOF ========================#
