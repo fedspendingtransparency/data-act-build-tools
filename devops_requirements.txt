@@ -1,0 +1,8 @@
+boto==2.49.0
+sh
+os
+json
+argparse
+sys
+shutil
+subprocess

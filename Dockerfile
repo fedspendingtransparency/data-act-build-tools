@@ -26,3 +26,6 @@ RUN pip3 install ansible==${ANSIBLE_VERSION}
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 RUN unzip /root/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt/terraform
 RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
+
+COPY devops_requirements.txt /root/devops_requirements.txt
+RUN pip install -r /root/devops_requirements.txt
