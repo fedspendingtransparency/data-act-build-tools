@@ -20,11 +20,15 @@ RUN ln -s /opt/packer/packer /usr/local/bin/packer
 
 # install ansible
 RUN pip3.6 install pip --upgrade
-RUN pip3 install ansible==${ANSIBLE_VERSION}
+RUN pip3 install ansible==${ANSIBLE_VERSION} virtualenv
 
 # install terraform
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 RUN unzip /root/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt/terraform
 RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
 
-RUN pip3 install boto sh argparse
+# make multiple virtualenv for boto and boto3
+RUN virtualenv -p /usr/bin/python boto1
+RUN virtualenv -p /usr/bin/python3.6 boto3
+RUN source boto3/bin/activate && pip3 install boto3 sh argparse
+RUN source boto1/bin/activate && pip install boto sh argparse
