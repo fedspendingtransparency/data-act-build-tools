@@ -114,7 +114,7 @@ resource "aws_launch_configuration" "val-lc" {
 }
 
 resource "aws_autoscaling_policy" "val_scale_up" {
-  name                   = "${var.val_name_prefix}_ScaleUp"
+  name                   = "${var.val_name_prefix}_scaleup_${lookup(var.aws_amis, var.aws_region)}"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -123,7 +123,7 @@ resource "aws_autoscaling_policy" "val_scale_up" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "val_alarm_high_cpu" {
-  alarm_name          = "${var.val_name_prefix}_HighCPU75"
+  alarm_name          = "${var.val_name_prefix}_cpuhigh_${lookup(var.aws_amis, var.aws_region)}"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
@@ -141,7 +141,7 @@ resource "aws_cloudwatch_metric_alarm" "val_alarm_high_cpu" {
 }
 
 resource "aws_autoscaling_policy" "val_scale_down" {
-  name                   = "${var.val_name_prefix}_ScaleDown"
+  name                   = "${var.val_name_prefix}_scaledown_${lookup(var.aws_amis, var.aws_region)}"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 30
@@ -150,7 +150,7 @@ resource "aws_autoscaling_policy" "val_scale_down" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "val_alarm_low_cpu" {
-  alarm_name          = "${var.val_name_prefix}_LowCPU5"
+  alarm_name          = "${var.val_name_prefix}_cpulow_${lookup(var.aws_amis, var.aws_region)}"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
@@ -168,7 +168,7 @@ resource "aws_cloudwatch_metric_alarm" "val_alarm_low_cpu" {
 }
 
 resource "aws_autoscaling_policy" "api_scale_up" {
-  name                   = "${var.api_name_prefix}_ScaleUp"
+  name                   = "${var.api_name_prefix}_scaleup_${lookup(var.aws_amis, var.aws_region)}"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
@@ -177,7 +177,7 @@ resource "aws_autoscaling_policy" "api_scale_up" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "api_alarm_high_cpu" {
-  alarm_name          = "${var.api_name_prefix}_HighCPU75"
+  alarm_name          = "${var.api_name_prefix}_cpuhigh_${lookup(var.aws_amis, var.aws_region)}"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
@@ -195,7 +195,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_cpu" {
 }
 
 resource "aws_autoscaling_policy" "api_scale_down" {
-  name                   = "${var.api_name_prefix}_ScaleDown"
+  name                   = "${var.api_name_prefix}_scaledown"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 30
@@ -204,7 +204,7 @@ resource "aws_autoscaling_policy" "api_scale_down" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "api_alarm_low_cpu" {
-  alarm_name          = "${var.api_name_prefix}_LowCPU5"
+  alarm_name          = "${var.api_name_prefix}_cpulow"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
