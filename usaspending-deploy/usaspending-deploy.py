@@ -1,5 +1,4 @@
-import boto
-from boto import ec2
+import boto3
 import sh
 import os
 import json
@@ -14,15 +13,17 @@ def deploy():
 
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
-    tf_exec_path     = '/terraform/latest/terraform'
+    # tf_exec_path     = '/terraform/latest/terraform'
+    tf_exec_path     = 'terraform'
     tf_file          = 'usaspending-deploy.tf'
 
-    packer_exec_path = '/packer/packerio'
+    # packer_exec_path = '/packer/packerio'
+    packer_exec_path = 'packer'
     packer_file      = 'usaspending-packer.json'
 
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
-    conn = boto.ec2.connect_to_region(region_name='us-gov-west-1')
+    ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
     print('Done.')
 
     parser = argparse.ArgumentParser()
@@ -80,22 +81,23 @@ def deploy():
     if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
         # Get Base AMI, Update Packer file
         print('Retrieving base AMI...')
-        base_ami = conn.get_all_images(filters={
-            "tag:current"           : "True",
-            "tag:base"              : "True",
-            "tag:type"              : "USASpending-API"
-            })[0].id
+        base_ami = ec2_client.describe_images(Filters=[
+            {'Name':'tag:current', 'Values':['True']},
+            {'Name':'tag:base', 'Values':['True']},
+            {'Name':'tag:type', 'Values':['USASpending-API']}
+            ])['Images'][0]['ImageId']
         print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
         update_packer_spec(packer_file, base_ami, deploy_env)
         print('Done.')
 
         # Get Old AMIs, for setting current=False after new one is created
-        old_instance_amis = conn.get_all_images(filters={
-            "tag:current" : "True",
-            "tag:base"    : "False",
-            "tag:type"    : "USASpending-API",
-            "tag:environment" : deploy_env
-            })
+        old_instance_amis = ec2_client.describe_images(Filters=[
+            {'Name':'tag:current', 'Values':['True']},
+            {'Name':'tag:base', 'Values':['False']},
+            {'Name':'tag:type', 'Values':['USASpending-API']},
+            {'Name':'tag:environment', 'Values':['sandbox']}
+            ])['Images']
+        print(old_instance_amis)
 
         # Build New AMI (Packer)
         print('**************************************************************************')
@@ -118,12 +120,12 @@ def deploy():
 
     elif optionsDict["prod"]:
         # Get current Staging AMI
-        staging_ami = conn.get_all_images(filters={
-            "tag:current"     : "True",
-            "tag:base"        : "False",
-            "tag:type"        : "USASpending-API",
-            "tag:environment" : "staging"
-            })[0].id
+        staging_ami = ec2_client.describe_images(Filters=[
+            {'Name':'tag:current', 'Values':['True']},
+            {'Name':'tag:base', 'Values':['False']},
+            {'Name':'tag:type', 'Values':['USASpending-API']},
+            {'Name':'tag:environment', 'Values':['staging']}
+            ])['Images'][0]['ImageId']
 
         # Add new AMI to Terraform variables
         update_tf_ami(staging_ami, tfvar_file)
@@ -190,10 +192,10 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
     packer_data['builders'][0]['tags']['environment'] = environment
 
     if environment == 'staging':
-        environment = 'stg'    
+        environment = 'stg'
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
-    
+
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
     packer_json.close()
@@ -235,10 +237,14 @@ def update_terraform_user_data(environment='staging', tf_file='usaspending-deplo
     return
 
 
-def update_ami_tags(old_instance_amis=False):
+def update_ami_tags(old_instance_amis):
+    ec2 = boto3.resource('ec2', region_name='us-gov-west-1')
     for ami in old_instance_amis:
-        ami.remove_tag('current','True')
-        ami.add_tag('current','False')
+        image = ec2.Image(ami['ImageId'])
+        image.create_tags(
+            DryRun=False,
+            Tags=[{'Key': 'current', 'Value': 'False'}]
+        )
     return
 
 
