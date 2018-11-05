@@ -28,7 +28,7 @@ RUN unzip /root/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt/terraform
 RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
 
 # make multiple virtualenv for boto and boto3
-RUN virtualenv -p /usr/bin/python boto1
-RUN virtualenv -p /usr/bin/python3.6 boto3
-RUN source boto3/bin/activate && pip3 install boto3 sh argparse
-RUN source boto1/bin/activate && pip install boto sh argparse
+RUN virtualenv -p /usr/bin/python python2
+RUN virtualenv -p /usr/bin/python3.6 python3
+RUN source python2/bin/activate && pip3 install boto3 sh argparse
+RUN source python3/bin/activate && pip install boto sh argparse
