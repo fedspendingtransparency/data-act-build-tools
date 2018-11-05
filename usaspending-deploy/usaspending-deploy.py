@@ -97,7 +97,9 @@ def deploy():
             {'Name':'tag:type', 'Values':['USASpending-API']},
             {'Name':'tag:environment', 'Values':['sandbox']}
             ])['Images']
-        print("old_instance_amis: " + old_instance_amis)
+        
+        print("Old Instance AMIs: ")
+        print(old_instance_amis)
 
         # Build New AMI (Packer)
         print('**************************************************************************')
