@@ -115,8 +115,6 @@ def deploy():
         else:
             print('No matching old AMIs. Skipping tag update...')
             
-        exit()
-
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
 
