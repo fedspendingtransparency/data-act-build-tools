@@ -19,7 +19,7 @@ def deploy():
     tf_exec_path     = 'terraform'
     tf_file          = 'usaspending-deploy.tf'
 
-    packer_exec_path = 'packerio'
+    packer_exec_path = 'packer'
     packer_file      = 'usaspending-packer.json'
 
     # Set connection
