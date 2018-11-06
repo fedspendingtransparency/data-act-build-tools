@@ -1,5 +1,4 @@
-import boto
-from boto import ec2
+import boto3
 import json
 import argparse
 import sys
@@ -19,22 +18,22 @@ def deploy():
 
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
-    conn = boto.ec2.connect_to_region(region_name='us-gov-west-1')
+    ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
     print('Done.')
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--sandbox", 
-        action="store_true", 
+    parser.add_argument("--sandbox",
+        action="store_true",
         help="Runs deploy for sandbox")
-    parser.add_argument("--dev", 
-        action="store_true", 
+    parser.add_argument("--dev",
+        action="store_true",
         help="Runs deploy for dev")
-    parser.add_argument("--staging", 
-        action="store_true", 
+    parser.add_argument("--staging",
+        action="store_true",
         help="Runs deploy for staging")
-    parser.add_argument("--prod", 
-        action="store_true", 
+    parser.add_argument("--prod",
+        action="store_true",
         help="Runs deploy for prod")
     args = parser.parse_args()
     optionsDict = vars(args)
@@ -56,23 +55,23 @@ def deploy():
 
     if optionsDict["staging"] or optionsDict["prod"]: # both pull staging AMI
         deploy_env = 'staging'
-        
+
     tfvar_json = open(tfvar_file, "r")
     tfvar_data = json.load(tfvar_json)
     tfvar_json.close()
-    
-    #initialize variables needed to deploy terraform 
+
+    #initialize variables needed to deploy terraform
     tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
     tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
 
     # Get previously created API AMI (created by usaspending-deploy.py)
-    current_api_ami = conn.get_all_images(filters={
-        "tag:current": "True",
-        "tag:base": "False",
-        "tag:type": "USASpending-API",
-        "tag:environment": deploy_env
-    })[0].id
+    current_api_ami = ec2_client.describe_images(Filters=[
+        {'Name':'tag:current', 'Values':['True']},
+        {'Name':'tag:base', 'Values':['False']},
+        {'Name':'tag:type', 'Values':['USASpending-API']},
+        {'Name':'tag:environment', 'Values':[deploy_env]}
+        ])['Images'][0]['ImageId']
 
     # Add API AMI to Terraform variables
     update_tf_ami(current_api_ami, tfvar_file)
@@ -80,8 +79,9 @@ def deploy():
     print('**************************************************************************')
     print(' Running terraform... ')
     # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
-    # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
-    # to a custom file/variable ...
+    # a subdir so this doesn't have to happen via Jenkins.
+    if optionsDict["prod"]:
+        deploy_env = 'prod'
     shutil.rmtree(deploy_env, ignore_errors=True)
     os.mkdir(deploy_env)
     shutil.copy(tf_file,    deploy_env)
@@ -95,7 +95,7 @@ def deploy():
                        '-backend-config=region='+tf_aws_region])
     real_time_command([tf_exec_path, 'plan',  '-input=false', '-out=' + tf_file])
     real_time_command([tf_exec_path, 'apply', '-input=false', tf_file])
-    
+
     global EXIT_CODE
     if EXIT_CODE != 0:
         print('Exiting with a code of {}'.format(EXIT_CODE))
@@ -119,7 +119,7 @@ def real_time_command(command_to_run):
             if '-machine-readable' in command_to_run:
                 output = output[output.rfind(',') + 1:]
             print(output.strip())
-            
+
     rc = process.poll()
     global EXIT_CODE
     EXIT_CODE += rc
