@@ -13,12 +13,10 @@ def deploy():
 
     # This tf_var file is expected to be copied from an external source
     tfvar_file       = 'usaspending-vars.tf.json'
-    # tf_exec_path     = '/terraform/latest/terraform'
-    tf_exec_path     = 'terraform'
+    tf_exec_path     = '/terraform/latest/terraform'
     tf_file          = 'usaspending-deploy.tf'
 
-    # packer_exec_path = '/packer/packerio'
-    packer_exec_path = 'packer'
+    packer_exec_path = '/packer/packerio'
     packer_file      = 'usaspending-packer.json'
 
     # Set connection
@@ -136,8 +134,7 @@ def deploy():
     print('**************************************************************************')
     print(' Running terraform... ')
     # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
-    # a subdir so this doesn't have to happen via Jenkins. If someone can figure out how to point TF init
-    # to a custom file/variable ...
+    # a subdir so this doesn't have to happen via Jenkins.
     shutil.rmtree(deploy_env, ignore_errors=True)
     os.mkdir(deploy_env)
     shutil.copy(tf_file,    deploy_env)
