@@ -27,8 +27,6 @@ RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform
 RUN unzip /root/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt/terraform
 RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
 
-# make multiple virtualenv for boto and boto3
-RUN virtualenv -p /usr/bin/python python2
-RUN virtualenv -p /usr/bin/python3.6 python3
-RUN source python2/bin/activate && pip3 install boto3 sh argparse
-RUN source python3/bin/activate && pip install boto sh argparse
+# set python path and install pip packages
+RUN rm /usr/bin/python && ln -s /usr/bin/python3.6 /usr/bin/python
+RUN pip3 install boto3 sh argparse
