@@ -106,8 +106,7 @@ def deploy():
         else:
             print('Something went wrong. Packer AMI: '+ami_id+'; Tagged AMI: '+ new_ami)
 
-        exit()
-        #Add new AMI id to terraform variables
+        # Add new AMI id to terraform variables
         update_lc_ami(ami_id, tfvar_file, deploy_env)
 
     elif optionsDict["prod"]:
