@@ -95,6 +95,8 @@ def deploy():
             {'Name':'tag:type', 'Values':['USASpending-API']},
             {'Name':'tag:environment', 'Values':['sandbox']}
             ])['Images']
+        
+        print("Old Instance AMIs: ")
         print(old_instance_amis)
 
         # Build New AMI (Packer)
@@ -112,7 +114,7 @@ def deploy():
             print('Done.')
         else:
             print('No matching old AMIs. Skipping tag update...')
-
+            
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
 
