@@ -143,19 +143,6 @@ def deploy():
         print('Exiting with a code of {}'.format(EXIT_CODE))
         sys.exit(EXIT_CODE)
 
-def get_running_instance(deploy_env='na', component='Validator'):
-    reservations = conn.get_all_instances(filters={
-        "tag:Application" : "Broker",
-        "tag:Component" : component,
-        "tag:Environment" : deploy_env
-        })
-    if len(reservations) != 1:
-        print("Error, current environment not configured correctly.")
-        EXIT_CODE = 1
-        return
-    else:
-        return reservations[0].instances[0]
-
 def get_current_base_ami():
     base_ami = ec2_client.describe_images(Filters=[
         {'Name':'tag:current', 'Values':['True']},
