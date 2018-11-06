@@ -1,5 +1,4 @@
-import boto
-from boto import ec2
+import boto3
 import sh
 import os
 import json
@@ -10,7 +9,9 @@ from subprocess import Popen, PIPE, STDOUT, call
 
 EXIT_CODE = 0
 # set global boto connection
-conn = boto.ec2.connect_to_region(region_name='us-gov-west-1')
+ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
+ec2_resource = boto3.resource('ec2', region_name='us-gov-west-1')
+
 def deploy():
 
     # set paths
@@ -55,7 +56,7 @@ def deploy():
     tfvar_data = json.load(tfvar_json)
     tfvar_json.close()
 
-    #initialize variables needed to deploy terraform
+    # initialize variables needed to deploy terraform
     tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
     tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
@@ -94,16 +95,18 @@ def deploy():
             print('No matching old AMIs. Skipping tag update...')
 
         # Confirm app instance that was created is now only current=True tagged AMI
-        if ami_id == conn.get_all_images(filters={
-            "tag:current" : "True",
-            "tag:base" : "False",
-            "tag:type" : "Application",
-            "tag:environment" : deploy_env
-            })[0].id:
+        new_ami = ec2_client.describe_images(Filters=[
+                {'Name':'tag:current', 'Values':['True']},
+                {'Name':'tag:base', 'Values':['False']},
+                {'Name':'tag:type', 'Values':['Application']},
+                {'Name':'tag:environment', 'Values':[deploy_env]}
+                ])['Images'][0]['ImageId']
+        if ami_id == new_ami:
             print('Success! Packer AMI id matches current tagged AMI.')
         else:
-            print('Something went wrong. Packer AMI: '+ami_id+'; Tagged AMI: '+conn.get_all_images(filters={"tag:current" : "True", "tag:base" : "False", "tag:type" : "Application", "tag:environment" : deploy_env})[0].id)
+            print('Something went wrong. Packer AMI: '+ami_id+'; Tagged AMI: '+ new_ami)
 
+        exit()
         #Add new AMI id to terraform variables
         update_lc_ami(ami_id, tfvar_file, deploy_env)
 
@@ -112,7 +115,7 @@ def deploy():
         staging_ami = conn.get_all_images(filters={"tag:current" : "True", "tag:base" : "False", "tag:type" : "Application", "tag:environment" : "staging"})[0].id
         # Update terraform variables with staging ami_id
         update_lc_ami(staging_ami, tfvar_file, deploy_env)
-        
+
     print('**************************************************************************')
     print(' Running terraform... ')
     # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
@@ -150,21 +153,21 @@ def get_running_instance(deploy_env='na', component='Validator'):
         return reservations[0].instances[0]
 
 def get_current_base_ami():
-    base_ami = conn.get_all_images(filters={
-        "tag:current" : "True",
-        "tag:base" : "True",
-        "tag:type" : "Application"
-        })[0].id
+    base_ami = ec2_client.describe_images(Filters=[
+        {'Name':'tag:current', 'Values':['True']},
+        {'Name':'tag:base', 'Values':['True']},
+        {'Name':'tag:type', 'Values':['Application']}
+        ])['Images'][0]['ImageId']
 
     return base_ami
 
 def get_current_app_instance_amis(deploy_env):
-    app_instance_amis = conn.get_all_images(filters={
-        "tag:current" : "True",
-        "tag:base" : "False",
-        "tag:type" : "Application",
-        "tag:environment" : deploy_env
-        })
+    app_instance_amis = ec2_client.describe_images(Filters=[
+        {'Name':'tag:current', 'Values':['True']},
+        {'Name':'tag:base', 'Values':['False']},
+        {'Name':'tag:type', 'Values':['Application']},
+        {'Name':'tag:environment', 'Values':[deploy_env]}
+        ])['Images']
     return app_instance_amis
 
 def real_time_command(command_to_run):
@@ -194,13 +197,13 @@ def update_packer_spec(packer_file, current_base_ami, environment):
 
     packer_data['builders'][0]['source_ami'] = current_base_ami
     packer_data['builders'][0]['tags']['environment'] = environment
-    
+
     # dev branch is called development
     if (environment == "dev"):
         environment = "development"
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
-        
+
     packer_json = open(packer_file, "w+")
     packer_json.write(json.dumps(packer_data))
     packer_json.close()
@@ -218,11 +221,14 @@ def update_lc_ami(new_ami='', tfvar_file='variables.tf.json', deploy_env='na'):
 
     return
 
-def update_ami_tags(current_app_amis=False):
+def update_ami_tags(current_app_amis):
     for ami in current_app_amis:
-        ami.remove_tag('current','True')
-        ami.add_tag('current','False')
-
+        image = ec2_resource.Image(ami['ImageId'])
+        print("updating: " + ami['ImageId'])
+        image.create_tags(
+            DryRun=False,
+            Tags=[{'Key': 'current', 'Value': 'False'}]
+        )
     return
 
 

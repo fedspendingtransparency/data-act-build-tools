@@ -8,6 +8,9 @@ import shutil
 from subprocess import Popen, PIPE, STDOUT, call
 
 EXIT_CODE = 0
+# set global boto connection
+ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
+ec2_resource = boto3.resource('ec2', region_name='us-gov-west-1')
 
 def deploy():
 
@@ -21,7 +24,6 @@ def deploy():
 
     # Set connection
     print('Connecting to AWS via region us-gov-west-1...')
-    ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
     print('Done.')
 
     parser = argparse.ArgumentParser()
@@ -93,9 +95,9 @@ def deploy():
             {'Name':'tag:current', 'Values':['True']},
             {'Name':'tag:base', 'Values':['False']},
             {'Name':'tag:type', 'Values':['USASpending-API']},
-            {'Name':'tag:environment', 'Values':['sandbox']}
+            {'Name':'tag:environment', 'Values':[deploy_env]}
             ])['Images']
-        
+
         print("Old Instance AMIs: ")
         print(old_instance_amis)
 
@@ -114,7 +116,7 @@ def deploy():
             print('Done.')
         else:
             print('No matching old AMIs. Skipping tag update...')
-            
+
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
 
@@ -237,9 +239,8 @@ def update_terraform_user_data(environment='staging', tf_file='usaspending-deplo
 
 
 def update_ami_tags(old_instance_amis):
-    ec2 = boto3.resource('ec2', region_name='us-gov-west-1')
     for ami in old_instance_amis:
-        image = ec2.Image(ami['ImageId'])
+        image = ec2_resource.Image(ami['ImageId'])
         image.create_tags(
             DryRun=False,
             Tags=[{'Key': 'current', 'Value': 'False'}]
