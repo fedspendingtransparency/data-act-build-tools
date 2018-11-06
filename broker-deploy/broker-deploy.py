@@ -111,7 +111,12 @@ def deploy():
 
     elif optionsDict["prod"]:
         #For prod, we don't build a new artifact, we just run terraform against the current staging AMI
-        staging_ami = conn.get_all_images(filters={"tag:current" : "True", "tag:base" : "False", "tag:type" : "Application", "tag:environment" : "staging"})[0].id
+        staging_ami = ec2_client.describe_images(Filters=[
+                {'Name':'tag:current', 'Values':['True']},
+                {'Name':'tag:base', 'Values':['False']},
+                {'Name':'tag:type', 'Values':['Application']},
+                {'Name':'tag:environment', 'Values':['staging']}
+                ])['Images'][0]['ImageId']
         # Update terraform variables with staging ami_id
         update_lc_ami(staging_ami, tfvar_file, deploy_env)
 
@@ -137,19 +142,6 @@ def deploy():
     if EXIT_CODE != 0:
         print('Exiting with a code of {}'.format(EXIT_CODE))
         sys.exit(EXIT_CODE)
-
-def get_running_instance(deploy_env='na', component='Validator'):
-    reservations = conn.get_all_instances(filters={
-        "tag:Application" : "Broker",
-        "tag:Component" : component,
-        "tag:Environment" : deploy_env
-        })
-    if len(reservations) != 1:
-        print("Error, current environment not configured correctly.")
-        EXIT_CODE = 1
-        return
-    else:
-        return reservations[0].instances[0]
 
 def get_current_base_ami():
     base_ami = ec2_client.describe_images(Filters=[
