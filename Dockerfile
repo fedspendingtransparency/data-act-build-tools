@@ -4,12 +4,12 @@ ENV PACKER_VERSION 1.3.2
 ENV ANSIBLE_VERSION 2.7.0
 ENV TERRAFORM_VERSION 0.11.10
 
-RUN yum update -y && \
-    yum install wget -y && \
-    yum install unzip -y && \
-    yum install https://centos7.iuscommunity.org/ius-release.rpm -y && \
-    yum install python36u -y && \
-    yum install python36u-pip -y
+RUN yum update -y && yum install -y \
+    wget \
+    unzip \
+    https://centos7.iuscommunity.org/ius-release.rpm \
+    python36u \
+    python36u-pip
 
 WORKDIR /root/workspace
 
