@@ -11,7 +11,6 @@ RUN yum update -y && \
     yum install python36u -y && \
     yum install python36u-pip -y
 
-ENV USER root
 WORKDIR /root/workspace
 
 # install packer and link to PATH

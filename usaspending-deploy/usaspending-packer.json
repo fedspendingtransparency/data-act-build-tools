@@ -1,0 +1,37 @@
+{
+    "builders": [
+        {
+            "ami_name": "USASpending-API-Image_{{timestamp}}",
+            "instance_type": "t2.micro",
+            "region": "us-gov-west-1",
+            "source_ami": "ami-24a63c45",
+            "iam_instance_profile": "ec2-usaspending-api-nonprod",
+            "kms_key_id": "2a921759-27e0-422c-9ee1-977f8d9d96cd",
+            "vpc_id": "vpc-6d1ad608",
+            "subnet_id": "subnet-5e0e8e29",
+            "security_group_id": "sg-f815be9d",
+            "ssh_username": "ec2-user",
+            "kms_key_id": "2a921759-27e0-422c-9ee1-977f8d9d96cd",
+            "ssh_interface": "public_ip",
+            "tags": {
+                "base": "False",
+                "current": "True",
+                "environment": "substituted_by_python",
+                "type": "USASpending-API"
+            },
+            "type": "amazon-ebs"
+        }
+    ],
+    "provisioners": [
+  		{
+  			"type": "ansible",
+  			"extra_arguments": [
+          "-vvvv",
+  				"--extra-vars",
+  				"BRANCH=sandbox"
+  				],
+  			"playbook_file": "usaspending-api-image.yml",
+        "user" : "root"
+  		}
+  	]
+}
