@@ -30,3 +30,5 @@ RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
 # set python path and install pip packages
 RUN rm /usr/bin/python && ln -s /usr/bin/python3.6 /usr/bin/python
 RUN pip3 install boto3 sh argparse
+
+COPY . /root/workspace

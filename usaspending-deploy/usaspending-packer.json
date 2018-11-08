@@ -11,12 +11,11 @@
             "subnet_id": "subnet-5e0e8e29",
             "security_group_id": "sg-f815be9d",
             "ssh_username": "ec2-user",
-            "kms_key_id": "2a921759-27e0-422c-9ee1-977f8d9d96cd",
             "ssh_interface": "public_ip",
             "tags": {
                 "base": "False",
                 "current": "True",
-                "environment": "substituted_by_python",
+                "environment": "sandbox",
                 "type": "USASpending-API"
             },
             "type": "amazon-ebs"
@@ -26,12 +25,12 @@
   		{
   			"type": "ansible",
   			"extra_arguments": [
-          "-vvvv",
+          			"-vvvv",
   				"--extra-vars",
   				"BRANCH=sandbox"
   				],
   			"playbook_file": "usaspending-api-image.yml",
-        "user" : "root"
+		    "user" : "ec2-user"
   		}
   	]
 }
