@@ -16,20 +16,19 @@ WORKDIR /root/workspace
 # this variable is used to run packer
 ENV USER ec2-user
 
-# install packer and link to PATH
+# install packer and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip
 RUN unzip /root/workspace/packer_${PACKER_VERSION}_linux_amd64.zip -d /opt/packer/
 RUN ln -s /opt/packer/packer /usr/local/bin/packer
 
 # install ansible
 RUN pip3.6 install pip --upgrade
-RUN pip3 install ansible==${ANSIBLE_VERSION} virtualenv
+RUN pip3 install ansible==${ANSIBLE_VERSION}
 
-# install terraform
+# install terraform and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 RUN unzip /root/workspace/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt/terraform
 RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
 
-# set python path and install pip packages
-RUN rm /usr/bin/python && ln -s /usr/bin/python3.6 /usr/bin/python
+# install pip packages
 RUN pip3 install boto3 sh argparse
