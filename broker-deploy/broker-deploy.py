@@ -18,8 +18,8 @@ def deploy():
     packer_file = 'broker-packer.json'
     tfvar_file = 'broker-vars.tf.json'
     tf_file = 'broker-deploy.tf'
-    packer_exec_path = 'packer'
-    tf_exec_path = 'terraform'
+    packer_exec_path = '/packer/packerio'
+    tf_exec_path = '/terraform/latest/terraform'
 
     parser = argparse.ArgumentParser()
 
@@ -106,7 +106,6 @@ def deploy():
         else:
             print('Something went wrong. Packer AMI: '+ami_id+'; Tagged AMI: '+ new_ami)
 
-        exit()
         # Add new AMI id to terraform variables
         update_lc_ami(ami_id, tfvar_file, deploy_env)
 
