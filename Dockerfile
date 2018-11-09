@@ -1,3 +1,5 @@
+# Contains packer/terraform/ansible dependencies in order to run the various *-deploy.py scripts in a container
+
 FROM centos:latest
 
 ENV PACKER_VERSION 1.3.2
