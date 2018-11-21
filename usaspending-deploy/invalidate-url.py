@@ -10,7 +10,8 @@ parser.add_argument('--url', required=True, type=str)
 args = parser.parse_args()
 url = args.url
 
-session = boto3.Session (profile_name='cf-invalidation')
+# Requires a cf-invalidation profile with the right access to our distros
+session = boto3.Session(profile_name='cf-invalidation')
 
 client = session.client('cloudfront')
 
