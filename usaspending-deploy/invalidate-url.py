@@ -10,12 +10,7 @@ parser.add_argument('--url', required=True, type=str)
 args = parser.parse_args()
 url = args.url
 
-session = boto3.Session (
-	aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-	aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-	region_name='us-east-1',
-# REQUIRED - AWS Profile/Key 
-	profile_name='cf-invalidation')
+session = boto3.Session (profile_name='cf-invalidation')
 
 client = session.client('cloudfront')
 
