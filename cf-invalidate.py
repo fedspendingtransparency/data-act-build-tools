@@ -9,12 +9,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--env', nargs='?', const='staging', default='staging', type=str)
 args = parser.parse_args()
 
-session = boto3.Session (
-	aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-	aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
-	region_name='us-east-1',
-# REQUIRED - AWS Profile/Key 
-	profile_name='cf-invalidation')
+# Requires a cf-invalidation profile with the right access to our distros
+session = boto3.Session(profile_name='cf-invalidation')
 
 client = session.client('cloudfront')
 
