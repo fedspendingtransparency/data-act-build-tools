@@ -18,8 +18,8 @@ def deploy():
     packer_file = 'broker-packer.json'
     tfvar_file = 'broker-vars.tf.json'
     tf_file = 'broker-deploy.tf'
-    packer_exec_path = '/packer/packerio'
-    tf_exec_path = '/terraform/latest/terraform'
+    packer_exec_path = 'packer'
+    tf_exec_path = 'terraform'
 
     parser = argparse.ArgumentParser()
 
