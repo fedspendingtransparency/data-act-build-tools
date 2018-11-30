@@ -1,3 +1,5 @@
+# ========================= BROKER-API-IMAGE PLAYBOOK =========================#
+
 ---
 - hosts: all
   remote_user: ec2-user
@@ -10,68 +12,122 @@
 
   tasks:
 
-# Copy Git Credentials from S3 Bucket
+    # ===================== Copy Git Creds from S3 Bucket =====================#
 
     - name: pull repo - copy broker git credentials from S3 Bucket
       become: true
-      shell: "aws s3 cp s3://da-config/broker/id_rsa_broker_config /home/ec2-user/.ssh/id_rsa_broker_config --region us-gov-west-1"
+      aws_s3:
+        bucket: da-config
+        object: /id_rsa_broker_config
+        dest: /home/ec2-user/.ssh/id_rsa_broker_config
+        region: us-gov-west-1
+        mode: get
 
-    - name: pull repo - change ownership to /home/ec2-user.ssh/
+    - name: change ownership of /home/ec2-user.ssh/
       become: true
-      file: path=/home/ec2-user/.ssh/ owner=ec2-user recurse=yes
+      file:
+        path: /home/ec2-user/.ssh/
+        owner: ec2-user
+        group: ec2-user
+        recurse: "yes"
 
-    - name: pull repo - change mode for the id_rsa_broker_config
+    - name: change mode for the id_rsa_broker_config
       become: true
-      shell: chmod 400 /home/ec2-user/.ssh/id_rsa_broker_config
+      file:
+        path: /home/ec2-user/.ssh/id_rsa_broker_config
+        mode: 0400
 
-    - name: pull repo - checkout backend from git
+    # ========================= Git Checkout ========================#
+
+    - name: checkout backend from git
       become: true
-      git: repo={{ REPO }}
-           version={{ BRANCH }}
-           dest=/data-act/backend
-           accept_hostkey=true
-           force=yes
+      git:
+        repo: "{{ REPO }}"
+        version: "{{ BRANCH }}"
+        dest: "/data-act/backend"
+        accept_hostkey: true
+        force: "yes"
 
-    - name: pull repo - checkout broker config from git
+    - name: checkout broker config from git
       become: true
-      git: repo=git@github.com:fedspendingtransparency/data-act-broker-config.git
-           dest=/data-act/config
-           accept_hostkey=true
-           force=yes
-           key_file="/home/ec2-user/.ssh/id_rsa_broker_config"
+      git:
+        repo: git@github.com:fedspendingtransparency/data-act-broker-config.git
+        dest: /data-act/config
+        accept_hostkey: true
+        force: "yes"
+        key_file: /home/ec2-user/.ssh/id_rsa_broker_config
 
-    - name: pull repo - checkout build-tools repo from git
+    - name: checkout build-tools repo from git
       become: true
-      git: repo=git@github.com:fedspendingtransparency/data-act-build-tools.git
-           dest=/data-act/build-tools
-           accept_hostkey=true
-           force=yes
-           key_file="/home/ec2-user/.ssh/id_rsa_broker_config"
+      git:
+        repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
+        dest: /data-act/build-tools
+        accept_hostkey: true
+        force: "yes"
+        key_file: /home/ec2-user/.ssh/id_rsa_broker_config
 
-    - name: pull repo - assign ownership of api dir to ec2-user
+    - name: assign ownership of api to ec2-user
       become: true
-      file: path=/data-act owner=ec2-user recurse=yes
+      file:
+        path: /data-act/
+        owner: ec2-user
+        recurse: "yes"
 
-    - name: pull repo - assign ownership of tmp dir to ec2-user
+    - name: assign ownership of tmp to ec2-user
       become: true
-      file: path=/tmp owner=ec2-user recurse=yes
+      file:
+        path: /tmp
+        owner: ec2-user
+        recurse: "yes"
 
-# Install Packages
+    # ======================== Install PIP Packages ========================#
 
-    - name: Install backend packages based on requirements.txt.
+    - name: install backend packages based on requirements.txt
       become: true
       pip:
-        requirements: "/data-act/backend/requirements.txt"
+        chdir: /data-act/backend
+        requirements: requirements.txt
         executable: pip3.5
 
-    - name: Install server packages based on server_requirements.txt.
+    - name: install server packages based on server_requirements.txt
       become: true
       pip:
-        requirements: "/data-act/backend/server_requirements.txt"
+        chdir: /data-act/backend
+        requirements: server_requirements.txt
         executable: pip3.5
 
-    - name: Install server packages based on legacy_requirements.txt.
+    - name: install python packages based on legacy_requirements.txt
       become: true
       pip:
-        requirements: "/data-act/backend/legacy_requirements.txt"
+        chdir: /data-act/backend
+        requirements: legacy_requirements.txt
         executable: pip2
+
+    # ======================== Configure DataDog Key ========================#
+
+    - name: copy datadog_key from S3
+      become: true
+      aws_s3:
+        bucket: da-config
+        object: /shared/datadog_key.yml
+        dest: /etc/datadog_key.yml
+        region: us-gov-west-1
+        mode: get
+
+    - name: load datadog_key var
+      include_vars: /etc/datadog_key.yml
+
+    - name: add Datadog license key to datadog.yaml
+      become: true
+      lineinfile:
+        dest: /data-act/config/datadog/datadog.yaml
+        regexp: '\s*api_key: .*'
+        line: "api_key: {{ DD_KEY }}"
+
+    - name: copy datadog.yml to it's home location
+      become: true
+      copy:
+        src: /data-act/config/datadog/datadog.yaml
+        dest: /etc/datadog-agent/datadog.yaml
+
+# ======================== EOF ========================#
