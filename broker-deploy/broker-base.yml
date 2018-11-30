@@ -17,7 +17,7 @@
     - name: upgrade all yum packages, kernel updates, OS patches
       become: true
       yum:
-        name: '*'
+        name: "*"
         state: latest
 
     - name: install EPEL and IUS repos
@@ -60,10 +60,6 @@
         name: ansible
         version: 2.4.2.0
         executable: pip3.5
-
-    - name: setsebool command
-      shell: "setsebool -P httpd_can_network_connect=1"
-      become: true
 
     - name: install nginx (from nginx repo)
       become: true
