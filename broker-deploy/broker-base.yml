@@ -14,13 +14,13 @@
 
   tasks:
 
-    - name: upgrade all yum packages, kernel updates, OS patches
+    - name: Upgrade all yum packages, kernel updates, OS patches
       become: true
       yum:
         name: "*"
         state: latest
 
-    - name: install EPEL and IUS repos
+    - name: Install EPEL and IUS repos
       become: true
       yum:
         name: "{{ item }}"
@@ -28,7 +28,7 @@
         - https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
         - https://centos7.iuscommunity.org/ius-release.rpm
 
-    - name: install base dependencies
+    - name: Install base dependencies
       become: true
       yum:
         name: "{{ item }}"
@@ -54,25 +54,25 @@
         - pcre.x86_64
         - pcre-devel.x86_64
 
-    - name: install ansible-2.4.2.0 package via pip
+    - name: Install ansible-2.4.2.0 package via pip
       become: true
       pip:
         name: ansible
         version: 2.4.2.0
         executable: pip3.5
 
-    - name: install nginx (from nginx repo)
+    - name: Install nginx (from nginx repo)
       become: true
       yum:
         name: http://nginx.org/packages/mainline/centos/7/x86_64/RPMS/nginx-1.13.8-1.el7_4.ngx.x86_64.rpm
 
-    - name: install aws cli pip package
+    - name: Install aws cli pip package
       become: true
       pip:
         name: awscli
         executable: pip
 
-    - name: add datadog repository
+    - name: Add datadog repository
       become: true
       yum_repository:
         name: datadog-agent
@@ -80,34 +80,34 @@
         baseurl: "https://yum.datadoghq.com/stable/6/x86_64/"
         gpgkey: "https://yum.datadoghq.com/DATADOG_RPM_KEY.public"
 
-    - name: install datadog agent
+    - name: Install datadog agent
       become: true
       yum:
         name: datadog-agent
 
-    - name: install filebeat (from filebeat repo)
+    - name: Install filebeat (from filebeat repo)
       become: true
       yum:
         name: https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.1.1-x86_64.rpm
 
-    - name: show timestamp in history (root)
+    - name: Show timestamp in history (root)
       become: true
       lineinfile:
         dest: /root/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
 
-    - name: show timestamp in history (ec2-user)
+    - name: Show timestamp in history (ec2-user)
       lineinfile:
         dest: /home/ec2-user/.bash_profile
         line: "export HISTTIMEFORMAT=\"%d/%m/%y %T \""
 
-    - name: colorize (root)
+    - name: Colorize (root)
       become: true
       lineinfile:
         dest: /root/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;1m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'
 
-    - name: colorize (ec2-user)
+    - name: Colorize (ec2-user)
       lineinfile:
         dest: /home/ec2-user/.bash_profile
         line: 'export PS1="[\[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;45m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\] \W]\\$ \[$(tput sgr0)\]"'

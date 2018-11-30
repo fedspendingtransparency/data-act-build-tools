@@ -14,7 +14,7 @@
 
     # ===================== Copy Git Creds from S3 Bucket =====================#
 
-    - name: pull repo - copy broker git credentials from S3 Bucket
+    - name: Pull repo - copy broker git credentials from S3 Bucket
       become: true
       aws_s3:
         bucket: da-config
@@ -23,7 +23,7 @@
         region: us-gov-west-1
         mode: get
 
-    - name: change ownership of /home/ec2-user.ssh/
+    - name: Change ownership of /home/ec2-user.ssh/
       become: true
       file:
         path: /home/ec2-user/.ssh/
@@ -31,7 +31,7 @@
         group: ec2-user
         recurse: "yes"
 
-    - name: change mode for the id_rsa_broker_config
+    - name: Change mode for the id_rsa_broker_config
       become: true
       file:
         path: /home/ec2-user/.ssh/id_rsa_broker_config
@@ -39,7 +39,7 @@
 
     # ========================= Git Checkout ========================#
 
-    - name: checkout backend from git
+    - name: Checkout backend from git
       become: true
       git:
         repo: "{{ REPO }}"
@@ -48,7 +48,7 @@
         accept_hostkey: true
         force: "yes"
 
-    - name: checkout broker config from git
+    - name: Checkout broker config from git
       become: true
       git:
         repo: git@github.com:fedspendingtransparency/data-act-broker-config.git
@@ -57,7 +57,7 @@
         force: "yes"
         key_file: /home/ec2-user/.ssh/id_rsa_broker_config
 
-    - name: checkout build-tools repo from git
+    - name: Checkout build-tools repo from git
       become: true
       git:
         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
@@ -66,14 +66,14 @@
         force: "yes"
         key_file: /home/ec2-user/.ssh/id_rsa_broker_config
 
-    - name: assign ownership of api to ec2-user
+    - name: Assign ownership of api to ec2-user
       become: true
       file:
         path: /data-act/
         owner: ec2-user
         recurse: "yes"
 
-    - name: assign ownership of tmp to ec2-user
+    - name: Assign ownership of tmp to ec2-user
       become: true
       file:
         path: /tmp
@@ -82,21 +82,21 @@
 
     # ======================== Install PIP Packages ========================#
 
-    - name: install backend packages based on requirements.txt
+    - name: Install backend packages based on requirements.txt
       become: true
       pip:
         chdir: /data-act/backend
         requirements: requirements.txt
         executable: pip3.5
 
-    - name: install server packages based on server_requirements.txt
+    - name: Install server packages based on server_requirements.txt
       become: true
       pip:
         chdir: /data-act/backend
         requirements: server_requirements.txt
         executable: pip3.5
 
-    - name: install python packages based on legacy_requirements.txt
+    - name: Install python packages based on legacy_requirements.txt
       become: true
       pip:
         chdir: /data-act/backend
@@ -105,7 +105,7 @@
 
     # ======================== Configure DataDog Key ========================#
 
-    - name: copy datadog_key from S3
+    - name: Copy datadog_key from S3
       become: true
       aws_s3:
         bucket: da-config
@@ -114,17 +114,17 @@
         region: us-gov-west-1
         mode: get
 
-    - name: load datadog_key var
+    - name: Load datadog_key var
       include_vars: /etc/datadog_key.yml
 
-    - name: add Datadog license key to datadog.yaml
+    - name: Add Datadog license key to datadog.yaml
       become: true
       lineinfile:
         dest: /data-act/config/datadog/datadog.yaml
         regexp: '\s*api_key: .*'
         line: "api_key: {{ DD_KEY }}"
 
-    - name: copy datadog.yml to it's home location
+    - name: Copy datadog.yml to it's home location
       become: true
       copy:
         src: /data-act/config/datadog/datadog.yaml
