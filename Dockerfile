@@ -33,8 +33,4 @@ RUN unzip /root/workspace/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt
 RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
 
 # install pip packages
-RUN pip3 install boto3 sh argparse
-
-# set the symlink to the current packer and terraform exec_path
-RUN mkdir -p /packer && mkdir -p /terraform/latest/
-RUN ln -s /opt/packer/packer /packer/packerio && ln -s /opt/terraform/terraform /terraform/latest/terraform
+RUN pip3.6 install boto3 sh argparse
