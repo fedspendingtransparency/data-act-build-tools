@@ -72,7 +72,6 @@ def deploy():
         print('Updating Packer file with current base app AMI ' + current_base_ami + '...')
         update_packer_spec(packer_file, current_base_ami, deploy_env)
         print('Done.')
-        exit()
 
         # Retrieve current App Instance AMIs
         print('Retrieving current app instance AMI(s)...')
