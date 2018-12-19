@@ -198,7 +198,7 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
      "BRANCH={} HOST=local".format(environment) ]
 
     packer_json = open(packer_file, "w+")
-    packer_json.write(json.dumps(packer_data))
+    packer_json.write(json.dumps(packer_data, indent=4))
     packer_json.close()
 
     return

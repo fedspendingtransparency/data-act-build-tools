@@ -7,6 +7,7 @@ import sys
 import shutil
 from subprocess import Popen, PIPE, STDOUT, call
 
+
 EXIT_CODE = 0
 # set global boto connection
 ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
@@ -71,6 +72,7 @@ def deploy():
         print('Updating Packer file with current base app AMI ' + current_base_ami + '...')
         update_packer_spec(packer_file, current_base_ami, deploy_env)
         print('Done.')
+        exit()
 
         # Retrieve current App Instance AMIs
         print('Retrieving current app instance AMI(s)...')
@@ -196,7 +198,7 @@ def update_packer_spec(packer_file, current_base_ami, environment):
      "BRANCH={} HOST=local".format(environment) ]
 
     packer_json = open(packer_file, "w+")
-    packer_json.write(json.dumps(packer_data))
+    packer_json.write(json.dumps(packer_data, indent=4))
     packer_json.close()
 
     return
