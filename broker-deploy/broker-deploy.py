@@ -208,7 +208,7 @@ def update_lc_ami(new_ami='', tfvar_file='variables.tf.json', deploy_env='na'):
     tfvar_json.close()
     tfvar_data['variable']['aws_amis']['default']['us-gov-west-1'] = new_ami
     tfvar_json = open(tfvar_file, "w+")
-    tfvar_json.write(json.dumps(tfvar_data, indent=4, sort_keys=True))
+    tfvar_json.write(json.dumps(tfvar_data, indent=4))
     tfvar_json.close()
 
     return
