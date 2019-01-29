@@ -48,6 +48,7 @@
         - libffi-devel
         - pcre.x86_64
         - pcre-devel.x86_64
+        - postgresql  
 
     - name: install ansible-2.4.2.0 package via pip
       become: true
