@@ -33,4 +33,4 @@ RUN unzip /root/workspace/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt
 RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
 
 # install pip packages
-RUN pip3 install boto3 botocore sh argparse
+RUN pip3 install boto3 sh argparse
