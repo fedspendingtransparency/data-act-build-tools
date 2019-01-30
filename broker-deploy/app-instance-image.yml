@@ -26,7 +26,7 @@
         region: us-gov-west-1
         mode: get
 
-    - name: Set permissions/owner of broker git credentials
+    - name: Read only permissions for broker git credentials
       become: true
       file:
         path: /home/ec2-user/.ssh/id_rsa_broker_config
