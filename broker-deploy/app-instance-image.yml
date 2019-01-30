@@ -1,5 +1,3 @@
-# ========================= BROKER-API-IMAGE PLAYBOOK =========================#
-
 ---
 - hosts: all
   remote_user: ec2-user
@@ -12,29 +10,29 @@
 
   tasks:
 
+    - name: Get boto3/botocore for aws modules
+      become: true
+      pip:
+        name: ['boto3', 'botocore']
+        executable: pip2
+
     # ===================== Copy Git Creds from S3 Bucket =====================#
 
     - name: Pull repo - copy broker git credentials from S3 Bucket
       become: true
       aws_s3:
         bucket: da-config
-        object: /id_rsa_broker_config
+        object: /broker/id_rsa_broker_config
         dest: /home/ec2-user/.ssh/id_rsa_broker_config
         region: us-gov-west-1
         mode: get
 
-    - name: Change ownership of /home/ec2-user.ssh/
-      become: true
-      file:
-        path: /home/ec2-user/.ssh/
-        owner: ec2-user
-        group: ec2-user
-        recurse: "yes"
-
-    - name: Change mode for the id_rsa_broker_config
+    - name: Set permissions/owner of broker git credentials
       become: true
       file:
         path: /home/ec2-user/.ssh/id_rsa_broker_config
+        owner: ec2-user
+        group: ec2-user
         mode: 0400
 
     # ========================= Git Checkout ========================#
@@ -110,24 +108,23 @@
       aws_s3:
         bucket: da-config
         object: /shared/datadog_key.yml
-        dest: /etc/datadog_key.yml
+        dest: /data-act/config/datadog_key
         region: us-gov-west-1
         mode: get
 
-    - name: Load datadog_key var
-      include_vars: /etc/datadog_key.yml
+    - name: save the contents of datadog_key file
+      shell: cat "/data-act/config/datadog_key"
+      register: dd_key
 
-    - name: Add Datadog license key to datadog.yaml
-      become: true
+    - name: add Datadog license key to datadog.yaml
       lineinfile:
         dest: /data-act/config/datadog/datadog.yaml
         regexp: '\s*api_key: .*'
-        line: "api_key: {{ DD_KEY }}"
+        line: "api_key: {{ dd_key.stdout }}"
 
-    - name: Copy datadog.yml to it's home location
+    - name: copy datadog.yml to its home location
       become: true
       copy:
         src: /data-act/config/datadog/datadog.yaml
         dest: /etc/datadog-agent/datadog.yaml
-
-# ======================== EOF ========================#
+        remote_src: true
