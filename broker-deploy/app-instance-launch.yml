@@ -96,12 +96,12 @@
 
     # ===================== SSL Certs (not used for Validator) =====================#
 
-    - name: copy public.pem from S3 Bucket
+    - name: Copy public.pem from S3 Bucket
       when: APP == "broker"
       become: true
       shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
-    - name: copy private.pem from S3 Bucket
+    - name: Copy private.pem from S3 Bucket
       when: APP == "broker"
       become: true
       shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/private.pem /etc/cert.key --region us-gov-west-1"
