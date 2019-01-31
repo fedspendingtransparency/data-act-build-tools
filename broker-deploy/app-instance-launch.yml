@@ -99,22 +99,12 @@
     - name: Copy public.pem from S3 Bucket
       when: APP == "broker"
       become: true
-      aws_s3:
-        bucket: usaspending-ssl
-        object: /{{ vars['envs'][BRANCH]['domain'] }}/public.pem
-        dest: /etc/cert.pem
-        region: us-gov-west-1
-        mode: get
+      shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
     - name: Copy private.pem from S3 Bucket
       when: APP == "broker"
       become: true
-      aws_s3:
-        bucket: usaspending-ssl
-        object: /{{ vars['envs'][BRANCH]['domain'] }}/private.pem
-        dest: /etc/cert.key
-        region: us-gov-west-1
-        mode: get
+      shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/private.pem /etc/cert.key --region us-gov-west-1"
 
     - name: Assign ownership of cert.pem to ec2-user
       when: APP == "broker"
