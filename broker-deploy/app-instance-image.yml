@@ -101,13 +101,7 @@
     # ======================== Configure DataDog Key ========================#
 
     - name: Copy datadog_key from S3
-      become: true
-      aws_s3:
-        bucket: da-config
-        object: /shared/datadog_key.yml
-        dest: /data-act/config/datadog_key
-        region: us-gov-west-1
-        mode: get
+      shell: "aws s3 cp s3://da-config/shared/datadog_key /data-act/config/ --region us-gov-west-1"
 
     - name: save the contents of datadog_key file
       shell: cat "/data-act/config/datadog_key"
@@ -115,13 +109,13 @@
 
     - name: add Datadog license key to datadog.yaml
       lineinfile:
-        dest: /data-act/config/deploy/datadog.yaml
+        dest: /data-act/config/datadog/datadog.yaml
         regexp: '\s*api_key: .*'
         line: "api_key: {{ dd_key.stdout }}"
 
     - name: copy datadog.yml to its home location
       become: true
       copy:
-        src: /data-act/config/deploy/datadog.yaml
+        src: /data-act/config/datadog/datadog.yaml
         dest: /etc/datadog-agent/datadog.yaml
         remote_src: true
