@@ -115,13 +115,13 @@
 
     - name: add Datadog license key to datadog.yaml
       lineinfile:
-        dest: /data-act/config/datadog/datadog.yaml
+        dest: /data-act/config/deploy/datadog.yaml
         regexp: '\s*api_key: .*'
         line: "api_key: {{ dd_key.stdout }}"
 
     - name: copy datadog.yml to its home location
       become: true
       copy:
-        src: /data-act/config/datadog/datadog.yaml
+        src: /data-act/config/deploy/datadog.yaml
         dest: /etc/datadog-agent/datadog.yaml
         remote_src: true
