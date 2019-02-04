@@ -13,7 +13,6 @@
     REQ_DIR: "{{ CODE_HOME }}/requirements"
     ansible_python_interpreter: /usr/bin/python
     DATADOG_YML_PATH: "/data-act/config/deploy/datadog.yaml"
-    DATADOG_KEY_PATH: "/data-act/config/datadog_key"
 
   tasks:
 
@@ -119,16 +118,11 @@
 
 #===============================  Configure DataDog Key  ===============================#
 
-    # - name: set datadog variables
-    #   vars:
-    #     DATADOG_YML_PATH: "/data-act/config/deploy/datadog.yaml"
-    #     DATADOG_KEY_PATH: "/data-act/config/datadog_key"
-
     - name: copy datadog_key from S3
       shell: "aws s3 cp s3://da-config/shared/datadog_key /data-act/config/ --region us-gov-west-1"
 
     - name: save the contents of datadog_key file
-      shell: cat "{{ DATADOG_KEY_PATH }}"
+      shell: cat /data-act/config/datadog_key
       register: dd_key
 
     - name: add Datadog license key to datadog.yaml
