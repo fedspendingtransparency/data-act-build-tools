@@ -7,6 +7,7 @@
     REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
     BRANCH: "{{ BRANCH }}"
     ansible_python_interpreter: /usr/bin/python
+    DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
 
   tasks:
 
@@ -100,28 +101,28 @@
 
     # ======================== Configure DataDog Key ========================#
 
-    - name: Copy datadog_key from S3
+    - name: copy datadog_key from S3
       become: true
       aws_s3:
         bucket: da-config
-        object: /shared/datadog_key.yml
+        object: /shared/datadog_key
         dest: /data-act/config/datadog_key
         region: us-gov-west-1
         mode: get
 
     - name: save the contents of datadog_key file
-      shell: cat "/data-act/config/datadog_key"
+      shell: cat /data-act/config/datadog_key
       register: dd_key
 
     - name: add Datadog license key to datadog.yaml
       lineinfile:
-        dest: /data-act/config/datadog/datadog.yaml
+        dest: "{{ DATADOG_YML_PATH }}"
         regexp: '\s*api_key: .*'
         line: "api_key: {{ dd_key.stdout }}"
 
     - name: copy datadog.yml to its home location
       become: true
       copy:
-        src: /data-act/config/datadog/datadog.yaml
+        src: "{{ DATADOG_YML_PATH }}"
         dest: /etc/datadog-agent/datadog.yaml
         remote_src: true
