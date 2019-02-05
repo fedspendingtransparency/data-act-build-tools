@@ -92,7 +92,7 @@
       lineinfile:
         dest: /etc/datadog-agent/datadog.yaml
         regexp: "  env: .*"
-        line: "  env:  usaspending-api-{{ ANSIBLE_VARS_ENV }}"
+        line: "  env:  usaspending_{{ ANSIBLE_VARS_ENV }}_api"
 
     - name: add tags to datadog.yaml
       become: true
@@ -147,7 +147,7 @@
         line: |
           DATADOG_TRACE = {
             'DEFAULT_SERVICE': 'API',
-            'TAGS': {'env': 'usaspending-api-{{ ANSIBLE_VARS_ENV }}'},
+            'TAGS': {'env': 'usaspending_{{ ANSIBLE_VARS_ENV }}_api'},
           }
 
 #===============================  usaspending_api/settings.py  ===============================#
