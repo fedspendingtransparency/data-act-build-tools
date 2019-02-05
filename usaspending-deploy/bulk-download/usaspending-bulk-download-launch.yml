@@ -61,7 +61,7 @@
       lineinfile:
         dest: /etc/datadog-agent/datadog.yaml
         regexp: "  env: .*"
-        line: "  env:  usaspending-api-{{ ANSIBLE_VARS_ENV }}"
+        line: "  env:  usaspending_{{ ANSIBLE_VARS_ENV }}_bd"
 
     - name: add tags to datadog.yaml
       become: true
