@@ -94,10 +94,17 @@
         regexp: "  env: .*"
         line: "  env:  usaspending-api-{{ ANSIBLE_VARS_ENV }}"
 
+    - name: add tags to datadog.yaml
+      become: true
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: "  - ddog: .*"
+        line: "  - ddog:usaspending_{{ ANSIBLE_VARS_ENV }}_api"
+
     - name: disable datadog apm if env is sandbox or dev
       become: true
       when: BRANCH == "dev" or BRANCH == "sandbox"
-      lineinfile: 
+      lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "^  enabled: true"
         insertafter: "^apm_config:.*"
@@ -105,13 +112,13 @@
 
     - name: ensure dd-agent ownership for datadog directory
       become: true
-      file: 
+      file:
         path: /etc/datadog-agent/
         state: directory
         owner: dd-agent
         group: dd-agent
         recurse: yes
-        
+
     - name: add single-interpreter to uwsgi_db.ini
       become: true
       ini_file:
@@ -119,7 +126,7 @@
         section: "uwsgi"
         option: single-interpreter
         value: true
-        
+
     - name: add ddtrace to supervisord configuration (start command)
       ini_file:
         dest: "{{ CODE_HOME }}/config/supervisord.conf"
@@ -144,14 +151,14 @@
           }
 
 #===============================  usaspending_api/settings.py  ===============================#
- 
+
     - name: add settings.py env vars (bulk/baby download, regions, static asset url, elasticsearch)
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       with_items:
-        - { regexp: "^IS_LOCAL =.*", 
+        - { regexp: "^IS_LOCAL =.*",
             line:   "IS_LOCAL = False" }
 
         - { regexp: '^USASPENDING_AWS_REGION =.*',
@@ -163,13 +170,13 @@
         - { regexp: '^BULK_DOWNLOAD_S3_BUCKET_NAME =.*',
             line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
-        - { regexp: '^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*', 
+        - { regexp: '^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*',
             line: "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'" }
 
         - { regexp: '\s*ES_HOSTNAME\*=.*',
             line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'" }
 
-        - { regexp: '^MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*', 
+        - { regexp: '^MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*',
             line: "MONTHLY_DOWNLOAD_S3_BUCKET_NAME = '{{ MONTHLY_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
         - { regexp: '\s*STATIC_URL =.*',
@@ -205,12 +212,12 @@
         line: "CACHE_ENVIRONMENT = 'elasticache'"
 
     - name: replace ELASTICACHE-CONNECTION-STRING (in staging or prod)
-      when: BRANCH == 'stg' or BRANCH == 'master' 
+      when: BRANCH == 'stg' or BRANCH == 'master'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "'ELASTICACHE-CONNECTION-STRING'"
         replace: "{{ ELASTICACHE_URL }}"
-    
+
     - name: replace ELASTICACHE-MASTER-STRING (in staging or prod)
       when: BRANCH == 'stg' or BRANCH == 'master'
       replace:
@@ -242,13 +249,13 @@
 #===============================  SSL Certs  ===============================#
 
     - name: copy public.pem from S3 Bucket
-      become: true 
+      become: true
       shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
     - name: copy private.pem from S3 Bucket
-      become: true 
+      become: true
       shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
-        
+
 #===============================  Filebeat Configuration  ===============================#
 
     - name: copy filebeat config
