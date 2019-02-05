@@ -68,7 +68,7 @@
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "  - ddog: .*"
-        line: "  - ddog:usaspending_{{ ANSIBLE_VARS_ENV }}_api"
+        line: "  - ddog:usaspending_{{ ANSIBLE_VARS_ENV }}_bd"
 
     - name: disable datadog apm if env is sandbox or dev
       become: true
