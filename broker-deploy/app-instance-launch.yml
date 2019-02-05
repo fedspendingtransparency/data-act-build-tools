@@ -129,13 +129,6 @@
         regexp: ' env: .*'
         line: "  env:  broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
 
-    - name: Add tags to datadog.yaml
-      become: true
-      lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: "  - ddog: *"
-        line: "  - ddog: broker-{{ vars['apps'][APP]['app_short'] }}-{{ BRANCH }}"
-
     - name: Disable datadog apm if env is sandbox or dev
       become: true
       when: BRANCH == "development" or BRANCH == "sandbox"
