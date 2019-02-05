@@ -3,7 +3,7 @@
 
 # NOTE: This should run after usaspending-api-image.yml
 
-# Required: {{ ANSIBLE_VARS_ENV }}, the prefix to the .yml with ansible vars 
+# Required: {{ ANSIBLE_VARS_ENV }}, the prefix to the .yml with ansible vars
 
   vars:
 # Bulk Vars Options: sandbox, dev, staging, prod
@@ -13,10 +13,10 @@
     CODE_HOME: "/data-act/backend"
     ansible_python_interpreter: /usr/bin/python
 
-  become_method: sudo  
+  become_method: sudo
 
   user: ec2-user
-  tasks:  
+  tasks:
 
     - name: Load variables from config repo
       include_vars: /{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml
@@ -29,16 +29,16 @@
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       with_items:
-        - { regexp: "^IS_LOCAL =.*", 
+        - { regexp: "^IS_LOCAL =.*",
             line:   "IS_LOCAL = False" }
 
         - { regexp: '^USASPENDING_AWS_REGION =.*',
             line: "USASPENDING_AWS_REGION = '{{ USASPENDING_AWS_REGION }}'" }
-            
-        - { regexp: "^BULK_DOWNLOAD_S3_BUCKET_NAME =.*", 
+
+        - { regexp: "^BULK_DOWNLOAD_S3_BUCKET_NAME =.*",
             line:   "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
-        - { regexp: "^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*", 
+        - { regexp: "^BULK_DOWNLOAD_SQS_QUEUE_NAME =.*",
             line:   "BULK_DOWNLOAD_SQS_QUEUE_NAME = '{{ BULK_DOWNLOAD_SQS_QUEUE_NAME }}'" }
 
     - name: set ES_HOSTNAME
@@ -53,6 +53,71 @@
 
     - name: load secrets (DB_SOURCE)
       include_vars: /etc/{{ ANSIBLE_VARS_ENV }}-usaspending-api-secrets.yml
+
+#===============================  DataDog Configuration  ===============================#
+
+    - name: add datadog label (app_name)
+      become: true
+      lineinfile:
+        dest: /etc/datadog-agent/datadog.yaml
+        regexp: "  env: .*"
+        line: "  env:  usaspending_{{ ANSIBLE_VARS_ENV }}_bd"
+
+    - name: add tags to datadog.yaml
+      become: true
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: "  - ddog: .*"
+        line: "  - ddog:usaspending_{{ ANSIBLE_VARS_ENV }}_bd"
+
+    - name: disable datadog apm if env is sandbox or dev
+      become: true
+      when: BRANCH == "dev" or BRANCH == "sandbox"
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: "^  enabled: true"
+        insertafter: "^apm_config:.*"
+        line: "  enabled: false"
+
+    - name: add single-interpreter to uwsgi_db.ini
+      become: true
+      ini_file:
+        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
+        section: "uwsgi"
+        option: single-interpreter
+        value: true
+
+    - name: add ddtrace to supervisord configuration (start command)
+      ini_file:
+        dest: "{{ CODE_HOME }}/config/supervisord.conf"
+        section: "program:uwsgi"
+        option: command
+        value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
+
+    - name: add ddtrace to INSTALLED_APPS in settings.py
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        insertafter: "^    'django.contrib.postgres',\n"
+        line: "    'ddtrace.contrib.django',"
+
+    - name: add ddtrace environment variables to settings.py
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        insertafter: "^INTERNAL_IPS = ()"
+        line: |
+          DATADOG_TRACE = {
+            'DEFAULT_SERVICE': 'BD',
+            'TAGS': {'env': 'usaspending_{{ ANSIBLE_VARS_ENV }}_bd'},
+          }
+
+    - name: ensure dd-agent ownership for datadog directory
+      become: true
+      file:
+        path: /etc/datadog-agent/
+        state: directory
+        owner: dd-agent
+        group: dd-agent
+        recurse: yes
 
 # config/filebeat/filebeat.yml
 
@@ -73,13 +138,13 @@
 
 # Start Worker
 
-    - name: enable filebeat service
+    - name: enable & restart datadog-agent service
       become: true
-      shell: systemctl enable filebeat
+      shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
 
-    - name: restart filebeat
+    - name: enable & restart filebeat service
       become: true
-      shell: systemctl restart filebeat
+      shell: "systemctl enable filebeat && systemctl restart filebeat"
 
     - name: stop supervisord
       become: true
