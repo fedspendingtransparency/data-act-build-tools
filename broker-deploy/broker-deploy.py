@@ -62,7 +62,7 @@ def deploy():
     tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
 
-    if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
+    if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"] or optionsDict["prod"]:
 
         # Retrieve current Base app AMI (where type=app and current=true)
         print('Retrieving current base app AMI...')
@@ -109,17 +109,6 @@ def deploy():
 
         # Add new AMI id to terraform variables
         update_lc_ami(ami_id, tfvar_file, deploy_env)
-
-    elif optionsDict["prod"]:
-        #For prod, we don't build a new artifact, we just run terraform against the current staging AMI
-        staging_ami = ec2_client.describe_images(Filters=[
-                {'Name':'tag:current', 'Values':['True']},
-                {'Name':'tag:base', 'Values':['False']},
-                {'Name':'tag:type', 'Values':['Application']},
-                {'Name':'tag:environment', 'Values':['staging']}
-                ])['Images'][0]['ImageId']
-        # Update terraform variables with staging ami_id
-        update_lc_ami(staging_ami, tfvar_file, deploy_env)
 
     print('**************************************************************************')
     print(' Running terraform... ')

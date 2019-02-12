@@ -78,7 +78,7 @@ def deploy():
     startup_script = "usaspending-start-{}.sh".format(deploy_env)
 
 
-    if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"]:
+    if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"] or optionsDict["prod"]:
         # Get Base AMI, Update Packer file
         print('Retrieving base AMI...')
         base_ami = ec2_client.describe_images(Filters=[
@@ -119,18 +119,6 @@ def deploy():
 
         # Add new AMI to Terraform variables
         update_tf_ami(new_instance_ami, tfvar_file)
-
-    elif optionsDict["prod"]:
-        # Get current Staging AMI
-        staging_ami = ec2_client.describe_images(Filters=[
-            {'Name':'tag:current', 'Values':['True']},
-            {'Name':'tag:base', 'Values':['False']},
-            {'Name':'tag:type', 'Values':['USASpending-API']},
-            {'Name':'tag:environment', 'Values':['staging']}
-            ])['Images'][0]['ImageId']
-
-        # Add new AMI to Terraform variables
-        update_tf_ami(staging_ami, tfvar_file)
 
     # Update Terraform User Data
     update_terraform_user_data(deploy_env)
