@@ -182,6 +182,8 @@ def update_packer_spec(packer_file, current_base_ami, environment):
     # dev branch is called development
     if (environment == "dev"):
         environment = "development"
+    if environment == "prod":
+        environment = "master"
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
 

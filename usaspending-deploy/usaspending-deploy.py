@@ -182,6 +182,8 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
 
     if environment == 'staging':
         environment = 'stg'
+    if environment == 'prod':
+        environment = 'master'
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
 
