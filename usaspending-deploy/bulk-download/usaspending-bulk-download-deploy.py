@@ -53,8 +53,11 @@ def deploy():
     if optionsDict["dev"]:
         deploy_env = 'dev'
 
-    if optionsDict["staging"] or optionsDict["prod"]: # both pull staging AMI
+    if optionsDict["staging"]:
         deploy_env = 'staging'
+
+    if optionsDict["prod"]:
+        deploy_env = 'prod'
 
     tfvar_json = open(tfvar_file, "r")
     tfvar_data = json.load(tfvar_json)
