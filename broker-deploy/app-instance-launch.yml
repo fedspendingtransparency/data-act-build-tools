@@ -134,7 +134,7 @@
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "  - ddog: .*"
-        line: "  - ddog:broker_{{ BRANCH }}_{{ vars['apps'][APP]['app_short'] | lower }}"
+        line: "  - ddog:broker_{{ vars['envs'][BRANCH]['env_long'] }}_{{ vars['apps'][APP]['app_short'] | lower }}"
 
     - name: Disable datadog apm if env is sandbox or dev
       become: true
