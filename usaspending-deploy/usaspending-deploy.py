@@ -180,10 +180,9 @@ def update_packer_spec(packer_file='packer.json', base_ami='', environment='stag
     packer_data['builders'][0]['source_ami'] = base_ami
     packer_data['builders'][0]['tags']['environment'] = environment
 
-    if environment == 'staging':
-        environment = 'stg'
     if environment == 'prod':
         environment = 'master'
+
     packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
      "BRANCH={} HOST=local".format(environment) ]
 
