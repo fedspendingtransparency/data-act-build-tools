@@ -38,17 +38,6 @@ def deploy():
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
     startup_script = "usaspending-start-{}.sh".format(deploy_env)
 
-    # Get Base AMI, Update Packer file
-    print('Retrieving base AMI...')
-    base_ami = ec2_client.describe_images(Filters=[
-        {'Name':'tag:current', 'Values':['True']},
-        {'Name':'tag:base', 'Values':['True']},
-        {'Name':'tag:type', 'Values':['USASpending-API']}
-        ])['Images'][0]['ImageId']
-    print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
-    update_packer_spec(packer_file, base_ami, deploy_env)
-    print('Done.')
-
     # Get Old AMIs, for setting current=False after new one is created
     old_instance_amis = ec2_client.describe_images(Filters=[
         {'Name':'tag:current', 'Values':['True']},
@@ -63,7 +52,11 @@ def deploy():
     # Build New AMI (Packer)
     print('**************************************************************************')
     print(' Building new AMI via Packer. This can take a while...')
-    packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
+
+    packer_output = real_time_command([packer_exec_path, 'build', 
+                                      '-var \'environment_ami_tag={}\''.format(deploy_env), 
+                                      '-var \'ansible_branch_var={}\''.format('master' if deploy_env == 'prod' else deploy_env), 
+                                      packer_file, '-machine-readable'])
     ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
     new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
     print('Done. New AMI created: ' + new_instance_ami)
@@ -129,27 +122,6 @@ def real_time_command(command_to_run):
     EXIT_CODE += rc
 
     return total_output
-
-
-def update_packer_spec(packer_file='packer.json', base_ami='', environment='staging'):
-    packer_json = open(packer_file, "r")
-    packer_data = json.load(packer_json)
-    packer_json.close()
-
-    packer_data['builders'][0]['source_ami'] = base_ami
-    packer_data['builders'][0]['tags']['environment'] = environment
-
-    if environment == 'prod':
-        environment = 'master'
-
-    packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
-     "BRANCH={} HOST=local".format(environment) ]
-
-    packer_json = open(packer_file, "w+")
-    packer_json.write(json.dumps(packer_data, indent=4, sort_keys=True))
-    packer_json.close()
-
-    return
 
 
 def update_tf_ami(new_ami='', tfvar_file='variables.tf.json'):
