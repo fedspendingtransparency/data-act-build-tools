@@ -47,7 +47,7 @@ def deploy():
     # Bad stuff
     if deploy_env == 'dev':
         ansible_branch_var = 'development'
-    else if deploy_env == 'prod':
+    elif deploy_env == 'prod':
         ansible_branch_var = 'master'
     else:
         ansible_branch_var = deploy_env
