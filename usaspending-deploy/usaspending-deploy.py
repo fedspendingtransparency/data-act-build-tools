@@ -1,16 +1,17 @@
 import boto3
-import sh
 import os
 import json
 import argparse
 import sys
 import shutil
-from subprocess import Popen, PIPE, STDOUT, call
+from subprocess import Popen, PIPE
 
 EXIT_CODE = 0
-# set global boto connection
+
+# global boto connections
 ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
 ec2_resource = boto3.resource('ec2', region_name='us-gov-west-1')
+
 
 def deploy():
 
@@ -22,50 +23,10 @@ def deploy():
     packer_exec_path = 'packer'
     packer_file      = 'usaspending-packer.json'
 
-    # Set connection
-    print('Connecting to AWS via region us-gov-west-1...')
-    print('Done.')
-
     parser = argparse.ArgumentParser()
-
-    parser.add_argument("--sandbox",
-        action="store_true",
-        help="Runs deploy for sandbox")
-    parser.add_argument("--dev",
-        action="store_true",
-        help="Runs deploy for dev")
-    parser.add_argument("--staging",
-        action="store_true",
-        help="Runs deploy for staging")
-    parser.add_argument("--prod",
-        action="store_true",
-        help="Runs deploy for prod")
+    parser.add_argument('--deploy_env', required=True, choices=['sandbox', 'dev', 'staging', 'prod'])
     args = parser.parse_args()
-    optionsDict = vars(args)
-    noArgs = True
-
-    for arg in optionsDict:
-        if(optionsDict[arg]):
-            noArgs = False
-
-    if noArgs:
-        print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, or --prod")
-        sys.exit(1)
-
-  # Sandbox, dev, and staging are all built the same way: packer, then create TF resources
-  # Prod pulls the same staging AMI that packer creates, and alters the launch config/AWS names
-
-    if optionsDict["sandbox"]:
-        deploy_env = 'sandbox'
-
-    if optionsDict["dev"]:
-        deploy_env = 'dev'
-
-    if optionsDict["staging"]:
-        deploy_env = 'staging'
-
-    if optionsDict["prod"]:
-        deploy_env = 'prod'
+    deploy_env = args.deploy_env
 
     tfvar_json = open(tfvar_file, "r")
     tfvar_data = json.load(tfvar_json)
@@ -77,48 +38,46 @@ def deploy():
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
     startup_script = "usaspending-start-{}.sh".format(deploy_env)
 
+    # Get Base AMI, Update Packer file
+    print('Retrieving base AMI...')
+    base_ami = ec2_client.describe_images(Filters=[
+        {'Name':'tag:current', 'Values':['True']},
+        {'Name':'tag:base', 'Values':['True']},
+        {'Name':'tag:type', 'Values':['USASpending-API']}
+        ])['Images'][0]['ImageId']
+    print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
+    update_packer_spec(packer_file, base_ami, deploy_env)
+    print('Done.')
 
-    if optionsDict["sandbox"] or optionsDict["dev"] or optionsDict["staging"] or optionsDict["prod"]:
-        # Get Base AMI, Update Packer file
-        print('Retrieving base AMI...')
-        base_ami = ec2_client.describe_images(Filters=[
-            {'Name':'tag:current', 'Values':['True']},
-            {'Name':'tag:base', 'Values':['True']},
-            {'Name':'tag:type', 'Values':['USASpending-API']}
-            ])['Images'][0]['ImageId']
-        print('Done. Updating Packer file to pull from base AMI: ' + base_ami + '...')
-        update_packer_spec(packer_file, base_ami, deploy_env)
+    # Get Old AMIs, for setting current=False after new one is created
+    old_instance_amis = ec2_client.describe_images(Filters=[
+        {'Name':'tag:current', 'Values':['True']},
+        {'Name':'tag:base', 'Values':['False']},
+        {'Name':'tag:type', 'Values':['USASpending-API']},
+        {'Name':'tag:environment', 'Values':[deploy_env]}
+        ])['Images']
+
+    print("Old Instance AMIs: ")
+    print(old_instance_amis)
+
+    # Build New AMI (Packer)
+    print('**************************************************************************')
+    print(' Building new AMI via Packer. This can take a while...')
+    packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
+    ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
+    new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
+    print('Done. New AMI created: ' + new_instance_ami)
+
+    # Set current=False tag for old AMIs
+    if old_instance_amis:
+        print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
+        update_ami_tags(old_instance_amis)
         print('Done.')
+    else:
+        print('No matching old AMIs. Skipping tag update...')
 
-        # Get Old AMIs, for setting current=False after new one is created
-        old_instance_amis = ec2_client.describe_images(Filters=[
-            {'Name':'tag:current', 'Values':['True']},
-            {'Name':'tag:base', 'Values':['False']},
-            {'Name':'tag:type', 'Values':['USASpending-API']},
-            {'Name':'tag:environment', 'Values':[deploy_env]}
-            ])['Images']
-
-        print("Old Instance AMIs: ")
-        print(old_instance_amis)
-
-        # Build New AMI (Packer)
-        print('**************************************************************************')
-        print(' Building new AMI via Packer. This can take a while...')
-        packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
-        ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
-        new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
-        print('Done. New AMI created: ' + new_instance_ami)
-
-        # Set current=False tag for old AMIs
-        if old_instance_amis:
-            print('Done. Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, old_instance_amis)) )
-            update_ami_tags(old_instance_amis)
-            print('Done.')
-        else:
-            print('No matching old AMIs. Skipping tag update...')
-
-        # Add new AMI to Terraform variables
-        update_tf_ami(new_instance_ami, tfvar_file)
+    # Add new AMI to Terraform variables
+    update_tf_ami(new_instance_ami, tfvar_file)
 
     # Update Terraform User Data
     update_terraform_user_data(deploy_env)
