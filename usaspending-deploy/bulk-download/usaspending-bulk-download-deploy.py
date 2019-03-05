@@ -8,6 +8,9 @@ from subprocess import Popen, PIPE
 
 EXIT_CODE = 0
 
+# global boto connection
+ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
+
 def deploy():
 
     # This tf_var file is expected to be copied from an external source
@@ -16,48 +19,10 @@ def deploy():
     tf_exec_path = 'terraform'
     tf_file      = 'usaspending-bulk-download-deploy.tf'
 
-    # Set connection
-    print('Connecting to AWS via region us-gov-west-1...')
-    ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
-    print('Done.')
-
     parser = argparse.ArgumentParser()
-
-    parser.add_argument("--sandbox",
-        action="store_true",
-        help="Runs deploy for sandbox")
-    parser.add_argument("--dev",
-        action="store_true",
-        help="Runs deploy for dev")
-    parser.add_argument("--staging",
-        action="store_true",
-        help="Runs deploy for staging")
-    parser.add_argument("--prod",
-        action="store_true",
-        help="Runs deploy for prod")
+    parser.add_argument('--deploy_env', required=True, choices=['sandbox', 'dev', 'staging', 'prod'])
     args = parser.parse_args()
-    optionsDict = vars(args)
-    noArgs = True
-
-    for arg in optionsDict:
-        if(optionsDict[arg]):
-            noArgs = False
-
-    if noArgs:
-        print ("No environment specified. Please include an argument: --sandbox, --dev, --staging, or --prod")
-        sys.exit(1)
-
-    if optionsDict["sandbox"]:
-        deploy_env = 'sandbox'
-
-    if optionsDict["dev"]:
-        deploy_env = 'dev'
-
-    if optionsDict["staging"]:
-        deploy_env = 'staging'
-
-    if optionsDict["prod"]:
-        deploy_env = 'prod'
+    deploy_env = args.deploy_env
 
     tfvar_json = open(tfvar_file, "r")
     tfvar_data = json.load(tfvar_json)
@@ -83,8 +48,6 @@ def deploy():
     print(' Running terraform... ')
     # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
     # a subdir so this doesn't have to happen via Jenkins.
-    if optionsDict["prod"]:
-        deploy_env = 'prod'
     shutil.rmtree(deploy_env, ignore_errors=True)
     os.mkdir(deploy_env)
     shutil.copy(tf_file,    deploy_env)
