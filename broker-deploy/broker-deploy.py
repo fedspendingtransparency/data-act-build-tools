@@ -8,7 +8,7 @@ from subprocess import Popen, PIPE
 
 
 EXIT_CODE = 0
-# set global boto connection
+# set global boto connections
 ec2_client = boto3.client('ec2', region_name='us-gov-west-1')
 ec2_resource = boto3.resource('ec2', region_name='us-gov-west-1')
 
@@ -37,30 +37,30 @@ def deploy():
     tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
 
-    # Retrieve current Base app AMI (where type=app and current=true)
-    print('Retrieving current base app AMI...')
-    current_base_ami = get_current_base_ami()
-
-    # Insert current Base app AMI into packer file
-    print('Updating Packer file with current base app AMI ' + current_base_ami + '...')
-    update_packer_spec(packer_file, current_base_ami, deploy_env)
-    print('Done.')
-
-    # Retrieve current App Instance AMIs
     print('Retrieving current app instance AMI(s)...')
     current_app_amis = get_current_app_instance_amis(deploy_env)
-
     print('Done. Current app instance AMI(s): '+ '\n'.join(map(str, current_app_amis)) )
 
-    # Build new app instance AMI via Packer
     print('**************************************************************************')
     print('Buiding new app instance AMI via Packer. This may take a few minutes...')
-    packer_output = real_time_command([packer_exec_path, 'build', packer_file, '-machine-readable'])
+
+    # Bad stuff
+    if deploy_env == 'dev':
+        ansible_branch_var = 'development'
+    else if deploy_env == 'prod':
+        ansible_branch_var = 'master'
+    else:
+        ansible_branch_var = deploy_env
+
+    packer_output = real_time_command([packer_exec_path, 'build', 
+                                      '-var', 'environment_ami_tag={}'.format(deploy_env), 
+                                      '-var', 'ansible_branch_var={}'.format(ansible_branch_var), 
+                                      '-machine-readable', packer_file])
+
     ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
     ami_id = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
     print('Done. Packer AMI created: '+ami_id)
 
-    # Set current=False tag for old App AMIs
     if current_app_amis:
         print('Setting current tag to False on old instance AMIs: \n' + '\n'.join(map(str, current_app_amis)) )
         update_ami_tags(current_app_amis)
@@ -106,15 +106,6 @@ def deploy():
         print('Exiting with a code of {}'.format(EXIT_CODE))
         sys.exit(EXIT_CODE)
 
-def get_current_base_ami():
-    base_ami = ec2_client.describe_images(Filters=[
-        {'Name':'tag:current', 'Values':['True']},
-        {'Name':'tag:base', 'Values':['True']},
-        {'Name':'tag:type', 'Values':['Application']}
-        ])['Images'][0]['ImageId']
-
-    return base_ami
-
 def get_current_app_instance_amis(deploy_env):
     app_instance_amis = ec2_client.describe_images(Filters=[
         {'Name':'tag:current', 'Values':['True']},
@@ -144,28 +135,6 @@ def real_time_command(command_to_run):
 
     return total_output
 
-def update_packer_spec(packer_file, current_base_ami, environment):
-    packer_json = open(packer_file, "r")
-    packer_data = json.load(packer_json)
-    packer_json.close()
-
-    packer_data['builders'][0]['source_ami'] = current_base_ami
-    packer_data['builders'][0]['tags']['environment'] = environment
-
-    # dev branch is called development, prod means master branch
-    if environment == 'dev':
-        environment = 'development'
-    if environment == 'prod':
-        environment = 'master'
-    packer_data['provisioners'][0]['extra_arguments'] = ["--extra-vars",
-     "BRANCH={} HOST=local".format(environment) ]
-
-    packer_json = open(packer_file, "w+")
-    packer_json.write(json.dumps(packer_data, indent=4, sort_keys=True))
-    packer_json.close()
-
-    return
-
 def update_lc_ami(new_ami='', tfvar_file='variables.tf.json', deploy_env='na'):
     tfvar_json = open(tfvar_file, "r")
     tfvar_data = json.load(tfvar_json)
@@ -186,7 +155,6 @@ def update_ami_tags(current_app_amis):
             Tags=[{'Key': 'current', 'Value': 'False'}]
         )
     return
-
 
 if __name__ == '__main__':
     deploy()
