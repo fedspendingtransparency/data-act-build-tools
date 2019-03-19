@@ -140,33 +140,6 @@ resource "aws_cloudwatch_metric_alarm" "val_alarm_high_cpu" {
   alarm_actions     = ["${aws_autoscaling_policy.val_scale_up.arn}"]
 }
 
-resource "aws_autoscaling_policy" "val_scale_down" {
-  name                   = "${var.val_name_prefix}_scaledown (${lookup(var.aws_amis, var.aws_region)})"
-  scaling_adjustment     = -1
-  adjustment_type        = "ChangeInCapacity"
-  cooldown               = 30
-  policy_type            = "SimpleScaling"
-  autoscaling_group_name = "${aws_autoscaling_group.val-asg.name}"
-}
-
-resource "aws_cloudwatch_metric_alarm" "val_alarm_low_cpu" {
-  alarm_name          = "${var.val_name_prefix}_cpulow (${lookup(var.aws_amis, var.aws_region)})"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = "60"
-  statistic           = "Maximum"
-  threshold           = "5"
-
-  dimensions {
-    AutoScalingGroupName = "${aws_autoscaling_group.val-asg.name}"
-  }
-
-  alarm_description = "All Instance CPU below 5% on ${var.val_name_prefix}"
-  alarm_actions     = ["${aws_autoscaling_policy.val_scale_down.arn}"]
-}
-
 resource "aws_autoscaling_policy" "api_scale_up" {
   name                   = "${var.api_name_prefix}_scaleup (${lookup(var.aws_amis, var.aws_region)})"
   scaling_adjustment     = 1
