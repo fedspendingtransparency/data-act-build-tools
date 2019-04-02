@@ -2,9 +2,9 @@
 
 FROM centos:latest
 
-ENV PACKER_VERSION 1.3.2
+ENV PACKER_VERSION 1.3.5
 ENV ANSIBLE_VERSION 2.7.0
-ENV TERRAFORM_VERSION 0.11.10
+ENV TERRAFORM_VERSION 0.11.13
 
 RUN yum update -y && \
     yum install -y wget && \
