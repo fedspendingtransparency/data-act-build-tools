@@ -58,7 +58,6 @@
       git:
         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
         dest: /data-act/build-tools
-        version: "ops-525/datadog-tags"
         accept_hostkey: true
         force: "yes"
         key_file: /home/ec2-user/.ssh/id_rsa_broker_config
