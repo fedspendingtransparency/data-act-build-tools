@@ -87,6 +87,13 @@
 
 #===============================  DataDog Configuration  ===============================#
 
+    - name: custom hostname (to get around datadog abandoning hosts)
+      become: true
+      lineinfile:
+        dest: "datadog.yaml"
+        insertbefore: BOF
+        line: "hostname: usaspending_{{ ANSIBLE_VARS_ENV }}_api_hostname"
+
     - name: add datadog label (app_name)
       become: true
       lineinfile:
