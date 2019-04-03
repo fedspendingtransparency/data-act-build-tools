@@ -122,6 +122,13 @@
 
     # ===================== DataDog Configuration =====================#
 
+    - name: custom hostname (to get around datadog abandoning hosts)
+      become: true
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        insertbefore: BOF
+        line: "hostname: broker-{{ vars['envs'][BRANCH]['env_long'] }}-{{ vars['apps'][APP]['app_short'] | lower }}-hostname"
+
     - name: Add environment name to datadog.yaml
       become: true
       lineinfile:
