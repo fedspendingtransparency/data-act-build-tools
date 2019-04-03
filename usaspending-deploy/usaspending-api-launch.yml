@@ -87,12 +87,19 @@
 
 #===============================  DataDog Configuration  ===============================#
 
-    - name: add datadog label (app_name)
+    - name: custom hostname (to get around datadog abandoning hosts)
       become: true
       lineinfile:
-        dest: /etc/datadog-agent/datadog.yaml
+        dest: "/etc/datadog-agent/datadog.yaml"
+        insertbefore: BOF
+        line: "hostname: usaspending-{{ ANSIBLE_VARS_ENV }}-api-hostname"
+
+    - name: add environment name to datadog tags
+      become: true
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "  env: .*"
-        line: "  env:  usaspending_{{ ANSIBLE_VARS_ENV }}_api"
+        line: "  env:  usaspending-{{ ANSIBLE_VARS_ENV }}-api"
 
     - name: add tags to datadog.yaml
       become: true
