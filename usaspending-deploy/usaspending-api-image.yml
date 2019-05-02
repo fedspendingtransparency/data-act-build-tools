@@ -94,12 +94,12 @@
         requirements: "{{ REQ_DIR }}/server_requirements.txt"
         executable: pip3.5
 
-    - name: check if requirements.txt (Python 3) defines a supervisor version
-      shell: cat "{{ REQ_DIR }}/requirements.txt" | grep supervisor || true
-      register: requirements_out
+    - name: check if server_requirements.txt (Python 3) defines a supervisor version
+      shell: cat "{{ REQ_DIR }}/server_requirements.txt" | grep supervisor || true
+      register: server_req_out
 
-    - name: only install "legacy" if requirements.txt doesn't define supervisor
-      when: requirements_out.stdout.find('supervisor') == -1
+    - name: only install "legacy" if server_requirements.txt doesn't define supervisor
+      when: server_req_out.stdout.find('supervisor') == -1
       become: true
       pip:
         requirements: "{{ REQ_DIR }}/legacy_requirements.txt"
