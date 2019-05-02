@@ -95,6 +95,7 @@
         executable: pip3.5
 
     - name: install python packages based on legacy_requirements.txt
+      when: BRANCH == "staging" or BRANCH == "master"
       become: true
       pip:
         requirements: "{{ REQ_DIR }}/legacy_requirements.txt"
@@ -146,5 +147,3 @@
         src:  /data-act/config/deploy/elk/usaspending-api.logrotate
         dest: /etc/logrotate.d/usaspending-api
         remote_src: true
-
-#===============================  EOF  ===============================#
