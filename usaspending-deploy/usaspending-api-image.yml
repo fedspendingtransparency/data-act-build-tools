@@ -98,7 +98,7 @@
       shell: cat "{{ REQ_DIR }}/requirements.txt" | grep supervisor || true
       register: requirements_out
 
-    - name: only install "legacy" if the requirements.txt doesn't define supervisor
+    - name: only install "legacy" if requirements.txt doesn't define supervisor
       when: requirements_out.stdout.find('supervisor') == -1
       become: true
       pip:

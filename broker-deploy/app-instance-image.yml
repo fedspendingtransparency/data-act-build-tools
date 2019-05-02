@@ -92,7 +92,12 @@
         requirements: server_requirements.txt
         executable: pip3.5
 
-    - name: Install python packages based on legacy_requirements.txt
+    - name: check if requirements.txt (Python 3) defines a supervisor version
+      shell: cat /data-act/backend/requirements.txt | grep supervisor || true
+      register: requirements_out
+
+    - name: only install "legacy" if requirements.txt doesn't define supervisor
+      when: requirements_out.stdout.find('supervisor') == -1
       become: true
       pip:
         chdir: /data-act/backend
