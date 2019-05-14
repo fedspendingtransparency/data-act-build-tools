@@ -48,7 +48,7 @@ def main():
     recent_files.sort(key=lambda tup: tup['LastModified'],reverse=True)
 
     try:
-        recent_cars = [x for x in recent_files if re.search('CARS', x['Key'])][0]
+        recent_cars = [x for x in recent_files if re.search('PE\.CARS', x['Key'])][0]
         cars_exists = True
     except Exception as e:
         print('No CARS file posted in the last 24 hours, or no files found.')
@@ -80,7 +80,7 @@ def main():
         data.to_csv(cars_file_name)
 
     try:
-        recent_gtas = [x for x in recent_files if re.search('GTAS', x['Key'])][0]
+        recent_gtas = [x for x in recent_files if re.search('PE\.GTAS', x['Key'])][0]
         gtas_exists = True
     except:
         print('No GTAS file posted in the last 24 hours, or no files found.')
