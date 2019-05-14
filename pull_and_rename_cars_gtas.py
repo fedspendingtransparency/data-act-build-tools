@@ -5,10 +5,13 @@ import re
 import argparse
 import pandas as pd
 
+'''
+Pulls and renames both the most recent CARS file and the most recent GTAS aka SF133 file.
+By default, does nothing if there was no S3 files found in the past 24 hours, 
+can be forced to pull the most recent.
 
-# Pulls and renames both the most recent CARS file and the most recent GTAS aka SF133 file.
-# By default, does nothing if there was no S3 files found in the past 24 hours, 
-# can be forced to pull the most recent.
+File naming convention is s3://gtas-sf133-frb/PE.[CARS or GTAS]_DA-YYYYMM-PP where PP = period and MM = fiscal month
+'''
 
 BUCKET_SOURCE = 'gtas-sf133-frb'
 
