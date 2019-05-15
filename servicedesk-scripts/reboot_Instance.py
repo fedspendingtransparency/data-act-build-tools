@@ -24,6 +24,7 @@ def main():
     elb_check = elb.describe_instance_health(
         LoadBalancerName=elbname,
     )
+    print (elb_check)
     # Wait for the ELB health check to turn OutOfService
     time.sleep(60)
 
@@ -35,6 +36,7 @@ def main():
     while (tries < maxtries ):
 
         status = elb_check.get("InstanceStates")[0].get("State")
+        print (status)
         if (status != "OutOfService"):
             break
         time.sleep(60)
