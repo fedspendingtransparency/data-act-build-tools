@@ -37,7 +37,7 @@ def main():
         if (status != "OutOfService"):
             break
         time.sleep(60)
-        tries += 1
+        minutes += 1
         print("The instance status is {} after {} minute(s)".format (status, minutes))
 
     if (status == "OutOfService" and minutes == maxtime):
