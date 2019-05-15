@@ -25,22 +25,22 @@ def main():
     # Wait for the ELB health check to turn OutOfService
     time.sleep(60)
 
-    tries  = 0
-    maxtries = 10
+    minutes  = 0
+    maxtime = 10
     status = None
     # wait fir the health check to become InService
 
-    while (tries < maxtries ):
+    while (minutes < maxtime ):
 
         status = get_elb_status(elbname, elb).get("InstanceStates")[0].get("State")
-        print (status)
+    
         if (status != "OutOfService"):
             break
         time.sleep(60)
         tries += 1
-        print(tries)
+        print("The instance status is {} after {} minute(s)".format (status, minutes))
 
-    if (status == "OutOfService" and tries == maxtries):
+    if (status == "OutOfService" and minutes == maxtime):
         sys.exit(1)
 
 
