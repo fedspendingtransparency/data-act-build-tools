@@ -32,7 +32,7 @@ def main():
 
     while (tries < maxtries ):
 
-        status = get_elb_status(elbname).get("InstanceStates")[0].get("State")
+        status = get_elb_status(elbname, elb).get("InstanceStates")[0].get("State")
         print (status)
         if (status != "OutOfService"):
             break
@@ -44,7 +44,7 @@ def main():
         sys.exit(1)
 
 
-def get_elb_status(elbname):
+def get_elb_status(elbname, elb):
     status = elb.describe_instance_health(LoadBalancerName=elbname,)
     return status
 
