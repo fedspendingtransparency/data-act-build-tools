@@ -21,10 +21,7 @@ def main():
     ec2 = session.client('ec2', region_name=region)
     ec2.reboot_instances(InstanceIds=[instance, ])
     print('instance rebooted with Instance ID: ' + instance)
-    elb_check = elb.describe_instance_health(
-        LoadBalancerName=elbname,
-    )
-    print (elb_check)
+    
     # Wait for the ELB health check to turn OutOfService
     time.sleep(60)
 
@@ -35,7 +32,7 @@ def main():
 
     while (tries < maxtries ):
 
-        status = elb_check.get("InstanceStates")[0].get("State")
+        status = get_elb_status(elbname).get("InstanceStates")[0].get("State")
         print (status)
         if (status != "OutOfService"):
             break
@@ -45,6 +42,11 @@ def main():
 
     if (status == "OutOfService" and tries == maxtries):
         sys.exit(1)
+
+
+def get_elb_status(elbname):
+    status = elb.describe_instance_health(LoadBalancerName=elbname,)
+    return status
 
 if __name__ == '__main__':
 	main()
