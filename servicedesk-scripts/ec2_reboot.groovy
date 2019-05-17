@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 
 node('matviews') {
-    def SLACK_CHANNEL = "#secret"
+    def SLACK_CHANNEL = "#operations"
 
     try {
         properties([
@@ -29,7 +29,6 @@ node('matviews') {
         }
         stage('EC2 restart') {
             dir('data-act-build-tools') {
-
                 sh """
                 docker run -i -v ~/.aws:/root/.aws -v \$(pwd):/root python /bin/bash -c \
                 'pip install boto3;python -u /root/servicedesk-scripts/reboot_Instance.py --elbname ${ELB}'
