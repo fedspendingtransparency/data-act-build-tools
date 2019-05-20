@@ -6,9 +6,9 @@ node('matviews') {
     try {
         properties([
             parameters([
-                string(name: 'ELB',
-                       defaultValue: 'servicedesk-dev',
-                       description: 'The Load Balancer Name of the instance that needs a restart'),
+                choice(name: 'Atlassian ELBs',
+                       choices: ['Atlassian-LoadBala-N2P7OUR3YJ9C', 'Confluence-ELB'],
+                       description: 'ELB Names for Atlassian Tools'),
             ])
         ])
 
@@ -19,9 +19,8 @@ node('matviews') {
             remote: 'git@github.com:fedspendingtransparency/data-act-broker-config.git',
             ])
 
-        stage ('Wipe Workspace') { deleteDir() }
-
         stage ('GitHub Pulls') {
+            deleteDir()
             dir('data-act-build-tools') {
               git url: "https://github.com/fedspendingtransparency/data-act-build-tools.git",
               branch: 'ops/service-desk-restart'
@@ -31,7 +30,7 @@ node('matviews') {
             dir('data-act-build-tools') {
                 sh """
                 docker run -i -v ~/.aws:/root/.aws -v \$(pwd):/root python /bin/bash -c \
-                'pip install boto3;python -u /root/servicedesk-scripts/reboot_Instance.py --elbname ${ELB}'
+                'pip install boto3;python -u /root/servicedesk-scripts/reboot_instance.py --elbname ${ELB}'
                 """
             }
         }
