@@ -85,14 +85,9 @@
         regexp: 'server_name INSERT_WITH_ANSIBLE;'
         replace: "server_name {{ vars['envs'][BRANCH]['domain'] }};"
 
-    - name: Download secrets from S3 bucket
+    - name: download secrets from S3 bucket
       become: true
-      aws_s3:
-        bucket: da-config
-        object: /broker/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml
-        dest: /data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml
-        region: us-gov-west-1
-        mode: get
+      shell: "aws s3 cp s3://da-config/broker/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml /data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml --region us-gov-west-1"
 
     # ===================== SSL Certs (not used for Validator) =====================#
 

@@ -84,13 +84,7 @@
 # ======================== Configure DataDog Key ========================#
 
     - name: copy datadog_key from S3
-      become: true
-      aws_s3:
-        bucket: da-config
-        object: /shared/datadog_key
-        dest: /data-act/config/datadog_key
-        region: us-gov-west-1
-        mode: get
+      shell: "aws s3 cp s3://da-config/shared/datadog_key /data-act/config/ --region us-gov-west-1"
 
     - name: save the contents of datadog_key file
       shell: cat /data-act/config/datadog_key
