@@ -11,11 +11,11 @@
 
   tasks:
 
-    - name: Get boto3/botocore for aws modules
+    - name: Get boto3/botocore for aws ansible modules (below)
       become: true
       pip:
         name: ['boto3', 'botocore']
-        executable: pip2
+        executable: pip3.5
 
     # ===================== Copy Git Creds from S3 Bucket =====================#
 
@@ -91,18 +91,6 @@
         chdir: /data-act/backend
         requirements: server_requirements.txt
         executable: pip3.5
-
-    - name: check if server_requirements.txt (Python 3) defines a supervisor version
-      shell: cat /data-act/backend/server_requirements.txt | grep supervisor || true
-      register: server_req_out
-
-    - name: only install "legacy" if server_requirements.txt doesn't define supervisor
-      when: server_req_out.stdout.find('supervisor') == -1
-      become: true
-      pip:
-        chdir: /data-act/backend
-        requirements: legacy_requirements.txt
-        executable: pip2
 
     # ======================== Configure DataDog Key ========================#
 
