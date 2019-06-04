@@ -21,7 +21,7 @@
     - name: copy git credentials from S3 Bucket
       shell: "aws s3 cp s3://da-config/usaspending/id_rsa_usaspending_config /home/ec2-user/.ssh/ --region us-gov-west-1"
 
-    - name: change mode for the id_rsa_usaspending_config
+    - name: Read-only permissions for usaspending git credentials
       become: true
       file:
         path: /home/ec2-user/.ssh/id_rsa_usaspending_config

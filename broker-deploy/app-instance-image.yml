@@ -11,29 +11,18 @@
 
   tasks:
 
-    - name: Get boto3/botocore for aws ansible modules (below)
-      become: true
-      pip:
-        name: ['boto3', 'botocore']
-        executable: pip3.5
+# ===================== Copy Git Creds from S3 Bucket =====================#
 
-    # ===================== Copy Git Creds from S3 Bucket =====================#
+    - name: copy git credentials from S3 Bucket
+      shell: "aws s3 cp s3://da-config/broker/id_rsa_broker_config /home/ec2-user/.ssh/ --region us-gov-west-1"
 
-    - name: Pull repo - copy broker git credentials from S3 Bucket
-      aws_s3:
-        bucket: da-config
-        object: /broker/id_rsa_broker_config
-        dest: /home/ec2-user/.ssh/id_rsa_broker_config
-        region: us-gov-west-1
-        mode: get
-
-    - name: Read only permissions for broker git credentials
+    - name: Read-only permissions for broker git credentials
       become: true
       file:
         path: /home/ec2-user/.ssh/id_rsa_broker_config
         mode: 0400
 
-    # ========================= Git Checkout ========================#
+# ========================= Git Checkout ========================#
 
     - name: Checkout backend from git
       become: true
@@ -76,7 +65,7 @@
         owner: ec2-user
         recurse: "yes"
 
-    # ======================== Install PIP Packages ========================#
+# ======================== Install PIP Packages ========================#
 
     - name: Install backend packages based on requirements.txt
       become: true
@@ -92,7 +81,7 @@
         requirements: server_requirements.txt
         executable: pip3.5
 
-    # ======================== Configure DataDog Key ========================#
+# ======================== Configure DataDog Key ========================#
 
     - name: copy datadog_key from S3
       become: true
