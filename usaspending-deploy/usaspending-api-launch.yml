@@ -162,7 +162,7 @@
 
 #===============================  usaspending_api/settings.py  ===============================#
 
-    - name: add settings.py env vars (API only) (bulk/baby download, static asset url)
+    - name: add settings.py env vars (API only)
       when: BUILD_TYPE == 'api'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
@@ -178,7 +178,7 @@
         - { regexp: '\s*STATIC_URL =.*',
             line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'" }
 
-    - name: add settings.py env vars (regions, static asset url, elasticsearch)
+    - name: add settings.py env vars
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "{{ item.regexp }}"
@@ -216,12 +216,12 @@
     - name: API | cache settings (staging/prod, elasticache)
       when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
       block:
-      - name: enable elasticache 
+      - name: enable elasticache
         lineinfile:
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
           regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
           line: "CACHE_ENVIRONMENT = 'elasticache'"
-  
+
       - name: replace ELASTICACHE-CONNECTION-STRING
         replace:
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
@@ -234,7 +234,7 @@
           regexp: "ELASTICACHE-MASTER-STRING"
           replace: "{{ ELASTICACHE_MASTER_URL }}"
 
-      - name: replace TIMEOUT-IN-SECONDS 
+      - name: replace TIMEOUT-IN-SECONDS
         replace:
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
           regexp: 'TIMEOUT-IN-SECONDS'
@@ -248,8 +248,8 @@
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
           regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
           line: "CACHE_ENVIRONMENT = 'local'"
-  
-      - name: API | replace TIMEOUT-IN-SECONDS
+
+      - name: replace TIMEOUT-IN-SECONDS
         replace:
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
           regexp: 'TIMEOUT-IN-SECONDS'
@@ -260,7 +260,7 @@
     - name: API | SSL Certs
       when: BUILD_TYPE == 'api'
       become: true
-      block: 
+      block:
       - name: copy public.pem from S3 Bucket
         shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
@@ -332,14 +332,14 @@
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
 
-    - name: BD | Stop / Start Supervisord 
+    - name: BD | Stop / Start Supervisord
       when: BUILD_TYPE == 'bulk-download'
       become: true
       block:
       - name: Stop supervisord
         shell: pkill supervisord
         ignore_errors: true
-      
+
       - name: Start supervisord
         shell: "supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf &"
         environment:
