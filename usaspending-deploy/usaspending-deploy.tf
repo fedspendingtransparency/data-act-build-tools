@@ -6,7 +6,7 @@ terraform {
   backend "s3" {}
 }
 
-resource "aws_autoscaling_group" "api-asg" {
+resource "aws_autoscaling_group" "api_asg" {
   name = "${var.api_name_prefix} (${lookup(var.aws_amis, var.aws_region)})"
   max_size = "${var.api_asg_max}"
   min_size = "${var.api_asg_min}"
@@ -14,7 +14,7 @@ resource "aws_autoscaling_group" "api-asg" {
   min_elb_capacity = "${var.api_asg_min}"
   health_check_type = "ELB"
   health_check_grace_period = 30
-  launch_configuration = "${aws_launch_configuration.api-lc.name}"
+  launch_configuration = "${aws_launch_configuration.api_lc.name}"
   load_balancers = ["${var.api_elb}"]
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
 
@@ -45,7 +45,7 @@ resource "aws_autoscaling_group" "api-asg" {
 
 }
 
-resource "aws_launch_configuration" "api-lc" {
+resource "aws_launch_configuration" "api_lc" {
   name = "${var.api_name_prefix} (${lookup(var.aws_amis, var.aws_region)})"
   image_id = "${lookup(var.aws_amis, var.aws_region)}"
   instance_type = "${var.api_instance_type}"
@@ -64,7 +64,7 @@ resource "aws_autoscaling_policy" "api_scale_up" {
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
   policy_type            = "SimpleScaling"
-  autoscaling_group_name = "${aws_autoscaling_group.api-asg.name}"
+  autoscaling_group_name = "${aws_autoscaling_group.api_asg.name}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "api_alarm_high_cpu" {
@@ -78,7 +78,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_cpu" {
   threshold           = "50"
 
   dimensions {
-    AutoScalingGroupName = "${aws_autoscaling_group.api-asg.name}"
+    AutoScalingGroupName = "${aws_autoscaling_group.api_asg.name}"
   }
 
   alarm_description = "High CPU on ${var.api_name_prefix}"
@@ -91,7 +91,7 @@ resource "aws_autoscaling_policy" "api_scale_down" {
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 30
   policy_type            = "SimpleScaling"
-  autoscaling_group_name = "${aws_autoscaling_group.api-asg.name}"
+  autoscaling_group_name = "${aws_autoscaling_group.api_asg.name}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "api_alarm_low_cpu" {
@@ -105,21 +105,21 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_cpu" {
   threshold           = "5"
 
   dimensions {
-    AutoScalingGroupName = "${aws_autoscaling_group.api-asg.name}"
+    AutoScalingGroupName = "${aws_autoscaling_group.api_asg.name}"
   }
 
   alarm_description = "All Instance CPU low ${var.api_name_prefix}"
   alarm_actions     = ["${aws_autoscaling_policy.api_scale_down.arn}"]
 }
 
-resource "aws_autoscaling_group" "bd-asg" {
+resource "aws_autoscaling_group" "bd_asg" {
   name = "${var.bd_name_prefix} (${lookup(var.aws_amis, var.aws_region)})"
   max_size = "${var.bd_asg_max}"
   min_size = "${var.bd_asg_min}"
   desired_capacity = "${var.bd_asg_desired}"
   health_check_type = "EC2"
   health_check_grace_period = 0
-  launch_configuration = "${aws_launch_configuration.bd-lc.name}"
+  launch_configuration = "${aws_launch_configuration.bd_lc.name}"
   vpc_zone_identifier = ["${split(",", var.subnets)}"]
 
   tag = {
@@ -149,7 +149,7 @@ resource "aws_autoscaling_group" "bd-asg" {
 
 }
 
-resource "aws_launch_configuration" "bd-lc" {
+resource "aws_launch_configuration" "bd_lc" {
   name = "${var.bd_name_prefix} (${lookup(var.aws_amis, var.aws_region)})"
   image_id = "${lookup(var.aws_amis, var.aws_region)}"
   instance_type = "${var.bd_instance_type}"
@@ -172,7 +172,7 @@ resource "aws_autoscaling_policy" "bd_scale_up" {
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 300
   policy_type            = "SimpleScaling"
-  autoscaling_group_name = "${aws_autoscaling_group.bd-asg.name}"
+  autoscaling_group_name = "${aws_autoscaling_group.bd_asg.name}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "bd_alarm_high_cpu" {
@@ -186,7 +186,7 @@ resource "aws_cloudwatch_metric_alarm" "bd_alarm_high_cpu" {
   threshold           = "50"
 
   dimensions {
-    AutoScalingGroupName = "${aws_autoscaling_group.bd-asg.name}"
+    AutoScalingGroupName = "${aws_autoscaling_group.bd_asg.name}"
   }
 
   alarm_description = "High CPU on ${var.bd_name_prefix}"
@@ -199,7 +199,7 @@ resource "aws_autoscaling_policy" "bd_scale_down" {
   adjustment_type        = "ChangeInCapacity"
   cooldown               = 30
   policy_type            = "SimpleScaling"
-  autoscaling_group_name = "${aws_autoscaling_group.bd-asg.name}"
+  autoscaling_group_name = "${aws_autoscaling_group.bd_asg.name}"
 }
 
 resource "aws_cloudwatch_metric_alarm" "bd_alarm_low_cpu" {
@@ -213,7 +213,7 @@ resource "aws_cloudwatch_metric_alarm" "bd_alarm_low_cpu" {
   threshold           = "5"
 
   dimensions {
-    AutoScalingGroupName = "${aws_autoscaling_group.bd-asg.name}"
+    AutoScalingGroupName = "${aws_autoscaling_group.bd_asg.name}"
   }
 
   alarm_description = "All Instance CPU low ${var.bd_name_prefix}"
