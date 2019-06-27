@@ -40,7 +40,7 @@
 
   tasks:
 
-    - name: API/BD | Load variables from config repo
+    - name: Load variables from config repo
       include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml"
 
 #===============================  Nginx Config  ===============================#
@@ -73,7 +73,7 @@
 
 #===============================  uwsgi_db.ini Setup  ===============================#
 
-    - name: duplicate config file to uwsgi_db.ini
+    - name: API | duplicate config file to uwsgi_db.ini
       become: true
       when: BUILD_TYPE == 'api'
       copy:
@@ -81,19 +81,19 @@
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
 
-    - name: API/BD | download secrets from S3 bucket
+    - name: download secrets from S3 bucket
       become: true
       shell: "aws s3 cp s3://da-config/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
 
-    - name: API/BD load secrets
+    - name: load secrets
       include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
 
-    - name: add DB_SOURCE to uswgi ini
+    - name: API | add DB_SOURCE to uswgi ini
       become: true
       when: BUILD_TYPE == 'api'
       shell: "echo env=DB_SOURCE={{ DB_SOURCE }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
-    - name: add DB_R1 to uswgi ini
+    - name: API | add DB_R1 to uswgi ini
       become: true
       when: BUILD_TYPE == 'api'
       shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
@@ -170,7 +170,7 @@
 
 #===============================  usaspending_api/settings.py  ===============================#
 
-    - name: add settings.py env vars (API only) (bulk/baby download, regions, static asset url, elasticsearch)
+    - name: add settings.py env vars (API only) (bulk/baby download, static asset url)
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "{{ item.regexp }}"
@@ -186,10 +186,7 @@
         - { regexp: '\s*STATIC_URL =.*',
             line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'" }
 
-        - { regexp: ,
-            line: "" }
-
-    - name: add settings.py env vars (API/BD) (bulk/baby download, regions, static asset url, elasticsearch)
+    - name: add settings.py env vars (regions, static asset url, elasticsearch)
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "{{ item.regexp }}"
@@ -211,57 +208,57 @@
         - { regexp: '\s*ES_HOSTNAME\*=.*',
             line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'" }
 
-    - name: add host to ALLOWED_HOSTS
+    - name: API | add host to ALLOWED_HOSTS
       when: BUILD_TYPE == 'api'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*ALLOWED_HOSTS =.*'
         line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS|d('') }}']"
 
-    - name: turn debug off in production or staging
-      when: BRANCH in ['master','stg'] and BUILD_TYPE == "api"
+    - name: API | turn debug off in production or staging
+      when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*DEBUG =.*'
         line: "DEBUG = False"
 
-    - name: enable elasticache (in staging or prod)
-      when: BRANCH in ['master','stg'] and BUILD_TYPE == "api"
+    - name: API | enable elasticache (in staging or prod)
+      when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'elasticache'"
 
-    - name: replace ELASTICACHE-CONNECTION-STRING (in staging or prod)
-      when: BRANCH in ['master','stg'] and BUILD_TYPE == "api"
+    - name: API | replace ELASTICACHE-CONNECTION-STRING (in staging or prod)
+      when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "'ELASTICACHE-CONNECTION-STRING'"
         replace: "{{ ELASTICACHE_URL }}"
 
-    - name: replace ELASTICACHE-MASTER-STRING (in staging or prod)
-      when: BRANCH in ['master','stg'] and BUILD_TYPE == "api"
+    - name: API | replace ELASTICACHE-MASTER-STRING (in staging or prod)
+      when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "ELASTICACHE-MASTER-STRING"
         replace: "{{ ELASTICACHE_MASTER_URL }}"
 
-    - name: replace TIMEOUT-IN-SECONDS (in staging or prod)
-      when: BRANCH in ['master','stg'] and BUILD_TYPE == "api"
+    - name: API | replace TIMEOUT-IN-SECONDS (in staging or prod)
+      when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
         replace: "{{ PROD_CACHE_TIMEOUT }}"
 
-    - name: enable local cache (in dev or sandbox)
-      when: BRANCH in ['dev','sandbox'] and BUILD_TYPE == "api"
+    - name: API | enable local cache (in dev or sandbox)
+      when: BRANCH in ['dev','sandbox'] and BUILD_TYPE == 'api'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
         line: "CACHE_ENVIRONMENT = 'local'"
 
-    - name: replace TIMEOUT-IN-SECONDS (in dev or sandbox)
-      when: BRANCH in ['dev','sandbox'] and BUILD_TYPE == "api"
+    - name: API | replace TIMEOUT-IN-SECONDS (in dev or sandbox)
+      when: BRANCH in ['dev','sandbox'] and BUILD_TYPE == 'api'
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: 'TIMEOUT-IN-SECONDS'
@@ -269,19 +266,22 @@
 
 #===============================  SSL Certs  ===============================#
 
-    - name: copy public.pem from S3 Bucket
-      become: true
-      shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/public.pem /etc/cert.pem --region us-gov-west-1"
-      when: BUILD_TYPE == 'api'
+    - name: API | SSL Certs
+      block: 
+      - name: copy public.pem from S3 Bucket
+        become: true
+        shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
-    - name: copy private.pem from S3 Bucket
-      become: true
-      shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
+
+      - name: copy private.pem from S3 Bucket
+        become: true
+        shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
+      
       when: BUILD_TYPE == 'api'
 
 #===============================  Filebeat Configuration  ===============================#
 
-    - name: API/BD | copy filebeat config
+    - name: copy filebeat config
       become: true
       copy:
         src:  "{{ CONFIG_HOME }}/deploy/elk/usaspending_api_filebeat.yml"
@@ -331,16 +331,16 @@
 
 #===============================  Enable and Restart Services  ===============================#
 
-    - name: enable & restart datadog-agent service
+    - name: API | enable & restart datadog-agent service
       become: true
       when: BUILD_TYPE == 'api'
       shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
 
-    - name: API/BD | enable & restart filebeat service
+    - name: enable & restart filebeat service
       become: true
       shell: "systemctl enable filebeat && systemctl restart filebeat"
 
-    - name: enable & restart supervisord.service
+    - name: API | enable & restart supervisord.service
       when: BUILD_TYPE == 'api'
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
