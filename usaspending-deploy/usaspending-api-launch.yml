@@ -16,6 +16,7 @@
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
     ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
+    BUILD_TYPE: "{{ BUILD_TYPE }}"
 
     envs:
       master: {env_long: prod, env_short: prod}
@@ -37,33 +38,36 @@
       include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml"
 
 #===============================  Nginx Config  ===============================#
+    - name: API | Nginx configs for usaspending api
+      when: BUILD_TYPE == 'api'
+      block:
+      - name: set nginx configuration path to SSL
+        set_fact:
+          nginx_path: "{{ CONFIG_HOME }}/deploy/nginx/nginx_usaspending_api.conf"
 
-    - name: set nginx configuration path to SSL
-      set_fact:
-         nginx_path: "{{ CONFIG_HOME }}/deploy/nginx/nginx_usaspending_api.conf"
+      - name: (remove later) run nginx as ec2-user
+        lineinfile:
+          dest: "{{ nginx_path }}"
+          regexp: '\s*user.*;'
+          line: 'user ec2-user;'
 
-    - name: (remove later) run nginx as ec2-user
-      lineinfile:
-        dest: "{{ nginx_path }}"
-        regexp: '\s*user.*;'
-        line: 'user ec2-user;'
+      - name: add server name to nginx config
+        replace:
+          path: "{{ nginx_path }}"
+          regexp: '^\s*server_name .*;'
+          replace: "\n\t\tserver_name  {{ DOMAIN }};"
 
-    - name: add server name to nginx config
-      replace:
-        path: "{{ nginx_path }}"
-        regexp: '^\s*server_name .*;'
-        replace: "\n\t\tserver_name  {{ DOMAIN }};"
-
-    - name: copy nginx config
-      become: true
-      copy:
-        src:  "{{ nginx_path }}"
-        dest: /etc/nginx/nginx.conf
-        remote_src: true
+      - name: copy nginx config
+        become: true
+        copy:
+          src:  "{{ nginx_path }}"
+          dest: /etc/nginx/nginx.conf
+          remote_src: true
 
 #===============================  uwsgi_db.ini Setup  ===============================#
 
-    - name: duplicate config file to uwsgi_db.ini
+    - name: API | duplicate config file to uwsgi_db.ini
+      when: BUILD_TYPE == 'api'
       become: true
       copy:
         src:  "{{ CODE_HOME }}/config/uwsgi.ini"
@@ -77,89 +81,104 @@
     - name: load secrets
       include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
 
-    - name: add DB_SOURCE to uswgi ini
+    - name: API | add DB_SOURCE to uswgi ini
+      when: BUILD_TYPE == 'api'
       become: true
       shell: "echo env=DB_SOURCE={{ DB_SOURCE }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
-    - name: add DB_R1 to uswgi ini
+    - name: API | add DB_R1 to uswgi ini
+      when: BUILD_TYPE == 'api'
       become: true
       shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
 #===============================  DataDog Configuration  ===============================#
 
-    - name: custom hostname (to get around datadog abandoning hosts)
-      become: true
-      lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        insertbefore: BOF
-        line: "hostname: usaspending-{{ ANSIBLE_VARS_ENV }}-api-hostname"
+    - name: API | DataDog Configuration
+      when: BUILD_TYPE == 'api'
+      block:
+      - name: custom hostname (to get around datadog abandoning hosts)
+        become: true
+        lineinfile:
+          dest: "/etc/datadog-agent/datadog.yaml"
+          insertbefore: BOF
+          line: "hostname: usaspending-{{ ANSIBLE_VARS_ENV }}-api-hostname"
 
-    - name: add environment name to datadog tags
-      become: true
-      lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: "  env: .*"
-        line: "  env:  usaspending-{{ ANSIBLE_VARS_ENV }}-api"
+      - name: add environment name to datadog tags
+        become: true
+        lineinfile:
+          dest: "/etc/datadog-agent/datadog.yaml"
+          regexp: "  env: .*"
+          line: "  env:  usaspending-{{ ANSIBLE_VARS_ENV }}-api"
 
-    - name: add tags to datadog.yaml
-      become: true
-      lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: "  - ddog: .*"
-        line: "  - ddog:usaspending_{{ ANSIBLE_VARS_ENV }}_api"
+      - name: add tags to datadog.yaml
+        become: true
+        lineinfile:
+          dest: "/etc/datadog-agent/datadog.yaml"
+          regexp: "  - ddog: .*"
+          line: "  - ddog:usaspending_{{ ANSIBLE_VARS_ENV }}_api"
 
-    - name: disable datadog apm if env is sandbox or dev
-      become: true
-      when: BRANCH == "dev" or BRANCH == "sandbox"
-      lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: "^  enabled: true"
-        insertafter: "^apm_config:.*"
-        line: "  enabled: false"
+      - name: disable datadog apm if env is sandbox or dev
+        become: true
+        when: BRANCH in ['dev','sandbox']
+        lineinfile:
+          dest: "/etc/datadog-agent/datadog.yaml"
+          regexp: "^  enabled: true"
+          insertafter: "^apm_config:.*"
+          line: "  enabled: false"
 
-    - name: add single-interpreter to uwsgi_db.ini
-      become: true
-      ini_file:
-        dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
-        section: "uwsgi"
-        option: single-interpreter
-        value: true
+      - name: add single-interpreter to uwsgi_db.ini
+        become: true
+        ini_file:
+          dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
+          section: "uwsgi"
+          option: single-interpreter
+          value: true
 
-    - name: add ddtrace to supervisord configuration (start command)
-      ini_file:
-        dest: "{{ CODE_HOME }}/config/supervisord.conf"
-        section: "program:uwsgi"
-        option: command
-        value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
+      - name: add ddtrace to supervisord configuration (start command)
+        ini_file:
+          dest: "{{ CODE_HOME }}/config/supervisord.conf"
+          section: "program:uwsgi"
+          option: command
+          value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
 
-    - name: add ddtrace to INSTALLED_APPS in settings.py
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        insertafter: "^    'django.contrib.postgres',\n"
-        line: "    'ddtrace.contrib.django',"
+      - name: add ddtrace environment variables to settings.py
+        lineinfile:
+          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+          insertafter: "^INTERNAL_IPS = ()"
+          line: |
+            DATADOG_TRACE = {
+              'DEFAULT_SERVICE': 'API',
+              'TAGS': {'env': 'usaspending_{{ ANSIBLE_VARS_ENV }}_api'},
+            }
 
-    - name: add ddtrace environment variables to settings.py
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        insertafter: "^INTERNAL_IPS = ()"
-        line: |
-          DATADOG_TRACE = {
-            'DEFAULT_SERVICE': 'API',
-            'TAGS': {'env': 'usaspending_{{ ANSIBLE_VARS_ENV }}_api'},
-          }
-
-    - name: ensure dd-agent ownership for datadog directory
-      become: true
-      file:
-        path: /etc/datadog-agent/
-        state: directory
-        owner: dd-agent
-        group: dd-agent
-        recurse: yes
+      - name: ensure dd-agent ownership for datadog directory
+        become: true
+        file:
+          path: /etc/datadog-agent/
+          state: directory
+          owner: dd-agent
+          group: dd-agent
+          recurse: yes
 
 #===============================  usaspending_api/settings.py  ===============================#
 
-    - name: add settings.py env vars (bulk/baby download, regions, static asset url, elasticsearch)
+    - name: add settings.py env vars (API only)
+      when: BUILD_TYPE == 'api'
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - { regexp: '^DOWNLOAD_ENV =.*',
+            line: "DOWNLOAD_ENV = '{{ DOWNLOAD_ENV }}'" }
+
+        - { regexp: '^MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*',
+            line: "MONTHLY_DOWNLOAD_S3_BUCKET_NAME = '{{ MONTHLY_DOWNLOAD_S3_BUCKET_NAME }}'" }
+
+        - { regexp: '\s*STATIC_URL =.*',
+            line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'" }
+
+    - name: add settings.py env vars
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "{{ item.regexp }}"
@@ -171,9 +190,6 @@
         - { regexp: '^USASPENDING_AWS_REGION =.*',
             line: "USASPENDING_AWS_REGION = '{{ USASPENDING_AWS_REGION }}'" }
 
-        - { regexp: '^DOWNLOAD_ENV =.*',
-            line: "DOWNLOAD_ENV = '{{ DOWNLOAD_ENV }}'" }
-
         - { regexp: '^BULK_DOWNLOAD_S3_BUCKET_NAME =.*',
             line: "BULK_DOWNLOAD_S3_BUCKET_NAME = '{{ BULK_DOWNLOAD_S3_BUCKET_NAME }}'" }
 
@@ -183,76 +199,73 @@
         - { regexp: '\s*ES_HOSTNAME\*=.*',
             line: "ES_HOSTNAME = '{{ ES_HOSTNAME }}'" }
 
-        - { regexp: '^MONTHLY_DOWNLOAD_S3_BUCKET_NAME =.*',
-            line: "MONTHLY_DOWNLOAD_S3_BUCKET_NAME = '{{ MONTHLY_DOWNLOAD_S3_BUCKET_NAME }}'" }
+    - name: API | add host to ALLOWED_HOSTS
+      when: BUILD_TYPE == 'api'
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*ALLOWED_HOSTS =.*'
+        line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS|d('') }}']"
 
-        - { regexp: '\s*STATIC_URL =.*',
-            line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'" }
-
-    - name: turn debug off in production or staging
-      when: BRANCH == 'master' or BRANCH == 'stg'
+    - name: API | turn debug off in production or staging
+      when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*DEBUG =.*'
         line: "DEBUG = False"
 
-    - name: add host to ALLOWED_HOSTS
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*ALLOWED_HOSTS =.*'
-        line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS }}']"
+    - name: API | cache settings (staging/prod, elasticache)
+      when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
+      block:
+      - name: enable elasticache
+        lineinfile:
+          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+          regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
+          line: "CACHE_ENVIRONMENT = 'elasticache'"
 
-    - name: enable elasticache (in staging or prod)
-      when: BRANCH == 'stg' or BRANCH == 'master'
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
-        line: "CACHE_ENVIRONMENT = 'elasticache'"
+      - name: replace ELASTICACHE-CONNECTION-STRING
+        replace:
+          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+          regexp: "'ELASTICACHE-CONNECTION-STRING'"
+          replace: "{{ ELASTICACHE_URL }}"
 
-    - name: replace ELASTICACHE-CONNECTION-STRING (in staging or prod)
-      when: BRANCH == 'stg' or BRANCH == 'master'
-      replace:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: "'ELASTICACHE-CONNECTION-STRING'"
-        replace: "{{ ELASTICACHE_URL }}"
+      - name: replace ELASTICACHE-MASTER-STRING
+        replace:
+          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+          regexp: "ELASTICACHE-MASTER-STRING"
+          replace: "{{ ELASTICACHE_MASTER_URL }}"
 
-    - name: replace ELASTICACHE-MASTER-STRING (in staging or prod)
-      when: BRANCH == 'stg' or BRANCH == 'master'
-      replace:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: "ELASTICACHE-MASTER-STRING"
-        replace: "{{ ELASTICACHE_MASTER_URL }}"
+      - name: replace TIMEOUT-IN-SECONDS
+        replace:
+          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+          regexp: 'TIMEOUT-IN-SECONDS'
+          replace: "{{ PROD_CACHE_TIMEOUT }}"
 
-    - name: enable local cache (in dev or sandbox)
-      when: BRANCH == 'dev' or BRANCH == 'sandbox'
-      lineinfile:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
-        line: "CACHE_ENVIRONMENT = 'local'"
+    - name: API | cache settings (nonprod)
+      when: BRANCH in ['dev','sandbox'] and BUILD_TYPE == 'api'
+      block:
+      - name: enable local cache
+        lineinfile:
+          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+          regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
+          line: "CACHE_ENVIRONMENT = 'local'"
 
-    - name: replace TIMEOUT-IN-SECONDS (in dev or sandbox)
-      when: BRANCH == 'dev' or BRANCH == 'sandbox'
-      replace:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: 'TIMEOUT-IN-SECONDS'
-        replace: "{{ NONPROD_CACHE_TIMEOUT }}"
-
-    - name: replace TIMEOUT-IN-SECONDS (in staging or prod)
-      when: BRANCH == 'master' or BRANCH == 'stg'
-      replace:
-        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-        regexp: 'TIMEOUT-IN-SECONDS'
-        replace: "{{ PROD_CACHE_TIMEOUT }}"
+      - name: replace TIMEOUT-IN-SECONDS
+        replace:
+          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+          regexp: 'TIMEOUT-IN-SECONDS'
+          replace: "{{ NONPROD_CACHE_TIMEOUT }}"
 
 #===============================  SSL Certs  ===============================#
 
-    - name: copy public.pem from S3 Bucket
+    - name: API | SSL Certs
+      when: BUILD_TYPE == 'api'
       become: true
-      shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/public.pem /etc/cert.pem --region us-gov-west-1"
+      block:
+      - name: copy public.pem from S3 Bucket
+        shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
-    - name: copy private.pem from S3 Bucket
-      become: true
-      shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
+      - name: copy private.pem from S3 Bucket
+        shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
 
 #===============================  Filebeat Configuration  ===============================#
 
@@ -263,40 +276,50 @@
         dest: /etc/filebeat/filebeat.yml
         remote_src: true
 
-    - name: update filebeat config to set correct index
+    - name: API | update filebeat config to set correct index
+      when: BUILD_TYPE == 'api'
       become: true
       replace:
         dest: /etc/filebeat/filebeat.yml
         regexp: 'index: filebeat'
         replace: "index: usaspending-api-{{ vars['envs'][BRANCH]['env_short'] }}"
 
+    - name: BD | update filebeat config to set correct index
+      when: BUILD_TYPE == 'bulk-download'
+      become: true
+      replace:
+        dest: "/etc/filebeat/filebeat.yml"
+        regexp: 'index: filebeat'
+        replace: "index: usaspending-bd-{{ vars['envs'][BRANCH]['env_short'] }}"
+
 #===============================  Setup supervisord.service  ===============================#
 
-    - name: make supervisord.service directory
+    - name: API | Setup supervisord for USAspending API
+      when: BUILD_TYPE == 'api'
       become: true
-      file:
-        path: /etc/supervisord/conf.d
-        recurse: true
-        state: directory
+      block:
+      - name: make supervisord.service directory
+        file:
+          path: /etc/supervisord/conf.d
+          recurse: true
+          state: directory
 
-    - name: supervisord.service conf
-      become: true
-      shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
+      - name: supervisord.service conf
+        shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
 
-    - name: supervisord.service conf.d append
-      become: true
-      shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
+      - name: supervisord.service conf.d append
+        shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
 
-    - name: supervisord.service copy
-      become: true
-      copy:
-        remote_src: true
-        src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
-        dest: /usr/lib/systemd/system/supervisord.service
+      - name: supervisord.service copy
+        copy:
+          remote_src: true
+          src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+          dest: /usr/lib/systemd/system/supervisord.service
 
 #===============================  Enable and Restart Services  ===============================#
 
-    - name: enable & restart datadog-agent service
+    - name: API | enable & restart datadog-agent service
+      when: BUILD_TYPE == 'api'
       become: true
       shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
 
@@ -304,8 +327,25 @@
       become: true
       shell: "systemctl enable filebeat && systemctl restart filebeat"
 
-    - name: enable & restart supervisord.service
+    - name: API | enable & restart supervisord.service
+      when: BUILD_TYPE == 'api'
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
 
-#===============================  EOF  ===============================#
+    - name: BD | Stop / Start Supervisord
+      when: BUILD_TYPE == 'bulk-download'
+      become: true
+      block:
+      - name: Stop supervisord
+        shell: pkill supervisord
+        ignore_errors: true
+
+      - name: Start supervisord
+        shell: "supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf &"
+        environment:
+          PYTHONPATH: "{{ CODE_HOME }}"
+          NUM_PROCS: "{{ NUM_PROCS }}"
+          DATABASE_URL_VAR: "{{ DB_SOURCE }}"
+          DOWNLOAD_DATABASE_URL: "{{ DOWNLOAD_DATABASE_URL }}"
+        args:
+          chdir: "{{ CODE_HOME }}/usaspending_api/"
