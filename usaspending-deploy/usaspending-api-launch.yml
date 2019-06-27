@@ -16,6 +16,7 @@
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
     ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
+    BUILD_TYPE: "{{ BUILD_TYPE }}"
 
     envs:
       master: {env_long: prod, env_short: prod}
@@ -31,13 +32,6 @@
 
     ansible_python_interpreter: "/usr/bin/python"
 
-  pre_tasks:
-    - name: Ensure vars set
-      fail: 
-        msg: "Pre-validation failed for {{ BUILD_TYPE | default ('api') }} buildout due to unset vars"
-      when: BUILD_TYPE not in ['bulk-download','api'] and 
-            ANSIBLE_VARS_ENV is not defined
-
   tasks:
 
     - name: Load variables from config repo
@@ -45,6 +39,7 @@
 
 #===============================  Nginx Config  ===============================#
     - name: API | Nginx configs for usaspending api
+      when: BUILD_TYPE == 'api'
       block:
       - name: set nginx configuration path to SSL
         set_fact:
@@ -68,14 +63,12 @@
           src:  "{{ nginx_path }}"
           dest: /etc/nginx/nginx.conf
           remote_src: true
-      
-      when: BUILD_TYPE == 'api'
 
 #===============================  uwsgi_db.ini Setup  ===============================#
 
     - name: API | duplicate config file to uwsgi_db.ini
-      become: true
       when: BUILD_TYPE == 'api'
+      become: true
       copy:
         src:  "{{ CODE_HOME }}/config/uwsgi.ini"
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
@@ -89,18 +82,19 @@
       include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
 
     - name: API | add DB_SOURCE to uswgi ini
-      become: true
       when: BUILD_TYPE == 'api'
+      become: true
       shell: "echo env=DB_SOURCE={{ DB_SOURCE }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
     - name: API | add DB_R1 to uswgi ini
-      become: true
       when: BUILD_TYPE == 'api'
+      become: true
       shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
 #===============================  DataDog Configuration  ===============================#
 
     - name: API | DataDog Configuration
+      when: BUILD_TYPE == 'api'
       block:
       - name: custom hostname (to get around datadog abandoning hosts)
         become: true
@@ -125,7 +119,7 @@
 
       - name: disable datadog apm if env is sandbox or dev
         become: true
-        when: BRANCH == "dev" or BRANCH == "sandbox"
+        when: BRANCH in ['dev','sandbox']
         lineinfile:
           dest: "/etc/datadog-agent/datadog.yaml"
           regexp: "^  enabled: true"
@@ -165,17 +159,15 @@
           owner: dd-agent
           group: dd-agent
           recurse: yes
-      
-      when: BUILD_TYPE == 'api'
 
 #===============================  usaspending_api/settings.py  ===============================#
 
     - name: add settings.py env vars (API only) (bulk/baby download, static asset url)
+      when: BUILD_TYPE == 'api'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
-      when: BUILD_TYPE == 'api'
       with_items:
         - { regexp: '^DOWNLOAD_ENV =.*',
             line: "DOWNLOAD_ENV = '{{ DOWNLOAD_ENV }}'" }
@@ -191,7 +183,6 @@
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
-      when: BUILD_TYPE == 'api' or BUILD_TYPE == 'bulk-download'
       with_items:
         - { regexp: "^IS_LOCAL =.*",
             line:   "IS_LOCAL = False" }
@@ -268,13 +259,12 @@
 
     - name: API | SSL Certs
       when: BUILD_TYPE == 'api'
+      become: true
       block: 
       - name: copy public.pem from S3 Bucket
-        become: true
         shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
       - name: copy private.pem from S3 Bucket
-        become: true
         shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
 
 #===============================  Filebeat Configuration  ===============================#
@@ -287,16 +277,16 @@
         remote_src: true
 
     - name: API | update filebeat config to set correct index
-      become: true
       when: BUILD_TYPE == 'api'
+      become: true
       replace:
         dest: /etc/filebeat/filebeat.yml
         regexp: 'index: filebeat'
         replace: "index: usaspending-api-{{ vars['envs'][BRANCH]['env_short'] }}"
 
     - name: BD | update filebeat config to set correct index
-      become: true
       when: BUILD_TYPE == 'bulk-download'
+      become: true
       replace:
         dest: "/etc/filebeat/filebeat.yml"
         regexp: 'index: filebeat'
@@ -305,6 +295,8 @@
 #===============================  Setup supervisord.service  ===============================#
 
     - name: API | Setup supervisord for USAspending API
+      when: BUILD_TYPE == 'api'
+      become: true
       block:
       - name: make supervisord.service directory
         file:
@@ -323,15 +315,12 @@
           remote_src: true
           src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
           dest: /usr/lib/systemd/system/supervisord.service
-      
-      become: true
-      when: BUILD_TYPE == 'api'
 
 #===============================  Enable and Restart Services  ===============================#
 
     - name: API | enable & restart datadog-agent service
-      become: true
       when: BUILD_TYPE == 'api'
+      become: true
       shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
 
     - name: enable & restart filebeat service
@@ -343,22 +332,20 @@
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
 
-    - name: BD | Stop supervisord
-      become: true
+    - name: BD | Stop / Start Supervisord 
       when: BUILD_TYPE == 'bulk-download'
-      shell: pkill supervisord
-      ignore_errors: true
-
-    - name: BD | start supervisord
       become: true
-      shell: "supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf &"
-      when: BUILD_TYPE == 'bulk-download'
-      environment:
-        PYTHONPATH: "{{ CODE_HOME }}"
-        NUM_PROCS: "{{ NUM_PROCS }}"
-        DATABASE_URL_VAR: "{{ DB_SOURCE }}"
-        DOWNLOAD_DATABASE_URL: "{{ DOWNLOAD_DATABASE_URL }}"
-      args:
-        chdir: "{{ CODE_HOME }}/usaspending_api/"
-
-#===============================  EOF  ===============================#
+      block:
+      - name: Stop supervisord
+        shell: pkill supervisord
+        ignore_errors: true
+      
+      - name: Start supervisord
+        shell: "supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf &"
+        environment:
+          PYTHONPATH: "{{ CODE_HOME }}"
+          NUM_PROCS: "{{ NUM_PROCS }}"
+          DATABASE_URL_VAR: "{{ DB_SOURCE }}"
+          DOWNLOAD_DATABASE_URL: "{{ DOWNLOAD_DATABASE_URL }}"
+        args:
+          chdir: "{{ CODE_HOME }}/usaspending_api/"
