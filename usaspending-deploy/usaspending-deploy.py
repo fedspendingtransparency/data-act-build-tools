@@ -32,7 +32,7 @@ def deploy():
     tfvar_data = json.load(tfvar_json)
     tfvar_json.close()
 
-    #initialize variables needed to deploy terraform
+    # Initialize variables needed to deploy terraform
     tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
     tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
@@ -70,6 +70,7 @@ def deploy():
         print('No matching old AMIs. Skipping tag update...')
 
     # Add new AMI to Terraform variables
+    # Variable aws_amis now replaced with newly created ami-id 
     update_tf_ami(new_instance_ami, tfvar_file)
 
     # Update Terraform User Data
@@ -87,6 +88,8 @@ def deploy():
     os.chdir(deploy_env)
 
     # Run Terraform plan and apply
+    # Terraform now builds out usaspending_api and usaspending_bd 
+    # as both are now contained within the single usaspending-deploy.tf file
     real_time_command([tf_exec_path, 'init',  '-input=false',
                        '-backend-config=bucket='+tf_state_s3_bucket,
                        '-backend-config=key='+tf_state_s3_path,
