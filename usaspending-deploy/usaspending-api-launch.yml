@@ -290,7 +290,7 @@
       replace:
         dest: "/etc/filebeat/filebeat.yml"
         regexp: 'index: filebeat'
-        replace: "index: usaspending-bd-{{ vars['envs'][BRANCH]['env_short'] }}"
+        replace: "index: usaspending-bd-{{ vars['envs'][BRANCH]['env_long'] }}"
 
 #===============================  Setup supervisord.service  ===============================#
 
