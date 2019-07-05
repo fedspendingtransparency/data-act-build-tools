@@ -4,7 +4,7 @@ FROM centos:latest
 
 ENV PACKER_VERSION 1.4.0
 ENV ANSIBLE_VERSION 2.7.0
-ENV TERRAFORM_VERSION 0.11.13
+ENV TERRAFORM_VERSION 0.12.3
 
 RUN yum update -y && \
     yum install -y wget && \
