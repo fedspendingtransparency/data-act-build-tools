@@ -16,14 +16,6 @@ resource "aws_autoscaling_group" "api_asg" {
   health_check_type         = "ELB"
   health_check_grace_period = 30
   launch_configuration      = aws_launch_configuration.api_lc.name
-  # TF-UPGRADE-TODO: In Terraform v0.10 and earlier, it was sometimes necessary to
-  # force an interpolation expression to be interpreted as a list by wrapping it
-  # in an extra set of list brackets. That form was supported for compatibilty in
-  # v0.11, but is no longer supported in Terraform v0.12.
-  #
-  # If the expression in the following list itself returns a list, remove the
-  # brackets to avoid interpretation as a list of lists. If the expression
-  # returns a single list item then leave it as-is and remove this TODO comment.
   load_balancers      = [var.api_elb]
   vpc_zone_identifier = split(",", var.subnets)
 
