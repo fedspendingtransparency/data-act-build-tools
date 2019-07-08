@@ -59,8 +59,8 @@ resource "aws_autoscaling_group" "val-asg" {
   health_check_type         = "ELB"
   health_check_grace_period = 180
   launch_configuration      = aws_launch_configuration.val-lc.name
-  load_balancers      = [var.val_elb]
-  vpc_zone_identifier = split(",", var.subnets)
+  load_balancers            = [var.val_elb]
+  vpc_zone_identifier       = split(",", var.subnets)
 
   tags {
     Name                = "${var.val_name_prefix} (${var.aws_amis[var.aws_region]})"
