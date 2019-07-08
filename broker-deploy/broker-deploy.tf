@@ -6,8 +6,7 @@ provider "aws" {
 }
 
 terraform {
-  backend "s3" {
-  }
+  backend "s3" {}
 }
 
 resource "aws_autoscaling_group" "api-asg" {
@@ -24,7 +23,7 @@ resource "aws_autoscaling_group" "api-asg" {
 
   tags = [
     {
-      key                   = "Name"                
+      key                   = "Name"
       value                 = "${var.api_name_prefix} (${var.aws_amis[var.aws_region]})"
       propagate_at_launch   = "true"
     },
@@ -64,7 +63,7 @@ resource "aws_autoscaling_group" "val-asg" {
 
   tags = [
     {
-      key                   = "Name"                
+      key                   = "Name"
       value                 = "${var.val_name_prefix} (${var.aws_amis[var.aws_region]})"
       propagate_at_launch   = "true"
     },
