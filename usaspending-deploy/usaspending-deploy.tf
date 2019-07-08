@@ -16,27 +16,14 @@ resource "aws_autoscaling_group" "api_asg" {
   health_check_type         = "ELB"
   health_check_grace_period = 30
   launch_configuration      = aws_launch_configuration.api_lc.name
-  load_balancers      = [var.api_elb]
-  vpc_zone_identifier = split(",", var.subnets)
+  load_balancers            = [var.api_elb]
+  vpc_zone_identifier       = split(",", var.subnets)
 
-  tag {
-    key                 = "Name"
-    value               = "${var.api_name_prefix} (${var.aws_amis[var.aws_region]})"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Application"
-    value               = "USAspending"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Component"
-    value               = "API"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Environment"
-    value               = var.env_tag
+  tags {
+    Name                = "${var.api_name_prefix} (${var.aws_amis[var.aws_region]})"
+    Application         = "USAspending"
+    Component           = "API"
+    Environment         = var.env_tag
     propagate_at_launch = "true"
   }
 
@@ -122,24 +109,11 @@ resource "aws_autoscaling_group" "bd_asg" {
   launch_configuration      = aws_launch_configuration.bd_lc.name
   vpc_zone_identifier       = split(",", var.subnets)
 
-  tag {
-    key                 = "Name"
-    value               = "${var.bd_name_prefix} (${var.aws_amis[var.aws_region]})"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Application"
-    value               = "USAspending"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Component"
-    value               = "BulkDownload"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Environment"
-    value               = var.env_tag
+  tags {
+    Name                = "${var.bd_name_prefix} (${var.aws_amis[var.aws_region]})"
+    Application         = "USAspending"
+    Component           = "BulkDownload"
+    Environment         = var.env_tag
     propagate_at_launch = "true"
   }
 

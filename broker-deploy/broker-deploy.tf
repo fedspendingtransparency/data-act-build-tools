@@ -19,27 +19,14 @@ resource "aws_autoscaling_group" "api-asg" {
   health_check_type         = "ELB"
   health_check_grace_period = 180
   launch_configuration      = aws_launch_configuration.api-lc.name
-  load_balancers      = [var.api_elb]
-  vpc_zone_identifier = split(",", var.subnets)
+  load_balancers            = [var.api_elb]
+  vpc_zone_identifier       = split(",", var.subnets)
 
-  tag {
-    key                 = "Name"
-    value               = "${var.api_name_prefix} (${var.aws_amis[var.aws_region]})"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Application"
-    value               = "Broker"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Component"
-    value               = "API"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Environment"
-    value               = var.env_tag
+  tags {
+    Name                = "${var.api_name_prefix} (${var.aws_amis[var.aws_region]})"
+    Application         = "Broker"
+    Component           = "API"
+    Environment         = var.env_tag
     propagate_at_launch = "true"
   }
 
@@ -60,24 +47,11 @@ resource "aws_autoscaling_group" "val-asg" {
   load_balancers      = [var.val_elb]
   vpc_zone_identifier = split(",", var.subnets)
 
-  tag {
-    key                 = "Name"
-    value               = "${var.val_name_prefix} (${var.aws_amis[var.aws_region]})"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Application"
-    value               = "Broker"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Component"
-    value               = "Validator"
-    propagate_at_launch = "true"
-  }
-  tag {
-    key                 = "Environment"
-    value               = var.env_tag
+  tags {
+    Name                = "${var.val_name_prefix} (${var.aws_amis[var.aws_region]})"
+    Application         = "Broker"
+    Component           = "Validator"
+    Environment         = var.env_tag
     propagate_at_launch = "true"
   }
 
