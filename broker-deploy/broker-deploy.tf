@@ -62,13 +62,28 @@ resource "aws_autoscaling_group" "val-asg" {
   load_balancers            = [var.val_elb]
   vpc_zone_identifier       = split(",", var.subnets)
 
-  tags {
-    Name                = "${var.val_name_prefix} (${var.aws_amis[var.aws_region]})"
-    Application         = "Broker"
-    Component           = "Validator"
-    Environment         = var.env_tag
-    propagate_at_launch = "true"
-  }
+  tags = [
+    {
+      key                   = "Name"                
+      value                 = "${var.val_name_prefix} (${var.aws_amis[var.aws_region]})"
+      propagate_at_launch   = "true"
+    },
+    {
+      key                   = "Application"
+      value                 = "Broker"
+      propagate_at_launch   = "true"
+    },
+    {
+      key                   = "Component"
+      value                 = "Validator"
+      propagate_at_launch   = "true"
+    },
+    {
+      key                   = "Environment"
+      value                 =  var.env_tag
+      propagate_at_launch   = "true"
+    },
+  ]
 
   lifecycle {
     create_before_destroy = true
