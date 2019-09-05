@@ -225,7 +225,7 @@
       - name: replace ELASTICACHE-CONNECTION-STRING
         replace:
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-          regexp: "'ELASTICACHE-CONNECTION-STRING'"
+          regexp: "ELASTICACHE-CONNECTION-STRING"
           replace: "{{ ELASTICACHE_URL }}"
 
       - name: replace ELASTICACHE-MASTER-STRING
