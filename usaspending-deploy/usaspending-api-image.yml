@@ -50,11 +50,11 @@
     - name: pull repo - checkout build-tools repo from git
       become: true
       git:
-         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
-         dest: /data-act/build-tools
-         accept_hostkey: true
-         force: yes
-         key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
+        repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
+        dest: /data-act/build-tools
+        accept_hostkey: true
+        force: yes
+        key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
 
     - name: assign ownership of api to ec2-user
       become: true
@@ -74,25 +74,19 @@
 
     - name: update pip
       become: true
-      shell: pip3.5 install --upgrade pip
+      shell: pip3.7 install --upgrade pip
 
-    - name: install python packages based on requirements.txt
+    - name: install python packages based on requirements-app.txt
       become: true
       pip:
-        requirements: "{{ REQ_DIR }}/requirements.txt"
-        executable: pip3.5
+        requirements: "{{ REQ_DIR }}/requirements-app.txt"
+        executable: pip3.7
 
-    - name: install python packages based on caching_requirements.txt
+    - name: install python packages based on requirements-server.txt
       become: true
       pip:
-        requirements: "{{ REQ_DIR }}/caching_requirements.txt"
-        executable: pip3.5
-
-    - name: install python packages based on server_requirements.txt
-      become: true
-      pip:
-        requirements: "{{ REQ_DIR }}/server_requirements.txt"
-        executable: pip3.5
+        requirements: "{{ REQ_DIR }}/requirements-server.txt"
+        executable: pip3.7
 
     - name: ensure the correct directory structure for tmp nginx files
       become: true
