@@ -55,7 +55,7 @@ def deploy():
 
     packer_output = real_time_command([packer_exec_path, 'build', 
                                       '-var', 'environment_ami_tag={}'.format(deploy_env), 
-                                      '-var', 'ansible_branch_var={}'.format('master' if deploy_env == 'prod' else deploy_env), 
+                                      '-var', 'ansible_branch_var={}'.format('master' if deploy_env == 'prod' else 'mod/dev-3064-python3.7'), 
                                       '-machine-readable', packer_file])
     ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
     new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
