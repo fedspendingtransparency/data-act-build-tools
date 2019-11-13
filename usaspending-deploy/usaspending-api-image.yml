@@ -75,6 +75,13 @@
     - name: update pip
       become: true
       shell: pip3 install --upgrade pip
+      
+    ### REMOVE THIS AFTER PR HAS BEEN UPDATED
+    - name: install numpy (later version)
+      become: true
+      pip:
+        name: numpy==1.17.2
+        executable: pip3
 
     - name: install python packages based on requirements.txt
       become: true
