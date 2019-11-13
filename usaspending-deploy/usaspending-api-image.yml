@@ -74,25 +74,25 @@
 
     - name: update pip
       become: true
-      shell: pip3.5 install --upgrade pip
+      shell: pip3 install --upgrade pip
 
     - name: install python packages based on requirements.txt
       become: true
       pip:
         requirements: "{{ REQ_DIR }}/requirements.txt"
-        executable: pip3.5
+        executable: pip3
 
     - name: install python packages based on caching_requirements.txt
       become: true
       pip:
         requirements: "{{ REQ_DIR }}/caching_requirements.txt"
-        executable: pip3.5
+        executable: pip3
 
     - name: install python packages based on server_requirements.txt
       become: true
       pip:
         requirements: "{{ REQ_DIR }}/server_requirements.txt"
-        executable: pip3.5
+        executable: pip3
 
     - name: ensure the correct directory structure for tmp nginx files
       become: true
