@@ -80,7 +80,7 @@
     - name: update to install numpy (later version)
       lineinfile:
         dest: "{{ REQ_DIR }}/requirements.txt"
-        regexp: "*numpy==*"
+        regexp: '\s*numpy==.*'
         line: "numpy==1.17.2"
 
     - name: install python packages based on requirements.txt
