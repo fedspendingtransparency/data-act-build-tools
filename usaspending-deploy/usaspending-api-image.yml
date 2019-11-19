@@ -19,6 +19,7 @@
 #=============================== Copy Git Credentials from S3 Bucket ===============================#
 
     - name: python-selinux (required for installing with Ansible using /usr/bin/python3 as the interpreter)
+      become: true
       pip:
         name:
           - selinux
