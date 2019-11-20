@@ -30,7 +30,7 @@
     PROD_CACHE_TIMEOUT: None
     NONPROD_CACHE_TIMEOUT: 600
 
-    ansible_python_interpreter: "/usr/bin/python"
+    ansible_python_interpreter: "/usr/bin/python3"
 
   tasks:
 
@@ -74,9 +74,14 @@
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
 
-    - name: download secrets from S3 bucket
+    - name: copy git credentials from S3 Bucket
       become: true
-      shell: "aws s3 cp s3://da-config/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml /etc/ --region us-gov-west-1"
+      aws_s3:
+        mode: get
+        bucket: da-config
+        object: "/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
+        dest: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
+        region: us-gov-west-1
 
     - name: load secrets
       include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
@@ -132,7 +137,7 @@
           dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
           section: "uwsgi"
           option: single-interpreter
-          value: true
+          value: "True"
 
       - name: add ddtrace to supervisord configuration (start command)
         ini_file:
@@ -261,11 +266,18 @@
       when: BUILD_TYPE == 'api'
       become: true
       block:
-      - name: copy public.pem from S3 Bucket
-        shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/public.pem /etc/cert.pem --region us-gov-west-1"
-
-      - name: copy private.pem from S3 Bucket
-        shell: "aws s3 cp s3://usaspending-ssl/usaspending-api-gov/{{ DOMAIN }}/private.pem /etc/cert.key --region us-gov-west-1"
+      - name: copy public.pem and private.pem from S3 Bucket
+        aws_s3:
+          mode: get
+          bucket: usaspending-ssl
+          region: us-gov-west-1
+          object: "{{ item.object }}"
+          dest: "{{ item.dest }}"
+        with_items:
+          - { object: "/usaspending-api-gov/{{ DOMAIN }}/public.pem",
+              dest: "/etc/cert.pem" }
+          - { object: "/usaspending-api-gov/{{ DOMAIN }}/private.pem",
+              dest: "/etc/cert.key" }
 
 #===============================  Filebeat Configuration  ===============================#
 
@@ -293,6 +305,16 @@
         replace: "index: usaspending-bd-{{ vars['envs'][BRANCH]['env_long'] }}"
 
 #===============================  Setup supervisord.service  ===============================#
+
+    - name: Create symlinks (Python 3.7)
+      file:
+        force: yes
+        src: "{{ item.src }}"
+        path: "{{ item.path }}"
+        state: link
+      with_items:
+        - { src: "/usr/local/bin/supervisord", path: "/bin/supervisord" }
+        - { src: "/usr/local/bin/echo_supervisord_conf", path: "/bin/echo_supervisord_conf" }
 
     - name: API | Setup supervisord for USAspending API
       when: BUILD_TYPE == 'api'
