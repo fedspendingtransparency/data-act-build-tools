@@ -11,15 +11,28 @@
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3
     DATADOG_YML_PATH: "/data-act/config/deploy/datadog.yaml"
 
   tasks:
 
 #=============================== Copy Git Credentials from S3 Bucket ===============================#
 
+    - name: boto3/python-selinux (required for installing with Ansible using /usr/bin/python3 as the interpreter)
+      become: true
+      pip:
+        name:
+          - selinux
+          - boto3
+        executable: pip3
+
     - name: copy git credentials from S3 Bucket
-      shell: "aws s3 cp s3://da-config/usaspending/id_rsa_usaspending_config /home/ec2-user/.ssh/ --region us-gov-west-1"
+      aws_s3:
+        mode: get
+        bucket: da-config
+        object: /usaspending/id_rsa_usaspending_config
+        dest: /home/ec2-user/.ssh/id_rsa_usaspending_config
+        region: us-gov-west-1
 
     - name: Read-only permissions for usaspending git credentials
       become: true
@@ -50,11 +63,11 @@
     - name: pull repo - checkout build-tools repo from git
       become: true
       git:
-         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
-         dest: /data-act/build-tools
-         accept_hostkey: true
-         force: yes
-         key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
+        repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
+        dest: /data-act/build-tools
+        accept_hostkey: true
+        force: yes
+        key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
 
     - name: assign ownership of api to ec2-user
       become: true
@@ -74,25 +87,19 @@
 
     - name: update pip
       become: true
-      shell: pip3.5 install --upgrade pip
+      shell: pip3 install --upgrade pip
 
     - name: install python packages based on requirements.txt
       become: true
       pip:
-        requirements: "{{ REQ_DIR }}/requirements.txt"
-        executable: pip3.5
+        requirements: "{{ REQ_DIR }}/requirements-app.txt"
+        executable: pip3
 
-    - name: install python packages based on caching_requirements.txt
+    - name: install python packages based on requirements-server.txt
       become: true
       pip:
-        requirements: "{{ REQ_DIR }}/caching_requirements.txt"
-        executable: pip3.5
-
-    - name: install python packages based on server_requirements.txt
-      become: true
-      pip:
-        requirements: "{{ REQ_DIR }}/server_requirements.txt"
-        executable: pip3.5
+        requirements: "{{ REQ_DIR }}/requirements-server.txt"
+        executable: pip3
 
     - name: ensure the correct directory structure for tmp nginx files
       become: true
@@ -113,7 +120,12 @@
 #===============================  Configure DataDog Key  ===============================#
 
     - name: copy datadog_key from S3
-      shell: "aws s3 cp s3://da-config/shared/datadog_key /data-act/config/ --region us-gov-west-1"
+      aws_s3:
+        mode: get
+        bucket: da-config
+        object: /shared/datadog_key
+        dest: /data-act/config/datadog_key
+        region: us-gov-west-1
 
     - name: save the contents of datadog_key file
       shell: cat /data-act/config/datadog_key
