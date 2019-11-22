@@ -98,6 +98,13 @@
         regexp: '\s*numpy==.*'
         line: "numpy==1.17.2"
 
+     ### REMOVE THIS AFTER USASPENDING-API HAS BEEN UPDATED
+    - name: update to install numpy (later version)
+      lineinfile:
+        dest: "{{ REQ_DIR }}/requirements.txt"
+        regexp: '\s*Markdown==.*'
+        line: "Markdown==2.6.11"
+
     - name: install python packages based on requirements.txt
       become: true
       pip:
