@@ -55,7 +55,6 @@
       become: true
       git:
         repo: "git@github.com:fedspendingtransparency/usaspending-config.git"
-        version: "rebase-test-3.7"
         dest: /data-act/config
         accept_hostkey: true
         force: yes
@@ -64,12 +63,11 @@
     - name: pull repo - checkout build-tools repo from git
       become: true
       git:
-         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
-         dest: /data-act/build-tools
-         version: "mod/ops-843-update-pip3-testing"
-         accept_hostkey: true
-         force: yes
-         key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
+        repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
+        dest: /data-act/build-tools
+        accept_hostkey: true
+        force: yes
+        key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
 
     - name: assign ownership of api to ec2-user
       become: true
