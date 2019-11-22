@@ -95,16 +95,10 @@
         requirements: "{{ REQ_DIR }}/requirements-app.txt"
         executable: pip3
 
-    - name: install python packages based on caching_requirements.txt
+    - name: install python packages based on requirements-server.txt
       become: true
       pip:
-        requirements: "{{ REQ_DIR }}/caching_requirements.txt"
-        executable: pip3
-
-    - name: install python packages based on server_requirements.txt
-      become: true
-      pip:
-        requirements: "{{ REQ_DIR }}/server_requirements.txt"
+        requirements: "{{ REQ_DIR }}/requirements-server.txt"
         executable: pip3
 
     - name: ensure the correct directory structure for tmp nginx files
