@@ -224,6 +224,13 @@
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
           regexp: '\s*HOST =.*'
           line: "HOST = '{{ DOMAIN }}'"
+          
+    - name: API | add host for permalink
+      when: BUILD_TYPE == 'bulk-download'
+      lineinfile:
+          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+          regexp: '\s*HOST =.*'
+          line: "HOST = '{{ DOMAIN }}'"
 
     - name: API | cache settings (staging/prod, elasticache)
       when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
