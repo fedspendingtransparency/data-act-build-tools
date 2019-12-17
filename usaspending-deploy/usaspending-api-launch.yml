@@ -15,6 +15,7 @@
     ALLOWED_HOSTS: "{{ ALLOWED_HOSTS }}"
     BRANCH: "{{ BRANCH }}"
     DOMAIN: "{{ DOMAIN }}"
+    SITE: "{{ SITE }}"
     ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
     BUILD_TYPE: "{{ BUILD_TYPE }}"
 
@@ -223,14 +224,14 @@
       lineinfile:
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
           regexp: '\s*HOST =.*'
-          line: "HOST = '{{ DOMAIN }}'"
+          line: "HOST = '{{ SITE }}'"
           
     - name: API | add host for permalink
       when: BUILD_TYPE == 'bulk-download'
       lineinfile:
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
           regexp: '\s*HOST =.*'
-          line: "HOST = '{{ DOMAIN }}'"
+          line: "HOST = '{{ SITE }}'"
 
     - name: API | cache settings (staging/prod, elasticache)
       when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
