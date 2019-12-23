@@ -57,6 +57,10 @@ resource "aws_launch_configuration" "api_lc" {
   lifecycle {
     create_before_destroy = true
   }
+  root_block_device {
+    volume_size = var.api_ebs_size
+    volume_type = var.api_ebs_type
+  }
 }
 
 resource "aws_autoscaling_policy" "api_scale_up" {

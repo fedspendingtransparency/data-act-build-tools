@@ -56,6 +56,7 @@
       git:
         repo: "git@github.com:fedspendingtransparency/usaspending-config.git"
         dest: /data-act/config
+        version: config/api-disk
         accept_hostkey: true
         force: yes
         key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
@@ -65,6 +66,7 @@
       git:
         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
         dest: /data-act/build-tools
+        version: config/api-disk
         accept_hostkey: true
         force: yes
         key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
