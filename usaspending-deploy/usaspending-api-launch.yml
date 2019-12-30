@@ -49,7 +49,7 @@
       - name: (remove later) run nginx as ec2-user
         lineinfile:
           dest: "{{ nginx_path }}"
-          regexp: '\s*user.*root;'
+          regexp: '\s*user  root;'
           line: 'user ec2-user;'
 
       - name: add server name to nginx config
