@@ -360,9 +360,9 @@
       become: true
       shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
 
-    - name: enable & restart ClamAV-freshclam service
+    - name: enable & restart filebeat service
       become: true
-      shell: "systemctl enable ClamAV-freshclam && systemctl restart ClamAV-freshclam"
+      shell: "systemctl enable filebeat && systemctl restart filebeat"
 
     - name: API | enable & restart supervisord.service
       when: BUILD_TYPE == 'api'
@@ -387,6 +387,4 @@
         args:
           chdir: "{{ CODE_HOME }}/usaspending_api/"
 
-    - name: enable & restart filebeat service
-      become: true
-      shell: "systemctl enable filebeat && systemctl restart filebeat"
+    
