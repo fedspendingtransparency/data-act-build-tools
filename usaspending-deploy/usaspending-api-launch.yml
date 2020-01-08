@@ -386,4 +386,3 @@
           DOWNLOAD_DATABASE_URL: "{{ DOWNLOAD_DATABASE_URL }}"
         args:
           chdir: "{{ CODE_HOME }}/usaspending_api/"
-          
