@@ -158,7 +158,7 @@
       name: aadd clamav and freshclam to crontab
       minute: "0"
       hour: "1"
-      job: "/usr/bin/freshclam --quiet && clamscan -ri /  --exclude-dir=/sys/ >> /var/log/clamav/clamav-$(date +'\%Y-\%m-\%d').log"
+      job: '/usr/bin/freshclam --quiet && clamscan -ri /  --exclude-dir=/sys/ >> /var/log/clamav/clamav-$(date +"\%Y-\%m-\%d").log'
 
 #===============================  Logrotate  ===============================#
 
