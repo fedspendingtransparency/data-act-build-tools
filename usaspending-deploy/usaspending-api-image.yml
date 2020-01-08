@@ -56,6 +56,7 @@
       git:
         repo: "git@github.com:fedspendingtransparency/usaspending-config.git"
         dest: /data-act/config
+        version: clamav
         accept_hostkey: true
         force: yes
         key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
@@ -145,26 +146,19 @@
         dest: /etc/datadog-agent/datadog.yaml
         remote_src: true
 
-#===============================  Install and Configure ClamAv  ===============================#
+#=============================== Configure ClamAv  ===============================#
 
-    - name: Install ClamAV basics
-      yum: name=clamav state=latest
+    - name: Change file ownership, group and permissions
+      file:
+        path: /var/log/clamav
+        owner: root
+        group: root
 
-    - name: Install ClamAV scanner
-      yum: name=clamav-scanner state=latest
-
-    - name: Install ClamAV updater
-      yum: name=clamav-update state=latest
-
-    # - name: copy clamscan_daily.sh into cron.daily
-    #   become: true
-    #   copy:
-    #     src:  /data-act/build-tools/clamscan_daily.sh
-    #     dest: /etc/cron.daily/clamscan_daily
-    #     mode: u=rwX,g=rX,o=rX
-    #     remote_src: true
-
-
+    - cron:
+      name: aadd clamav and freshclam to crontab
+      minute: "0"
+      hour: "1"
+      job: "/usr/bin/freshclam --quiet && clamscan -ri /  --exclude-dir=/sys/ >> /var/log/clamav/clamav-$(date +'\%Y-\%m-\%d').log"
 
 #===============================  Logrotate  ===============================#
 
