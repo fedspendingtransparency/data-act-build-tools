@@ -149,11 +149,13 @@
 #=============================== Configure ClamAv  ===============================#
 
     - name: Create /var/log/clamav
+      become: true
       file:
         path: /var/log/clamav
         state: directory
 
     - name : create Crontab to run daily
+      become: true
       cron:
         name: add clamav and freshclam to crontab
         minute: "0"
