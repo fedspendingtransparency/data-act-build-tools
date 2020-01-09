@@ -148,17 +148,17 @@
 
 #=============================== Configure ClamAv  ===============================#
 
-    - name: Change file ownership, group and permissions
+    - name: Create /var/log/clamav
       file:
         path: /var/log/clamav
-        owner: root
-        group: root
+        state: directory
 
-    - cron:
-      name: aadd clamav and freshclam to crontab
-      minute: "0"
-      hour: "1"
-      job: '/usr/bin/freshclam --quiet && clamscan -ri /  --exclude-dir=/sys/ >> /var/log/clamav/clamav-$(date +"\%Y-\%m-\%d").log'
+    - name : create Crontab to run daily
+      cron:
+        name: add clamav and freshclam to crontab
+        minute: "0"
+        hour: "1"
+        job: '/usr/bin/freshclam --quiet && clamscan -ri /  --exclude-dir=/sys/ >> /var/log/clamav/clamav-$(date +"\%Y-\%m-\%d").log'
 
 #===============================  Logrotate  ===============================#
 
