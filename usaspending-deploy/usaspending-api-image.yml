@@ -154,13 +154,13 @@
         path: /var/log/clamav
         state: directory
 
-    - name : create Crontab to run daily
+    - name : create Crontab to run daily scans
       become: true
       cron:
-        name: add clamav and freshclam to crontab
+        name: add clamscan_daily.sh and freshclam to crontab
         minute: "0"
         hour: "1"
-        job: '/usr/bin/freshclam --quiet && clamscan -ri /  --exclude-dir=/sys/ >> /var/log/clamav/clamav-$(date +"\%Y-\%m-\%d").log'
+        job: '/usr/bin/freshclam --quiet && /data-act/config/clamav/clamscan_daily.sh'
 
 #===============================  Logrotate  ===============================#
 
