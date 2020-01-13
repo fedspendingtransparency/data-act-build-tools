@@ -154,6 +154,14 @@
         path: /var/log/clamav
         state: directory
 
+    - name: chmod 0755 clamscan_daily
+      become: true
+      file:
+        path: /data-act/config/clamav/clamscan_daily.sh
+        owner: ec2-user
+        mode: u=rwX,g=rX,o=rX
+        recurse: yes
+
     - name : create Crontab to run daily scans
       become: true
       cron:
