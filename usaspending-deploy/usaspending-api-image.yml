@@ -159,7 +159,7 @@
       file:
         path: /data-act/config/clamav/clamscan_daily.sh
         owner: ec2-user
-        mode: u=rwX,g=rX,o=rX
+        mode: "0755"
 
     - name : create Crontab to run daily scans
       become: true
