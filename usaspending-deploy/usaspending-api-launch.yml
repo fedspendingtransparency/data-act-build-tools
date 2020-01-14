@@ -102,43 +102,30 @@
     - name: API | DataDog Configuration
       when: BUILD_TYPE == 'api'
       block:
-      - name: custom hostname (to get around datadog abandoning hosts)
-        become: true
-        lineinfile:
-          dest: "/etc/datadog-agent/datadog.yaml"
-          insertbefore: BOF
-          line: "hostname: usaspending-{{ ANSIBLE_VARS_ENV }}-api-hostname"
-
-      - name: add environment name to datadog tags
+      - name: Define datadog APM env key for this deploy
         become: true
         lineinfile:
           dest: "/etc/datadog-agent/datadog.yaml"
           regexp: "  env: .*"
-          line: "  env:  usaspending-{{ ANSIBLE_VARS_ENV }}-api"
+          line: "  env: usaspending_{{ ANSIBLE_VARS_ENV | lower }}_api"
 
-      - name: add tags to datadog.yaml
+      - name: Add custom tags to datadog.yaml
         become: true
         lineinfile:
           dest: "/etc/datadog-agent/datadog.yaml"
-          regexp: "  - ddog: .*"
-          line: "  - ddog:usaspending_{{ ANSIBLE_VARS_ENV }}_api"
+          regexp: "  - deploy_name: .*"
+          line: "  - deploy_name: usaspending_{{ ANSIBLE_VARS_ENV | lower }}_api"
 
-      - name: disable datadog apm if env is sandbox or dev
-        become: true
-        when: BRANCH in ['dev','sandbox']
-        lineinfile:
-          dest: "/etc/datadog-agent/datadog.yaml"
-          regexp: "^  enabled: true"
-          insertafter: "^apm_config:.*"
-          line: "  enabled: false"
-
-      - name: add single-interpreter to uwsgi_db.ini
-        become: true
-        ini_file:
-          dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
-          section: "uwsgi"
-          option: single-interpreter
-          value: "True"
+      # TODO:OPS-1034 change back
+      # Make always enabled on this mod/OPS-1034-fix-datadog-cfg git branch
+      # - name: disable datadog apm if env is sandbox or dev
+      #   become: true
+      #   when: BRANCH in ['dev','sandbox']
+      #   lineinfile:
+      #     dest: "/etc/datadog-agent/datadog.yaml"
+      #     regexp: "^  enabled: true"
+      #     insertafter: "^apm_config:.*"
+      #     line: "  enabled: false"
 
       - name: add ddtrace to supervisord configuration (start command)
         ini_file:
@@ -146,16 +133,15 @@
           section: "program:uwsgi"
           option: command
           value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
-
-      - name: add ddtrace environment variables to settings.py
-        lineinfile:
-          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-          insertafter: "^INTERNAL_IPS = ()"
-          line: |
-            DATADOG_TRACE = {
-              'DEFAULT_SERVICE': 'API',
-              'TAGS': {'env': 'usaspending_{{ ANSIBLE_VARS_ENV }}_api'},
-            }
+      
+      - name: Enable Datadog in settings.py if env is prod or staging
+        # TODO:OPS-1034 change back
+        # Make always True on this mod/OPS-1034-fix-datadog-cfg git branch
+        #when: BRANCH in ["master", "stg"]
+        replace:
+          dest: "./settings.py"
+          regexp: '^(DATADOG_TRACE = {\n[^}]*\s+)"ENABLED": False,'
+          replace: '\1"ENABLED": True,'
 
       - name: ensure dd-agent ownership for datadog directory
         become: true
