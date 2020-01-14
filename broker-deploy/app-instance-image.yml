@@ -125,3 +125,4 @@
         minute: "0"
         hour: "1"
         job: '/usr/bin/freshclam --quiet && /data-act/config/clamav/clamscan_daily.sh'
+
