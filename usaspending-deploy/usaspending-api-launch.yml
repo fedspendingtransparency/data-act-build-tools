@@ -99,6 +99,19 @@
       shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
 #===============================  DataDog Configuration  ===============================#
+    # TODO:OPS-1034 change back
+    # Remove block below. Temporary config to check custom tag replacement syntax
+    # NOTE: when added, be sure to replace hard-coded 'api' throughout datadog config
+    - name: BD | Add custom tags to datadog.yaml
+      when: BUILD_TYPE == 'bulk-download'
+      become: true
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: '  - "{{ item.tagname }}:.*"'
+        line: '  - "{{ item.tagname }}:{{ item.value }}"'
+      with_items:
+        - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_bd" }
+        - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
     - name: API | DataDog Configuration
       when: BUILD_TYPE == 'api'
@@ -114,8 +127,8 @@
         become: true
         lineinfile:
           dest: "/etc/datadog-agent/datadog.yaml"
-          regexp: "  - {{ item.tagname }}: .*"
-          line: "  - {{ item.tagname }}: {{ item.value }}"
+          regexp: '  - "{{ item.tagname }}:.*"'
+          line: '  - "{{ item.tagname }}:{{ item.value }}"'
         with_items:
           - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_api" }
           - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }

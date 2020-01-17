@@ -128,8 +128,8 @@
       become: true
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: "  - {{ item.tagname }}: .*"
-        line: "  - {{ item.tagname }}: {{ item.value }}"
+        regexp: '  - "{{ item.tagname }}:.*"'
+        line: '  - "{{ item.tagname }}:{{ item.value }}"'
       with_items:
         - { tagname: 'deploy_name', value: "broker_{{ vars['envs'][BRANCH]['env_long'] | lower }}_{{ vars['apps'][APP]['app_short'] | lower }}" }
         - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
