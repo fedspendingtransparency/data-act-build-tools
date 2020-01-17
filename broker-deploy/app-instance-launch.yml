@@ -183,31 +183,34 @@
 
     ###### Broker-API ######
 
-    - name: Modify supervisord to add 'ddtrace-run uwsgi' when 'app = API'
-      when: APP == "broker"
-      ini_file:
-        dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
-        section: "program:uwsgi"
-        option: command
-        value: "ddtrace-run uwsgi --ini /data-act/backend/dataactbroker/config/uwsgi.ini --socket :3030 --stats /tmp/stats.socket"
+    # TODO:OPS-1034 remove block if it can trace without ddtrace-run
+    # - name: Modify supervisord to add 'ddtrace-run uwsgi' when 'app = API'
+    #   when: APP == "broker"
+    #   ini_file:
+    #     dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
+    #     section: "program:uwsgi"
+    #     option: command
+    #     value: "ddtrace-run uwsgi --ini /data-act/backend/dataactbroker/config/uwsgi.ini --socket :3030 --stats /tmp/stats.socket"
 
     ###### Broker-Validator ######
 
-    - name: Modify supervisord to add 'ddtrace-run' under 'program:data_act_validator_app' when 'app = VAL'
-      when: APP == "validator"
-      ini_file:
-        dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
-        section: "program:data_act_validator_app"
-        option: command
-        value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/app.py"
-
-    - name: Modify supervisord to add 'ddtrace-run' under 'program:data_act_validator_health_check' when 'app = VAL'
-      when: APP == "validator"
-      ini_file:
-        dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
-        section: "program:data_act_validator_health_check"
-        option: command
-        value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/health_check.py"
+    # TODO:OPS-1034 remove block if it can trace without ddtrace-run
+    # - name: Modify supervisord to add 'ddtrace-run' under 'program:data_act_validator_app' when 'app = VAL'
+    #   when: APP == "validator"
+    #   ini_file:
+    #     dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
+    #     section: "program:data_act_validator_app"
+    #     option: command
+    #     value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/app.py"
+   
+    # TODO:OPS-1034 remove block if it can trace without ddtrace-run
+    # - name: Modify supervisord to add 'ddtrace-run' under 'program:data_act_validator_health_check' when 'app = VAL'
+    #   when: APP == "validator"
+    #   ini_file:
+    #     dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
+    #     section: "program:data_act_validator_health_check"
+    #     option: command
+    #     value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/health_check.py"
 
     # ===================== Setup supervisord.service =====================#
 

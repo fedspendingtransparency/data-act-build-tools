@@ -99,19 +99,6 @@
       shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
 #===============================  DataDog Configuration  ===============================#
-    # TODO:OPS-1034 change back
-    # Remove block below. Temporary config to check custom tag replacement syntax
-    # NOTE: when added, be sure to replace hard-coded 'api' throughout datadog config
-    - name: BD | Add custom tags to datadog.yaml
-      when: BUILD_TYPE == 'bulk-download'
-      become: true
-      lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: '  - "{{ item.tagname }}:.*"'
-        line: '  - "{{ item.tagname }}:{{ item.value }}"'
-      with_items:
-        - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_bd" }
-        - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
     - name: API | DataDog Configuration
       when: BUILD_TYPE == 'api'
@@ -133,6 +120,26 @@
           - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_api" }
           - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
+    - name: BD | DataDog Configuration
+      when: BUILD_TYPE == 'bulk-download'
+      block:
+      - name: Define datadog APM env key for this deploy
+        become: true
+        lineinfile:
+          dest: "/etc/datadog-agent/datadog.yaml"
+          regexp: "  env: .*"
+          line: "  env: usaspending_{{ ANSIBLE_VARS_ENV | lower }}_bd"
+
+      - name: Add custom tags to datadog.yaml
+        become: true
+        lineinfile:
+          dest: "/etc/datadog-agent/datadog.yaml"
+          regexp: '  - "{{ item.tagname }}:.*"'
+          line: '  - "{{ item.tagname }}:{{ item.value }}"'
+        with_items:
+          - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_bd" }
+          - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
+
       # TODO:OPS-1034 change back
       # Make always enabled on this mod/OPS-1034-fix-datadog-cfg git branch
       # - name: disable datadog apm if env is sandbox or dev
@@ -144,30 +151,31 @@
       #     insertafter: "^apm_config:.*"
       #     line: "  enabled: false"
 
-      - name: add ddtrace to supervisord configuration (start command)
-        ini_file:
-          dest: "{{ CODE_HOME }}/config/supervisord.conf"
-          section: "program:uwsgi"
-          option: command
-          value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
+      # TODO:OPS-1034 remove block if it can trace without ddtrace-run
+      # - name: add ddtrace to supervisord configuration (start command)
+      #   ini_file:
+      #     dest: "{{ CODE_HOME }}/config/supervisord.conf"
+      #     section: "program:uwsgi"
+      #     option: command
+      #     value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
       
-      - name: Enable Datadog in settings.py if env is prod or staging
-        # TODO:OPS-1034 change back
-        # Make always True on this mod/OPS-1034-fix-datadog-cfg git branch
-        #when: BRANCH in ["master", "stg"]
-        replace:
-          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-          regexp: '^(DATADOG_TRACE = {\n[^}]*\s+)"ENABLED": False,'
-          replace: '\1"ENABLED": True,'
+    - name: Enable Datadog in settings.py if env is prod or staging
+      # TODO:OPS-1034 change back
+      # Make always True on this mod/OPS-1034-fix-datadog-cfg git branch
+      #when: BRANCH in ["master", "stg"]
+      replace:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '^(DATADOG_TRACE = {\n[^}]*\s+)"ENABLED": False,'
+        replace: '\1"ENABLED": True,'
 
-      - name: ensure dd-agent ownership for datadog directory
-        become: true
-        file:
-          path: /etc/datadog-agent/
-          state: directory
-          owner: dd-agent
-          group: dd-agent
-          recurse: yes
+    - name: ensure dd-agent ownership for datadog directory
+      become: true
+      file:
+        path: /etc/datadog-agent/
+        state: directory
+        owner: dd-agent
+        group: dd-agent
+        recurse: yes
 
 #===============================  usaspending_api/settings.py  ===============================#
 
@@ -334,32 +342,69 @@
         - { src: "/usr/local/bin/supervisord", path: "/bin/supervisord" }
         - { src: "/usr/local/bin/echo_supervisord_conf", path: "/bin/echo_supervisord_conf" }
 
-    - name: API | Setup supervisord for USAspending API
-      when: BUILD_TYPE == 'api'
+    - name: make supervisord.service directory
+      file:
+        path: /etc/supervisord/conf.d
+        recurse: true
+        state: directory
+
+    - name: supervisord.service conf
       become: true
-      block:
-      - name: make supervisord.service directory
-        file:
-          path: /etc/supervisord/conf.d
-          recurse: true
-          state: directory
+      shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
 
-      - name: supervisord.service conf
-        shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
+    - name: supervisord.service conf.d append
+      become: true
+      shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
 
-      - name: supervisord.service conf.d append
-        shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
+    - name: BD | Set supervisord.service config file location
+      when: BUILD_TYPE == 'bulk-download'
+      become: true
+      replace:
+        dest: "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+        regexp: 'ExecStart=/bin/supervisord.*'
+        replace: "ExecStart=/bin/supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
+    
+    - name: BD | Set supervisord.service config file location
+      when: BUILD_TYPE == 'bulk-download'
+      become: true
+      replace:
+        dest: "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+        regexp: 'ExecStart=/bin/supervisord.*'
+        replace: "ExecStart=/bin/supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
 
-      - name: supervisord.service copy
-        copy:
-          remote_src: true
-          src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
-          dest: /usr/lib/systemd/system/supervisord.service
+    - name: BD | Set supervisord.service config file location and working dir
+      when: BUILD_TYPE == 'bulk-download'
+      become: true
+      ini_file:
+        dest: "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+        section: Service
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { option: "ExecStart", value: "/bin/supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf" }
+        - { option: "WorkingDirectory", value: "{{ CODE_HOME }}/usaspending_api/" }
+
+    - name: BD | Insert environment variables into supervisord.conf
+      when: BUILD_TYPE == 'bulk-download'
+      become: true
+      replace:
+        dest: "{{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
+        regexp: "%(ENV_{{ item.varname }})s"
+        replace: "{{ item.value }}"
+      with_items:
+        - { varname: "NUM_PROCS", value: "{{ NUM_PROCS }}" }
+        - { varname: "DATABASE_URL_VAR", value: "{{ DB_SOURCE }}" }
+        - { varname: "DOWNLOAD_DATABASE_URL", value: "{{ DOWNLOAD_DATABASE_URL }}" }
+
+    - name: supervisord.service copy
+      copy:
+        remote_src: true
+        src:  "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+        dest: /usr/lib/systemd/system/supervisord.service
 
 #===============================  Enable and Restart Services  ===============================#
 
-    - name: API | enable & restart datadog-agent service
-      when: BUILD_TYPE == 'api'
+    - name: enable & restart datadog-agent service
       become: true
       shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
 
@@ -367,25 +412,7 @@
       become: true
       shell: "systemctl enable filebeat && systemctl restart filebeat"
 
-    - name: API | enable & restart supervisord.service
-      when: BUILD_TYPE == 'api'
+    - name: enable & restart supervisord.service
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
 
-    - name: BD | Stop / Start Supervisord
-      when: BUILD_TYPE == 'bulk-download'
-      become: true
-      block:
-      - name: Stop supervisord
-        shell: pkill supervisord
-        ignore_errors: true
-
-      - name: Start supervisord
-        shell: "supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf &"
-        environment:
-          PYTHONPATH: "{{ CODE_HOME }}"
-          NUM_PROCS: "{{ NUM_PROCS }}"
-          DATABASE_URL_VAR: "{{ DB_SOURCE }}"
-          DOWNLOAD_DATABASE_URL: "{{ DOWNLOAD_DATABASE_URL }}"
-        args:
-          chdir: "{{ CODE_HOME }}/usaspending_api/"
