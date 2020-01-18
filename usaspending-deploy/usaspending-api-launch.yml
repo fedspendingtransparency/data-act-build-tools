@@ -389,12 +389,14 @@
       become: true
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
-        regexp: "%(ENV_{{ item.varname }})s"
+        regexp: "%\\(ENV_{{ item.varname }}\\)s"
         replace: "{{ item.value }}"
       with_items:
         - { varname: "NUM_PROCS", value: "{{ NUM_PROCS }}" }
         - { varname: "DATABASE_URL_VAR", value: "{{ DB_SOURCE }}" }
         - { varname: "DOWNLOAD_DATABASE_URL", value: "{{ DOWNLOAD_DATABASE_URL }}" }
+      register: item_result
+      failed_when: not item_result.changed  # make sure all these are found and replaced (makes this not a repeatable task)
 
     - name: supervisord.service copy
       copy:
