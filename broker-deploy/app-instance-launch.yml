@@ -117,12 +117,12 @@
 
     # ===================== DataDog Configuration =====================#
 
-    - name: Define datadog APM env key for this deploy
+    - name: Define Datadog APM env key for this app environment
       become: true
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "  env: .*"
-        line: "  env: broker_{{ vars['apps'][APP]['app_short'] | lower }}_{{ BRANCH | lower }}"
+        line: "  env: broker_{{ vars['envs'][BRANCH]['env_long'] | lower }}"
 
     - name: Add custom tags to datadog.yaml
       become: true

@@ -100,45 +100,34 @@
 
 #===============================  DataDog Configuration  ===============================#
 
-    - name: API | DataDog Configuration
+    - name: Define Datadog APM env key for this app environment
+      become: true
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: "  env: .*"
+        line: "  env: usaspending_{{ ANSIBLE_VARS_ENV | lower }}"
+
+    - name: API | Add custom tags to datadog.yaml
       when: BUILD_TYPE == 'api'
-      block:
-      - name: Define datadog APM env key for this deploy
-        become: true
-        lineinfile:
-          dest: "/etc/datadog-agent/datadog.yaml"
-          regexp: "  env: .*"
-          line: "  env: usaspending_{{ ANSIBLE_VARS_ENV | lower }}_api"
+      become: true
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: '  - "{{ item.tagname }}:.*"'
+        line: '  - "{{ item.tagname }}:{{ item.value }}"'
+      with_items:
+        - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_api" }
+        - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
-      - name: Add custom tags to datadog.yaml
-        become: true
-        lineinfile:
-          dest: "/etc/datadog-agent/datadog.yaml"
-          regexp: '  - "{{ item.tagname }}:.*"'
-          line: '  - "{{ item.tagname }}:{{ item.value }}"'
-        with_items:
-          - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_api" }
-          - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
-
-    - name: BD | DataDog Configuration
+    - name: BD | Add custom tags to datadog.yaml
       when: BUILD_TYPE == 'bulk-download'
-      block:
-      - name: Define datadog APM env key for this deploy
-        become: true
-        lineinfile:
-          dest: "/etc/datadog-agent/datadog.yaml"
-          regexp: "  env: .*"
-          line: "  env: usaspending_{{ ANSIBLE_VARS_ENV | lower }}_bd"
-
-      - name: Add custom tags to datadog.yaml
-        become: true
-        lineinfile:
-          dest: "/etc/datadog-agent/datadog.yaml"
-          regexp: '  - "{{ item.tagname }}:.*"'
-          line: '  - "{{ item.tagname }}:{{ item.value }}"'
-        with_items:
-          - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_bd" }
-          - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
+      become: true
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: '  - "{{ item.tagname }}:.*"'
+        line: '  - "{{ item.tagname }}:{{ item.value }}"'
+      with_items:
+        - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_bd" }
+        - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
       # TODO:OPS-1034 change back
       # Make always enabled on this mod/OPS-1034-fix-datadog-cfg git branch
