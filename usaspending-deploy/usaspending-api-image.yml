@@ -55,8 +55,6 @@
       become: true
       git:
         repo: "git@github.com:fedspendingtransparency/usaspending-config.git"
-        # TODO:OPS-1034 change back to have no version
-        version: "mod/ops-1034-fix-datadog-cfg"
         dest: /data-act/config
         accept_hostkey: true
         force: yes
@@ -66,8 +64,6 @@
       become: true
       git:
         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
-        # TODO:OPS-1034 change back to have no version
-        version: "mod/ops-1034-fix-datadog-cfg"
         dest: /data-act/build-tools
         accept_hostkey: true
         force: yes

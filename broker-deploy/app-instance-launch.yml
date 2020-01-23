@@ -134,39 +134,31 @@
         - { tagname: 'deploy_name', value: "broker_{{ vars['envs'][BRANCH]['env_long'] | lower }}_{{ vars['apps'][APP]['app_short'] | lower }}" }
         - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
-    # TODO:OPS-1034 change back
-    # Make always enabled on this mod/OPS-1034-fix-datadog-cfg git branch
-    # - name: Disable datadog apm if env is sandbox or dev
-    #   become: true
-    #   when: BRANCH == "development" or BRANCH == "sandbox"
-    #   lineinfile:
-    #     dest: "/etc/datadog-agent/datadog.yaml"
-    #     regexp: "^  enabled: true"
-    #     insertafter: "^apm_config:.*"
-    #     line: "  enabled: false"
+    - name: Disable datadog apm if env is sandbox or dev
+      become: true
+      when: BRANCH == "development" or BRANCH == "sandbox"
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: "^  enabled: true"
+        insertafter: "^apm_config:.*"
+        line: "  enabled: false"
 
     - name: (API) instrument datadog with the application if env is prod or staging in app.py
-      # TODO:OPS-1034 change back
-      # Make always True on this mod/OPS-1034-fix-datadog-cfg git branch
-      #when: BRANCH == "master" or BRANCH == "staging"
+      when: BRANCH == "master" or BRANCH == "staging"
       lineinfile:
         dest: "/data-act/backend/dataactbroker/app.py"
         regexp: "^USE_DATADOG = False"
         line: "USE_DATADOG = True"
 
     - name: (VAL) instrument datadog with the application if env is prod or staging in app.py
-      # TODO:OPS-1034 change back
-      # Make always True on this mod/OPS-1034-fix-datadog-cfg git branch
-      #when: BRANCH == "master" or BRANCH == "staging"
+      when: BRANCH == "master" or BRANCH == "staging"
       lineinfile:
         dest: "/data-act/backend/dataactvalidator/app.py"
         regexp: "^USE_DATADOG = False"
         line: "USE_DATADOG = True"
 
     - name: (VAL) instrument datadog with the application if env is prod or staging in health_check.py
-      # TODO:OPS-1034 change back
-      # Make always True on this mod/OPS-1034-fix-datadog-cfg git branch
-      #when: BRANCH == "master" or BRANCH == "staging"
+      when: BRANCH == "master" or BRANCH == "staging"
       lineinfile:
         dest: "/data-act/backend/dataactvalidator/health_check.py"
         regexp: "^USE_DATADOG = False"
@@ -180,37 +172,6 @@
         owner: dd-agent
         group: dd-agent
         recurse: "yes"
-
-    ###### Broker-API ######
-
-    # TODO:OPS-1034 remove block if it can trace without ddtrace-run
-    # - name: Modify supervisord to add 'ddtrace-run uwsgi' when 'app = API'
-    #   when: APP == "broker"
-    #   ini_file:
-    #     dest: "/data-act/backend/dataactbroker/config/supervisord.conf"
-    #     section: "program:uwsgi"
-    #     option: command
-    #     value: "ddtrace-run uwsgi --ini /data-act/backend/dataactbroker/config/uwsgi.ini --socket :3030 --stats /tmp/stats.socket"
-
-    ###### Broker-Validator ######
-
-    # TODO:OPS-1034 remove block if it can trace without ddtrace-run
-    # - name: Modify supervisord to add 'ddtrace-run' under 'program:data_act_validator_app' when 'app = VAL'
-    #   when: APP == "validator"
-    #   ini_file:
-    #     dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
-    #     section: "program:data_act_validator_app"
-    #     option: command
-    #     value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/app.py"
-   
-    # TODO:OPS-1034 remove block if it can trace without ddtrace-run
-    # - name: Modify supervisord to add 'ddtrace-run' under 'program:data_act_validator_health_check' when 'app = VAL'
-    #   when: APP == "validator"
-    #   ini_file:
-    #     dest: "/data-act/backend/dataactvalidator/config/supervisord.conf"
-    #     section: "program:data_act_validator_health_check"
-    #     option: command
-    #     value: "ddtrace-run /usr/bin/python3.5 /data-act/backend/dataactvalidator/health_check.py"
 
     # ===================== Setup supervisord.service =====================#
 

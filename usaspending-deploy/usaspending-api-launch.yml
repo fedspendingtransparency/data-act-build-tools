@@ -129,29 +129,17 @@
         - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_bd" }
         - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
-      # TODO:OPS-1034 change back
-      # Make always enabled on this mod/OPS-1034-fix-datadog-cfg git branch
-      # - name: disable datadog apm if env is sandbox or dev
-      #   become: true
-      #   when: BRANCH in ['dev','sandbox']
-      #   lineinfile:
-      #     dest: "/etc/datadog-agent/datadog.yaml"
-      #     regexp: "^  enabled: true"
-      #     insertafter: "^apm_config:.*"
-      #     line: "  enabled: false"
+      - name: disable datadog apm if env is sandbox or dev
+        become: true
+        when: BRANCH in ['dev','sandbox']
+        lineinfile:
+          dest: "/etc/datadog-agent/datadog.yaml"
+          regexp: "^  enabled: true"
+          insertafter: "^apm_config:.*"
+          line: "  enabled: false"
 
-      # TODO:OPS-1034 remove block if it can trace without ddtrace-run
-      # - name: add ddtrace to supervisord configuration (start command)
-      #   ini_file:
-      #     dest: "{{ CODE_HOME }}/config/supervisord.conf"
-      #     section: "program:uwsgi"
-      #     option: command
-      #     value: "ddtrace-run uwsgi --ini /data-act/backend/config/uwsgi_db.ini --socket :3030 --stats /tmp/stats.socket"
-      
     - name: Enable Datadog in settings.py if env is prod or staging
-      # TODO:OPS-1034 change back
-      # Make always True on this mod/OPS-1034-fix-datadog-cfg git branch
-      #when: BRANCH in ["master", "stg"]
+      when: BRANCH in ["master", "stg"]
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '^(DATADOG_TRACE = {\n[^}]*\s+)"ENABLED": False,'
