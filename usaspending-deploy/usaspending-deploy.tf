@@ -39,11 +39,6 @@ resource "aws_autoscaling_group" "api_asg" {
       value                 =  var.env_tag
       propagate_at_launch   = "true"
     },
-    {
-      key                   = "Experiment"
-      value                 = "ops-1034"
-      propagate_at_launch   = "true"
-    },
   ]
 
   lifecycle {
@@ -151,11 +146,6 @@ resource "aws_autoscaling_group" "bd_asg" {
     {
       key                   = "Environment"
       value                 =  var.env_tag
-      propagate_at_launch   = "true"
-    },
-    {
-      key                   = "Experiment"
-      value                 = "ops-1034"
       propagate_at_launch   = "true"
     },
   ]
