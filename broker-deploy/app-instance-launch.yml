@@ -145,24 +145,17 @@
 
     - name: (API) instrument datadog with the application if env is prod or staging in app.py
       when: BRANCH == "master" or BRANCH == "staging"
-      lineinfile:
+      replace:
         dest: "/data-act/backend/dataactbroker/app.py"
-        regexp: "^USE_DATADOG = False"
-        line: "USE_DATADOG = True"
+        regexp: "^tracer\\.enabled = False"
+        replace: "tracer.enabled = True"
 
     - name: (VAL) instrument datadog with the application if env is prod or staging in app.py
       when: BRANCH == "master" or BRANCH == "staging"
-      lineinfile:
+      replace:
         dest: "/data-act/backend/dataactvalidator/app.py"
-        regexp: "^USE_DATADOG = False"
-        line: "USE_DATADOG = True"
-
-    - name: (VAL) instrument datadog with the application if env is prod or staging in health_check.py
-      when: BRANCH == "master" or BRANCH == "staging"
-      lineinfile:
-        dest: "/data-act/backend/dataactvalidator/health_check.py"
-        regexp: "^USE_DATADOG = False"
-        line: "USE_DATADOG = True"
+        regexp: "^tracer\\.enabled = False"
+        replace: "tracer.enabled = True"
 
     - name: Ensure dd-agent ownership for datadog directory
       become: true
