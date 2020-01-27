@@ -129,14 +129,14 @@
         - { tagname: 'deploy_name', value: "usaspending_{{ ANSIBLE_VARS_ENV | lower }}_bd" }
         - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
-      - name: disable datadog apm if env is sandbox or dev
-        become: true
-        when: BRANCH in ['dev','sandbox']
-        lineinfile:
-          dest: "/etc/datadog-agent/datadog.yaml"
-          regexp: "^  enabled: true"
-          insertafter: "^apm_config:.*"
-          line: "  enabled: false"
+    - name: disable datadog apm if env is sandbox or dev
+      become: true
+      when: BRANCH in ['dev','sandbox']
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: "^  enabled: true"
+        insertafter: "^apm_config:.*"
+        line: "  enabled: false"
 
     - name: Enable Datadog in settings.py if env is prod or staging
       when: BRANCH in ["master", "stg"]
