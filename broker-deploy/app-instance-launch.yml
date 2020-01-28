@@ -134,9 +134,12 @@
         - { tagname: 'deploy_name', value: "broker_{{ vars['envs'][BRANCH]['env_long'] | lower }}_{{ vars['apps'][APP]['app_short'] | lower }}" }
         - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
+    # NOTE: Carefully note the BRANCH variable passed to this playbook.While broker's branch for d
+    # While Broker's Git branch for development work is called 'development',
+    # the BRANCH variable tends to be used to represent an "environment" in this playbook, so often is 'dev'
     - name: Disable datadog apm if env is sandbox or dev
       become: true
-      when: BRANCH == "development" or BRANCH == "sandbox"
+      when: BRANCH == "dev" or BRANCH == "sandbox"
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "^  enabled: true"
