@@ -19,6 +19,12 @@
     ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
     BUILD_TYPE: "{{ BUILD_TYPE }}"
     INSTANCE_ID: "{{ INSTANCE_ID }}"
+    vars:
+    proxy_env:
+      http_proxy: "{{ SQUID_ELB }}"
+      https_proxy: "{{ SQUID_ELB }}"
+      HTTP_PROXY: "{{ SQUID_ELB }}"
+      HTTPS_PROXY: "{{ SQUID_ELB }}"
 
     envs:
       master: {env_long: prod, env_short: prod}
@@ -394,4 +400,12 @@
     - name: enable & restart supervisord.service
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
+
+#===============================  Set http and https proxies  ===============================#
+
+    - name: Install cobbler
+          package:
+            name: cobbler
+            state: present
+          environment: "{{ proxy_env }}"
 
