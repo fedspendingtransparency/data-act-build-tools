@@ -404,8 +404,8 @@
 #===============================  Set http and https proxies  ===============================#
 
     - name: Install cobbler
-          package:
-            name: cobbler
-            state: present
-          environment: "{{ proxy_env }}"
+      package:
+        name: cobbler
+        state: present
+      environment: "{{ proxy_env }}"
 
