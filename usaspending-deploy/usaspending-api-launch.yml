@@ -404,11 +404,11 @@
         mode: 0755
         content: |
           http_proxy={{ SQUID_ELB }}
-          https_proxy=$http_proxy
-          HTTPS_PROXY=$https_proxy
-          HTTP_PROXY=$http_proxy
+          https_proxy={{ SQUID_ELB }}
+          HTTPS_PROXY={{ SQUID_ELB }}
+          HTTP_PROXY=${{ SQUID_ELB }}
           NO_PROXY=169.254.169.254,10.2.*,172.31.*,127.0.0.1,localhost
-          no_proxy=$NO_PROXY
+          no_proxy=169.254.169.254,10.2.*,172.31.*,127.0.0.1,localhost
           export http_proxy https_proxy HTTPS_PROXY HTTP_PROXY no_proxy NO_PROXY
 
     - name: add proxy env vars to /etc/environment
