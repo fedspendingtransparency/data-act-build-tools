@@ -19,12 +19,6 @@
     ANSIBLE_VARS_ENV: "{{ ANSIBLE_VARS_ENV }}"
     BUILD_TYPE: "{{ BUILD_TYPE }}"
     INSTANCE_ID: "{{ INSTANCE_ID }}"
-    vars:
-    proxy_env:
-      http_proxy: "{{ SQUID_ELB }}"
-      https_proxy: "{{ SQUID_ELB }}"
-      HTTP_PROXY: "{{ SQUID_ELB }}"
-      HTTPS_PROXY: "{{ SQUID_ELB }}"
 
     envs:
       master: {env_long: prod, env_short: prod}
@@ -403,9 +397,30 @@
 
 #===============================  Set http and https proxies  ===============================#
 
-    - name: Install cobbler
-      package:
-        name: cobbler
-        state: present
-      environment: "{{ proxy_env }}"
+    - name: create /etc/profile.d/proxy.sh to export proxy env vars
+      become: true
+      copy:
+        dest: /etc/profile.d/proxy.sh
+        mode: 0755
+        content: |
+          http_proxy={{ SQUID_ELB }}
+          https_proxy=$http_proxy
+          HTTPS_PROXY=$https_proxy
+          HTTP_PROXY=$http_proxy
+          NO_PROXY=169.254.169.254,10.2.*,172.31.*
+          no_proxy=$NO_PROXY
+          export http_proxy https_proxy HTTPS_PROXY HTTP_PROXY no_proxy NO_PROXY
+
+    - name: add proxy env vars to /etc/environment
+      become: true
+      blockinfile:
+        dest: /etc/environment
+        block: |
+          http_proxy={{ SQUID_ELB }}
+          https_proxy={{ SQUID_ELB }}
+          HTTP_PROXY={{ SQUID_ELB }}
+          HTTPS_PROXY={{ SQUID_ELB }}
+          no_proxy=169.254.169.254,,10.2.*,172.31.*
+          NO_PROXY=169.254.169.254,,10.2.*,172.31.*
+
 
