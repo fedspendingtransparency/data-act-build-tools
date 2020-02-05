@@ -10,10 +10,10 @@
     BRANCH: "{{ BRANCH }}"
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     CODE_HOME: /data-act/backend
-    CONFIG_HOME: /data-act/config
     REQ_DIR: "{{ CODE_HOME }}/requirements"
     ansible_python_interpreter: /usr/bin/python3
     DATADOG_YML_PATH: "/data-act/config/deploy/datadog.yaml"
+    SQUID_ELB: 'http://Non-P-LoadB-1GM436SHHMZD8-d6ed959d1a7209d5.elb.us-gov-west-1.amazonaws.com:3128'
 
   tasks:
 
@@ -85,9 +85,6 @@
         path: /tmp
         owner: ec2-user
         recurse: yes
-
-    - name: Load variables from config repo
-      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
 
 #===============================  Set http and https proxies  ===============================#
   
