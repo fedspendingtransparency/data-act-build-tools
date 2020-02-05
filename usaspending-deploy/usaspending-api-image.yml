@@ -17,46 +17,6 @@
 
   tasks:
 
-    - name: Load variables from config repo
-      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
-
-#===============================  Set http and https proxies  ===============================#
-  
-    - name: turn off sslverif in yum.conf
-      become: true
-      ini_file:
-        path: /etc/yum.conf
-        section: main
-        option: sslverify
-        value: 'false'
-        no_extra_spaces: yes
-
-    - name: create /etc/profile.d/proxy.sh to export proxy env vars
-      become: true
-      copy:
-        dest: /etc/profile.d/proxy.sh
-        mode: 0755
-        content: |
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          no_proxy=169.254.169.254,10.2.*,172.31.*,127.0.0.1,localhost
-          export http_proxy https_proxy no_proxy
-
-    - name: add proxy env vars to /etc/environment
-      become: true
-      blockinfile:
-        dest: /etc/environment
-        block: |
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          HTTP_PROXY={{ SQUID_ELB }}
-          HTTPS_PROXY={{ SQUID_ELB }}
-          no_proxy=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
-          NO_PROXY=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
-
-    - name: Execute proxy.sh
-      shell: /etc/profile.d/proxy.sh
-
 #=============================== Copy Git Credentials from S3 Bucket ===============================#
 
     - name: boto3/python-selinux (required for installing with Ansible using /usr/bin/python3 as the interpreter)
@@ -125,6 +85,46 @@
         path: /tmp
         owner: ec2-user
         recurse: yes
+
+    - name: Load variables from config repo
+      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
+
+#===============================  Set http and https proxies  ===============================#
+  
+    - name: turn off sslverif in yum.conf
+      become: true
+      ini_file:
+        path: /etc/yum.conf
+        section: main
+        option: sslverify
+        value: 'false'
+        no_extra_spaces: yes
+
+    - name: create /etc/profile.d/proxy.sh to export proxy env vars
+      become: true
+      copy:
+        dest: /etc/profile.d/proxy.sh
+        mode: 0755
+        content: |
+          http_proxy={{ SQUID_ELB }}
+          https_proxy={{ SQUID_ELB }}
+          no_proxy=169.254.169.254,10.2.*,172.31.*,127.0.0.1,localhost
+          export http_proxy https_proxy no_proxy
+
+    - name: add proxy env vars to /etc/environment
+      become: true
+      blockinfile:
+        dest: /etc/environment
+        block: |
+          http_proxy={{ SQUID_ELB }}
+          https_proxy={{ SQUID_ELB }}
+          HTTP_PROXY={{ SQUID_ELB }}
+          HTTPS_PROXY={{ SQUID_ELB }}
+          no_proxy=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
+          NO_PROXY=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
+
+    - name: Execute proxy.sh
+      shell: /etc/profile.d/proxy.sh
 
 #===============================  Install PIP Packages  ===============================#
 
