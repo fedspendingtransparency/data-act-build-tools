@@ -96,6 +96,7 @@
     
     - name: test
       command: ls -lstr /home/ec2-user
+      remote_src: no
 
     - name: Load variables from config repo
       include_vars: "/home/ec2-user/ansible-vars-{{ BRANCH }}.yml"
