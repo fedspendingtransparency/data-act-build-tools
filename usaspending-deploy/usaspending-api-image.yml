@@ -89,7 +89,7 @@
 #===============================  Set http and https proxies  ===============================#
     
     - name: test  
-      command: find /data-act -ls -lstr
+      command: find /data-act -ls
       register: test
 
     - debug: msg="{{ test.stdout }}"
