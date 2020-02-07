@@ -89,8 +89,8 @@
 #===============================  Set http and https proxies  ===============================#
 
     - name: Load variables from config repo
-      become: true
       include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
+      remote_src: true
 
     - name: create /etc/profile.d/proxy.sh to export proxy env vars
       become: true
