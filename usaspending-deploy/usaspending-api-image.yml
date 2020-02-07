@@ -89,7 +89,10 @@
 #===============================  Set http and https proxies  ===============================#
     
     - name: test  
-      command: find /data-act -ls
+      command: find /data-act -ls -lstr
+      register: test
+
+    - debug: msg="{{ test.stdout }}"
 
     - name: Load variables from config repo
       include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
