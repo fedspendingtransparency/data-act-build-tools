@@ -89,7 +89,6 @@
 #===============================  Set http and https proxies  ===============================#
     
     - name: copy ansible-vars-{{ BRANCH }} to its home location
-      become: true
       copy:
         src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
         dest: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
