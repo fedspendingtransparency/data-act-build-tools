@@ -53,7 +53,7 @@ def deploy():
     print('**************************************************************************')
     print(' Building new AMI via Packer. This can take a while...')
 
-    packer_output = real_time_command([packer_exec_path, 'build', 
+    packer_output = real_time_command([packer_exec_path, 'build -debug', 
                                       '-var', 'environment_ami_tag={}'.format(deploy_env), 
                                       '-var', 'ansible_branch_var={}'.format('master' if deploy_env == 'prod' else deploy_env), 
                                       '-machine-readable', packer_file])
