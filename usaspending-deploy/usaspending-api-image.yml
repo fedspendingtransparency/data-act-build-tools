@@ -88,7 +88,7 @@
 
 #===============================  Set http and https proxies  ===============================#
     
-    - name: copy datadog.yml to its home location
+    - name: copy ansible-vars-{{ BRANCH }}.yml to controller
       fetch:
         src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
         dest: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
