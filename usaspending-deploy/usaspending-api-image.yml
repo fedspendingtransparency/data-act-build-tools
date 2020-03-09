@@ -88,19 +88,19 @@
 
 #===============================  Set http and https proxies  ===============================#
     
-    - name: copy ansible-vars-{{ BRANCH }}.yml to 
-      copy:
-        src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
-        dest: /home/ec2-user
+    # - name: copy ansible-vars-{{ BRANCH }}.yml to 
+    #   copy:
+    #     src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
+    #     dest: /home/ec2-user
     
-    - name: test1
-      command: ls -a /home/ec2-user
+    # - name: test1
+    #   command: ls -a /home/ec2-user
       register: test1
 
     - debug: var=test1.stdout_lines
 
     - name: test2
-      command: ls -a {{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml
+      command: ls -a {{ CONFIG_HOME }}/deploy/
       register: test2
 
     - debug: var=test2.stdout_lines
