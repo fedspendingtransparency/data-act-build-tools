@@ -98,13 +98,13 @@
       command: ls -a /home/ec2-user
       register: test1
 
-    - debug: msg="{{ test1.stdout }}"
+    - debug: var=test1.stdout_lines
 
     - name: test2
       command: ls -a /data-act/config
       register: test2
 
-    - debug: msg="{{ test2.stdout }}"
+    - debug: var=test2.stdout_lines
 
     - name: Load variables from config repo
       include_vars: "/home/ec2-user/ansible-vars-{{ BRANCH }}.yml"
