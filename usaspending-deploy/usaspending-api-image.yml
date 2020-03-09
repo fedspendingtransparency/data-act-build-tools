@@ -89,8 +89,7 @@
 #===============================  Set http and https proxies  ===============================#
     
     - name: copy ansible-vars-{{ BRANCH }}.yml to 
-      fetch:
-        flat: yes
+      copy:
         src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
         dest: /home/ec2-user
     
@@ -101,7 +100,7 @@
     - debug: var=test1.stdout_lines
 
     - name: test2
-      command: ls -a /data-act/config
+      command: ls -a {{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml
       register: test2
 
     - debug: var=test2.stdout_lines
