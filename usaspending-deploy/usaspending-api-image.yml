@@ -106,7 +106,7 @@
     - debug: var=test2.stdout_lines
 
     - name: Load variables from config repo
-      include_vars: "/home/ec2-user/ansible-vars-{{ BRANCH }}.yml"
+      include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
 
     - name: create /etc/profile.d/proxy.sh to export proxy env vars
       become: true
