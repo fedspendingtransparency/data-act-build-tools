@@ -109,6 +109,7 @@
 
     - name: Load variables from config repo
       include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
+      remote_src: yes
 
     - name: create /etc/profile.d/proxy.sh to export proxy env vars
       become: true
