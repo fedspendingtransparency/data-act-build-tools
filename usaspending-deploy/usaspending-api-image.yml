@@ -89,11 +89,12 @@
 #===============================  Set http and https proxies  ===============================#
     
     - name: copy ansible-vars-{{ BRANCH }}.yml to 
-      fecth:
+      fetch:
         src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
         dest: "/home/ec2-user/ansible-vars-{{ BRANCH }}.yml"
         flat: yes
-            
+      # delegate_to: localhost
+    
     - name: test1
       command: ls -a /home/ec2-user
       register: test1
