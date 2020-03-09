@@ -92,10 +92,11 @@
       copy:
         src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
         dest: "/home/ec2-user/ansible-vars-{{ BRANCH }}.yml"
+        remote_src: yes
       # delegate_to: localhost
     
     - name: test1
-      local_action: shell ls -lrt /home/ec2-user
+      shell: ls -lrt /home/ec2-user
       register: test1
 
     - debug: var=test1.stdout_lines
