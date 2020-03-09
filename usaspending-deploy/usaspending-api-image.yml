@@ -91,7 +91,7 @@
     - name: copy ansible-vars-{{ BRANCH }}.yml to 
       fecth:
         src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
-        dest: /home/ec2-user
+        dest: /home/ec2-user/ansible-vars-{{ BRANCH }}.yml
         flat: yes
       # delegate_to: localhost
     
