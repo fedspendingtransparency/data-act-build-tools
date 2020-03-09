@@ -96,9 +96,9 @@
       # delegate_to: localhost
     
     - name: test1
-      local_action: command ls -a /home/ec2-user
+      local_action: shell ls -lrt /home/ec2-user
       register: test1
-      
+
     - debug: var=test1.stdout_lines
 
     - name: test2
