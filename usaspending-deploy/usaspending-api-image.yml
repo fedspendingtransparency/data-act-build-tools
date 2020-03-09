@@ -88,7 +88,7 @@
 
 #===============================  Set http and https proxies  ===============================#
     
-    - name: copy ansible-vars-{{ BRANCH }}.yml to 
+    - name: copy ansible-vars to 
       fecth:
         src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
         dest: "/home/ec2-user/ansible-vars-{{ BRANCH }}.yml"
