@@ -91,18 +91,6 @@
         src: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ BRANCH }}.yml"
         dest: /home/ec2-user/
         flat: true
-            
-    - name: test1
-      shell: ls -lrt /home/ec2-user
-      register: test1
-
-    - debug: var=test1.stdout_lines
-
-    - name: test2
-      command: ls -a {{ CONFIG_HOME }}/deploy/
-      register: test2
-
-    - debug: var=test2.stdout_lines
 
     - name: Load variables from config repo
       include_vars: "/home/ec2-user/ansible-vars-{{ BRANCH }}.yml"
