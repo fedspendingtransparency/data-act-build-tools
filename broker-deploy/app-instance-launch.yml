@@ -209,7 +209,7 @@
         dest: /data-act/backend/dataact{{ APP }}/config/supervisord.conf
         section: supervisord
         option: environment
-        value: |
+        value: >
           PYTHONPATH=%(ENV_PATH)s:/data-act/backend,env={{ vars['envs'][BRANCH]['env_long'] }},
           http_proxy="{{ SQUID_ELB }}",
           https_proxy="{{ SQUID_ELB }}",
