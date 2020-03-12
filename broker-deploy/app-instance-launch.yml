@@ -30,7 +30,7 @@
   tasks:
 
     - name: Load variables from config repo
-      include_vars: "{{ CONFIG_HOME }}/deployment/ansible-vars-{{ BRANCH }}.yml"
+      include_vars: "/data-act/config/deployment/ansible-vars-{{ BRANCH }}.yml"
 
     # ===================== Configs =====================#
     - name: Copy core config
