@@ -29,6 +29,9 @@
 
   tasks:
 
+    - name: Load variables from config repo
+      include_vars: "{{ CONFIG_HOME }}/deployment/ansible-vars-{{ BRANCH }}.yml"
+
     # ===================== Configs =====================#
     - name: Copy core config
       copy:
@@ -206,7 +209,14 @@
         dest: /data-act/backend/dataact{{ APP }}/config/supervisord.conf
         section: supervisord
         option: environment
-        value: "PYTHONPATH=%(ENV_PATH)s:/data-act/backend,env={{ vars['envs'][BRANCH]['env_long'] }}"
+        value: |
+          PYTHONPATH=%(ENV_PATH)s:/data-act/backend,env={{ vars['envs'][BRANCH]['env_long'] }},
+          http_proxy="{{ SQUID_ELB }}",
+          https_proxy="{{ SQUID_ELB }}",
+          HTTP_PROXY="{{ SQUID_ELB }}",
+          HTTPS_PROXY="{{ SQUID_ELB }}",
+          no_proxy="169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost",
+          NO_PROXY="169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost"
 
     # ===================== Logging =====================#
 
