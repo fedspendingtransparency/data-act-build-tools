@@ -57,6 +57,7 @@
       git:
         repo: "git@github.com:fedspendingtransparency/usaspending-config.git"
         dest: /data-act/config
+        version: config/squid-env-vars
         accept_hostkey: true
         force: yes
         key_file: /home/ec2-user/.ssh/id_rsa_usaspending_config
@@ -65,6 +66,7 @@
       become: true
       git:
         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
+        config: config/squid-deploy
         dest: /data-act/build-tools
         accept_hostkey: true
         force: yes
@@ -120,6 +122,20 @@
 
     - name: Execute proxy.sh
       shell: /etc/profile.d/proxy.sh
+
+    - name: add proxy env to /etc/systemd/system.config
+      become: true
+      ini_file:
+        path: /etc/systemd/system.conf
+        section: Manager
+        option: DefaultEnvironment
+        value: >
+          http_proxy={{ SQUID_ELB }}
+          https_proxy={{ SQUID_ELB }}
+          HTTP_PROXY={{ SQUID_ELB }}
+          HTTPS_PROXY={{ SQUID_ELB }}
+          no_proxy=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
+          NO_PROXY=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
 
 #===============================  Install PIP Packages  ===============================#
 
