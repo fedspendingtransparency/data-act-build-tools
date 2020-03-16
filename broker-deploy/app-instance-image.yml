@@ -10,6 +10,12 @@
     ansible_python_interpreter: /usr/bin/python
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
 
+  envs:
+    master:      {env_long: prod }
+    staging:     {env_long: staging }
+    development: {env_long: dev }
+    sandbox:     {env_long: sandbox}
+
   tasks:
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
@@ -70,9 +76,9 @@
 
 #===============================  Set http and https proxies  ===============================#
 
-    - name: copy ansible-vars-{{ BRANCH }}.yml to 
+    - name: copy ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml to 
       fetch:
-        src: "{{ CONFIG_HOME }}/deployment/ansible-vars-{{ BRANCH }}.yml"
+        src: "{{ CONFIG_HOME }}/deployment/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
         dest: /home/ec2-user/
         flat: true
 
