@@ -9,6 +9,7 @@
     CONFIG_HOME: /data-act/config
     ansible_python_interpreter: /usr/bin/python
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
+    NO_PROXY_VAR : 169.254.169.254,100.100.100.200,10.2.*,172.31.*,127.0.0.1,localhost,us-gov-west-1.queue.amazonaws.com,ec2.us-gov-west-1.amazonaws.com,s3-us-gov-west-1.amazonaws.com
 
     envs:
       master:      {env_long: prod }
@@ -93,7 +94,7 @@
         content: |
           http_proxy={{ SQUID_ELB }}
           https_proxy={{ SQUID_ELB }}
-          no_proxy=169.254.169.254,10.2.*,172.31.*,127.0.0.1,localhost
+          no_proxy={{ NO_PROXY_VAR }}
           export http_proxy https_proxy no_proxy
     
     - name: add proxy env vars to /etc/environment
@@ -105,8 +106,8 @@
           https_proxy={{ SQUID_ELB }}
           HTTP_PROXY={{ SQUID_ELB }}
           HTTPS_PROXY={{ SQUID_ELB }}
-          no_proxy=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
-          NO_PROXY=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
+          no_proxy={{ NO_PROXY_VAR }}
+          NO_PROXY={{ NO_PROXY_VAR }}
     
     - name: Execute proxy.sh
       shell: /etc/profile.d/proxy.sh
@@ -122,8 +123,8 @@
           https_proxy={{ SQUID_ELB }}
           HTTP_PROXY={{ SQUID_ELB }}
           HTTPS_PROXY={{ SQUID_ELB }}
-          no_proxy=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
-          NO_PROXY=169.254.169.254,,10.2.*,172.31.*,127.0.0.1,localhost
+          no_proxy={{ NO_PROXY_VAR }}
+          NO_PROXY={{ NO_PROXY_VAR }}
 
 # ======================== Install PIP Packages ========================#
 
