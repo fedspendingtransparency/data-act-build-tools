@@ -9,7 +9,7 @@
     CONFIG_HOME: /data-act/config
     ansible_python_interpreter: /usr/bin/python
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
-    NO_PROXY_VAR : 169.254.169.254,100.100.100.200,10.2.*,172.31.*,127.0.0.1,localhost,us-gov-west-1.queue.amazonaws.com,ec2.us-gov-west-1.amazonaws.com,s3-us-gov-west-1.amazonaws.com
+    NO_PROXY_VAR : 169.254.169.254,100.100.100.200,10.2.*,172.31.*,127.0.0.1,localhost,.amazonaws.com
 
     envs:
       master:      {env_long: prod }
