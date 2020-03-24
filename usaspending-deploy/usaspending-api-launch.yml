@@ -23,6 +23,7 @@
     envs:
       master: {env_long: prod, env_short: prod}
       stg: {env_long: staging, env_short: stg}
+      qat: {env_long: qat, env_short: qat}
       dev: {env_long: dev, env_short: dev}
       sandbox: {env_long: sandbox, env_short: sbx}
 
@@ -131,7 +132,7 @@
 
     - name: disable datadog apm if env is sandbox or dev
       become: true
-      when: BRANCH in ['dev','sandbox']
+      when: BRANCH in ["qat", "dev", "sandbox"]
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "^  enabled: true"
@@ -249,7 +250,7 @@
           replace: "{{ PROD_CACHE_TIMEOUT }}"
 
     - name: API | cache settings (nonprod)
-      when: BRANCH in ['dev','sandbox'] and BUILD_TYPE == 'api'
+      when: BRANCH in ['dev','sandbox','qat'] and BUILD_TYPE == 'api'
       block:
       - name: enable local cache
         lineinfile:
