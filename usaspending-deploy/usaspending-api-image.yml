@@ -46,7 +46,7 @@
       become: true
       git:
         repo: "{{ REPO }}"
-        version: "dev"
+        version: "{{ BRANCH }}"
         dest: "{{ CODE_HOME }}"
         accept_hostkey: true
         force: yes

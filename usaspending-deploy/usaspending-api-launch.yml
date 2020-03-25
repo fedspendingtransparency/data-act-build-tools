@@ -132,7 +132,7 @@
 
     - name: disable datadog apm if env is sandbox or dev
       become: true
-      when: BRANCH in ["qat", "dev", "sandbox"]
+      when: BRANCH in ["dev", "sandbox"]
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "^  enabled: true"
@@ -140,7 +140,7 @@
         line: "  enabled: false"
 
     - name: Enable Datadog in settings.py if env is prod or staging
-      when: BRANCH in ["master", "stg"]
+      when: BRANCH in ["master", "stg", "qat"]
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '^(DATADOG_TRACE = {\n[^}]*\s+)"ENABLED": False,'
@@ -202,7 +202,7 @@
         line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS|d('') }}']"
 
     - name: API | turn debug off in production or staging
-      when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
+      when: BRANCH in ['master','stg','qat'] and BUILD_TYPE == 'api'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*DEBUG =.*'
@@ -223,7 +223,7 @@
           line: "HOST = '{{ SITE }}'"
 
     - name: API | cache settings (staging/prod, elasticache)
-      when: BRANCH in ['master','stg'] and BUILD_TYPE == 'api'
+      when: BRANCH in ['master','stg','qat'] and BUILD_TYPE == 'api'
       block:
       - name: enable elasticache
         lineinfile:
@@ -250,7 +250,7 @@
           replace: "{{ PROD_CACHE_TIMEOUT }}"
 
     - name: API | cache settings (nonprod)
-      when: BRANCH in ['dev','sandbox','qat'] and BUILD_TYPE == 'api'
+      when: BRANCH in ['dev','sandbox'] and BUILD_TYPE == 'api'
       block:
       - name: enable local cache
         lineinfile:
