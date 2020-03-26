@@ -14,11 +14,11 @@
     REQ_DIR: "{{ CODE_HOME }}/requirements"
     ansible_python_interpreter: /usr/bin/python3
     DATADOG_YML_PATH: "/data-act/config/deploy/datadog.yaml"
-    NO_PROXY_VAR : 169.254.169.254,100.100.100.200,10.2.*,172.31.*,127.0.0.1,localhost,.amazonaws.com
 
     envs:
       master : {env_long: prod }
       staging: {env_long: staging }
+      qat    : {env_long: qat }
       dev    : {env_long: dev }
       sandbox: {env_long: sandbox}
 
