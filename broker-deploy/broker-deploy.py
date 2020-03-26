@@ -23,7 +23,7 @@ def deploy():
     tf_exec_path = 'terraform'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--deploy_env', required=True, choices=['sandbox', 'dev', 'staging', 'prod'])
+    parser.add_argument('--deploy_env', required=True, choices=['sandbox', 'dev', 'qat', 'staging', 'prod'])
     args = parser.parse_args()
     deploy_env = args.deploy_env
 
