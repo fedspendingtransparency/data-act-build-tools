@@ -9,11 +9,11 @@
     CONFIG_HOME: /data-act/config
     ansible_python_interpreter: /usr/bin/python
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
-    NO_PROXY_VAR : 169.254.169.254,100.100.100.200,10.2.*,172.31.*,127.0.0.1,localhost,.amazonaws.com
 
     envs:
       master:      {env_long: prod }
       staging:     {env_long: staging }
+      qat:         {env_long: qat }
       development: {env_long: dev }
       sandbox:     {env_long: sandbox}
 
@@ -46,7 +46,6 @@
       git:
         repo: git@github.com:fedspendingtransparency/data-act-broker-config.git
         dest: /data-act/config
-        version: config/squid-deploy
         accept_hostkey: true
         force: "yes"
         key_file: /home/ec2-user/.ssh/id_rsa_broker_config
@@ -56,7 +55,6 @@
       git:
         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
         dest: /data-act/build-tools
-        version: broker/squid-deploy
         accept_hostkey: true
         force: "yes"
         key_file: /home/ec2-user/.ssh/id_rsa_broker_config
