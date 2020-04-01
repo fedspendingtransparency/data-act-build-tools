@@ -37,6 +37,7 @@
       become: true
       git:
         repo: git@github.com:fedspendingtransparency/data-act-broker-config.git
+        version: temp/nessus-key
         dest: /data-act/config
         accept_hostkey: true
         force: "yes"
@@ -46,6 +47,7 @@
       become: true
       git:
         repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
+        version: temp/nessus-key
         dest: /data-act/build-tools
         accept_hostkey: true
         force: "yes"
