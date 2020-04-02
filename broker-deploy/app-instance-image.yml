@@ -13,14 +13,13 @@
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
 
-    - name: copy git credentials from S3 Bucket
-      shell: "aws s3 cp s3://da-config/broker/id_rsa_broker_config /home/ec2-user/.ssh/ --region us-gov-west-1"
-
-    - name: Read-only permissions for broker git credentials
-      become: true
-      file:
-        path: /home/ec2-user/.ssh/id_rsa_broker_config
-        mode: 0400
+    - name: copy github credentials from S3 Bucket
+      aws_s3:
+        mode: getstr
+        bucket: da-config
+        object: /shared/github-data-act-service-account.pat
+        region: us-gov-west-1
+      register: pat
 
 # ========================= Git Checkout ========================#
 
@@ -30,26 +29,21 @@
         repo: "{{ REPO }}"
         version: "{{ BRANCH }}"
         dest: "/data-act/backend"
-        accept_hostkey: true
         force: "yes"
 
     - name: Checkout broker config from git
       become: true
       git:
-        repo: git@github.com:fedspendingtransparency/data-act-broker-config.git
+        repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/data-act-broker-config.git
         dest: /data-act/config
-        accept_hostkey: true
         force: "yes"
-        key_file: /home/ec2-user/.ssh/id_rsa_broker_config
 
     - name: Checkout build-tools repo from git
       become: true
       git:
-        repo: git@github.com:fedspendingtransparency/data-act-build-tools.git
+        repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/data-act-build-tools.git
         dest: /data-act/build-tools
-        accept_hostkey: true
         force: "yes"
-        key_file: /home/ec2-user/.ssh/id_rsa_broker_config
 
     - name: Assign ownership of api to ec2-user
       become: true
