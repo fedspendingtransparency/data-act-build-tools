@@ -17,8 +17,9 @@
       become: true
       pip:
         name:
+          - botocore
           - boto3
-        executable: pip
+        executable: pip3.5
 
     - name: copy github credentials from S3 Bucket
       aws_s3:
