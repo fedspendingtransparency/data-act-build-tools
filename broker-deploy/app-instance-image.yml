@@ -19,7 +19,7 @@
         name:
           - selinux
           - boto3
-        executable: pip3
+        executable: pip3.5
 
     - name: copy github credentials from S3 Bucket
       aws_s3:
