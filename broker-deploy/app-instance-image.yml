@@ -6,14 +6,14 @@
   vars:
     REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
     BRANCH: "{{ BRANCH }}"
-    ansible_python_interpreter: /usr/bin/python3.5
+    ansible_python_interpreter: /usr/bin/python3
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
 
   tasks:
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
     - name: python version
-      shell: "python3.5 --version"
+      shell: "python3 --version"
       register: python_installed
 
     - debug: msg="{{ python_installed.stdout }}"
@@ -77,19 +77,19 @@
 
 # ======================== Install PIP Packages ========================#
 
-    - name: Install backend packages based on requirements.txt
-      become: true
-      pip:
-        chdir: /data-act/backend
-        requirements: requirements.txt
-        executable: pip3.5
+    # - name: Install backend packages based on requirements.txt
+    #   become: true
+    #   pip:
+    #     chdir: /data-act/backend
+    #     requirements: requirements.txt
+    #     executable: pip3.5
 
-    - name: Install server packages based on server_requirements.txt
-      become: true
-      pip:
-        chdir: /data-act/backend
-        requirements: server_requirements.txt
-        executable: pip3.5
+    # - name: Install server packages based on server_requirements.txt
+    #   become: true
+    #   pip:
+    #     chdir: /data-act/backend
+    #     requirements: server_requirements.txt
+    #     executable: pip3.5
 
 # ======================== Configure DataDog Key ========================#
 
