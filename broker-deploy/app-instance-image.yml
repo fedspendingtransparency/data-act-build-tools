@@ -12,6 +12,10 @@
   tasks:
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
+    - shell: "python --version"
+      register: python_installed
+
+    - debug: msg="{{ python_installed.stdout }}"
 
     - name: boto3
       become: true
