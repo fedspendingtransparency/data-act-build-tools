@@ -13,7 +13,7 @@
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
     - name: python version
-      shell: "python3 --version"
+      shell: "python3.5 --version"
       register: python_installed
 
     - debug: msg="{{ python_installed.stdout }}"
