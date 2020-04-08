@@ -17,6 +17,7 @@
       become: true
       pip:
         name:
+          - selinux
           - botocore
           - boto3
         executable: pip3.5
