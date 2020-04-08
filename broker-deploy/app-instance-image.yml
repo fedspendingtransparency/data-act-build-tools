@@ -24,7 +24,7 @@
         name:
           - botocore
           - boto3
-        executable: pip3.5
+        executable: pip
 
     - name: copy github credentials from S3 Bucket
       aws_s3:
