@@ -2,9 +2,13 @@
 
 FROM centos:latest
 
-ENV PACKER_VERSION 1.4.0
-ENV ANSIBLE_VERSION 2.8.3
-ENV TERRAFORM_VERSION 0.12.3
+ARG packer_version_arg=1.4.0
+ARG ansible_version_arg=2.8.3
+ARG terraform_version_arg=0.12.3
+
+ENV PACKER_VERSION=${packer_version_arg}
+ENV ANSIBLE_VERSION=${ansible_version_arg}
+ENV TERRAFORM_VERSION=${terraform_version_arg}
 
 RUN yum update -y && \
     yum install -y wget && \
