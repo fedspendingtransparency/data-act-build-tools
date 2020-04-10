@@ -6,6 +6,7 @@
   vars:
     REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
     BRANCH: "{{ BRANCH }}"
+    CONFIG_HOME: /data-act/config
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
 
     envs:
