@@ -18,8 +18,13 @@
       sandbox:     {env_long: sandbox}
 
   tasks:
-
-# ===================== Copy Git Creds from S3 Bucket =====================#
+    - name: python3 symlink
+      become: true
+      file:
+        force: yes
+        src: /usr/bin/python3.5
+        path: /usr/bin/python3
+        state: link
 
     - name: pip packages
       become: true
