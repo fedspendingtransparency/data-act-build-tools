@@ -60,6 +60,9 @@
           - selinux
           - botocore
           - boto3
+      register: pipinstall
+
+    - debug: var=pipinstall
 
     - name: copy github credentials from S3 Bucket
       aws_s3:
