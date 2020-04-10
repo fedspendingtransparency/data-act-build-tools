@@ -13,6 +13,14 @@
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
 
+    - name: /usr/bin
+      command: "ls -ls /usr/bin/python*"
+      register: bin
+      ignore_errors: yes
+
+    - debug: msg="{{ bin.stdout }}"
+      ignore_errors: yes
+
     - debug: var=ansible_python_interpreter
 
     - name: check /usr/bin/python version
