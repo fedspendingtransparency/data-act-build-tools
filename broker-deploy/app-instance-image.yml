@@ -61,6 +61,7 @@
           - botocore
           - boto3
       register: pipinstall
+      ignore_errors: yes
 
     - debug: var=pipinstall
 
