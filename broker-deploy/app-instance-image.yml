@@ -60,8 +60,7 @@
           - selinux
           - botocore
           - boto3
-        executable: /usr/bin/python
-        extra_args: -m pip
+        executable: /usr/bin/python -m pip
       register: pipinstall
       ignore_errors: yes
 
