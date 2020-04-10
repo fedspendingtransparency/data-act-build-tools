@@ -6,18 +6,11 @@
   vars:
     REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
     BRANCH: "{{ BRANCH }}"
-    ansible_python_interpreter: /usr/bin/python3
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
 
   tasks:
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
-    - name: python version
-      shell: "python3 --version"
-      register: python_installed
-
-    - debug: msg="{{ python_installed.stdout }}"
-
     - name: boto3
       become: true
       pip:
