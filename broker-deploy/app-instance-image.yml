@@ -22,6 +22,36 @@
       with_items:
         - { src: "/usr/local/bin/python", path: "/usr/bin/python3.5" }
         - { src: "/usr/local/bin/pip", path: "/usr/bin/pip3.5" }
+        
+    - name: python version
+      shell: "python --version"
+      register: python_installed
+
+    - debug: msg="{{ python_installed.stdout }}"
+    
+    - name: python3 version
+      shell: "python3 --version"
+      register: python3_installed
+
+    - debug: msg="{{ python3_installed.stdout }}"
+    
+    - name: pip version
+      shell: "pip --version"
+      register: pip_installed
+
+    - debug: msg="{{ pip_installed.stdout }}"
+    
+    - name: pip3 version
+      shell: "pip3 --version"
+      register: pip3_installed
+
+    - debug: msg="{{ pip3_installed.stdout }}"
+    
+    - name: pip3.5 version
+      shell: "pip3.5 --version"
+      register: pip35_installed
+
+    - debug: msg="{{ pip35_installed.stdout }}"
           
     - name: boto3
       become: true
