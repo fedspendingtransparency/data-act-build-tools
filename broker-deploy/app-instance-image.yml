@@ -20,38 +20,47 @@
         path: "{{ item.path }}"
         state: link
       with_items:
-        - { src: "/usr/local/bin/python", path: "/usr/bin/python3.5" }
         - { src: "/usr/local/bin/pip", path: "/usr/bin/pip3.5" }
         
     - name: python version
       shell: "python --version"
       register: python_installed
+      ignore_errors: yes
 
     - debug: msg="{{ python_installed.stdout }}"
+      ignore_errors: yes
     
     - name: python3 version
       shell: "python3 --version"
       register: python3_installed
+      ignore_errors: yes
 
     - debug: msg="{{ python3_installed.stdout }}"
+      ignore_errors: yes
     
     - name: pip version
       shell: "pip --version"
       register: pip_installed
+      ignore_errors: yes
 
     - debug: msg="{{ pip_installed.stdout }}"
+      ignore_errors: yes
     
     - name: pip3 version
       shell: "pip3 --version"
       register: pip3_installed
+      ignore_errors: yes
 
     - debug: msg="{{ pip3_installed.stdout }}"
+      ignore_errors: yes
     
     - name: pip3.5 version
       shell: "pip3.5 --version"
       register: pip35_installed
+      ignore_errors: yes
 
     - debug: msg="{{ pip35_installed.stdout }}"
+      ignore_errors: yes
           
     - name: boto3
       become: true
