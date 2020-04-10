@@ -13,14 +13,14 @@
 # ===================== Copy Git Creds from S3 Bucket =====================#
 
     - name: Create a link to new Python executables
-        file:
-          force: yes
-          src: "{{ item.src }}"
-          path: "{{ item.path }}"
-          state: link
-        with_items:
-          - { src: "/usr/local/bin/python", path: "/usr/bin/python3.5" }
-          - { src: "/usr/local/bin/pip", path: "/usr/bin/pip3.5" }
+      file:
+        force: yes
+        src: "{{ item.src }}"
+        path: "{{ item.path }}"
+        state: link
+      with_items:
+        - { src: "/usr/local/bin/python", path: "/usr/bin/python3.5" }
+        - { src: "/usr/local/bin/pip", path: "/usr/bin/pip3.5" }
           
     - name: boto3
       become: true
