@@ -14,7 +14,7 @@
 # ===================== Copy Git Creds from S3 Bucket =====================#
 
     - name: check /usr/bin/python version
-      command: /usr/bin/python --version
+      command: "/usr/bin/python --version 2>&1"
       register: ubpyver
       ignore_errors: yes
 
@@ -22,7 +22,7 @@
       ignore_errors: yes
 
     - name: check python version
-      command: python --version
+      command: "python --version 2>&1"
       register: pyver
       ignore_errors: yes
 
@@ -30,7 +30,7 @@
       ignore_errors: yes
 
     - name: check python3 version
-      command: python3 --version
+      command: "python3 --version 2>&1"
       register: py3ver
       ignore_errors: yes
 
@@ -38,7 +38,7 @@
       ignore_errors: yes
 
     - name: check pip version
-      command: pip --version
+      command: "pip --version 2>&1"
       register: pipver
       ignore_errors: yes
 
@@ -46,7 +46,7 @@
       ignore_errors: yes
 
     - name: check pip3 version
-      command: pip3.5 --version
+      command: "pip3.5 --version 2>&1"
       register: pip3ver
       ignore_errors: yes
 
