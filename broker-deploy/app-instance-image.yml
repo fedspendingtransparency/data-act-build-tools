@@ -13,6 +13,7 @@
 # ===================== Copy Git Creds from S3 Bucket =====================#
 
     - name: Create a link to new Python executables
+      become: true
       file:
         force: yes
         src: "{{ item.src }}"
