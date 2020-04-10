@@ -18,35 +18,40 @@
       register: ubpyver
       ignore_errors: yes
 
-    - debug: msg="/usr/bin/python - {{ ubpyver.stdout }}"
+    - debug: msg="/usr/bin/python - {{ ubpyver.stdout_lines }}"
+      ignore_errors: yes
 
     - name: check python version
       command: python --version
       register: pyver
       ignore_errors: yes
 
-    - debug: msg="python - {{ pyver.stdout }}"
+    - debug: msg="python - {{ pyver.stdout_lines }}"
+      ignore_errors: yes
 
     - name: check python3 version
       command: python3 --version
       register: py3ver
       ignore_errors: yes
 
-    - debug: msg="python3 - {{ py3ver.stdout }}"
+    - debug: msg="python3 - {{ py3ver.stdout_lines }}"
+      ignore_errors: yes
 
     - name: check pip version
       command: pip --version
       register: pipver
       ignore_errors: yes
 
-    - debug: msg="pip - {{ pipver.stdout }}"
+    - debug: msg="pip - {{ pipver.stdout_lines }}"
+      ignore_errors: yes
 
     - name: check pip3 version
       command: pip3.5 --version
       register: pip3ver
       ignore_errors: yes
 
-    - debug: msg="pip3 - {{ pip3ver.stdout }}"
+    - debug: msg="pip3 - {{ pip3ver.stdout_lines }}"
+      ignore_errors: yes
 
     - name: pip packages
       become: true

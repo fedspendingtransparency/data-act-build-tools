@@ -7,6 +7,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {}
+  required_version = ">= 0.12"
 }
 
 resource "aws_autoscaling_group" "api-asg" {
