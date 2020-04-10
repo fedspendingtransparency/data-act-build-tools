@@ -8,6 +8,7 @@
     BRANCH: "{{ BRANCH }}"
     CONFIG_HOME: /data-act/config
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
+    ansible_python_interpreter: /usr/bin/python3.5
 
     envs:
       master:      {env_long: prod }
@@ -20,11 +21,6 @@
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
 
-    - name: Install pip
-      become: true
-      yum: 
-        name: python-pip
-
     - name: pip packages
       become: true
       pip:
@@ -32,6 +28,7 @@
           - selinux
           - botocore
           - boto3
+        executable: pip3.5
 
     - name: copy github credentials from S3 Bucket
       aws_s3:
