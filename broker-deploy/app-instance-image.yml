@@ -13,13 +13,49 @@
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
 
-    - name: boto3
+    - name: check /usr/bin/python version
+      command: /usr/bin/python --version
+      register: ubpyver
+      ignore_errors: yes
+
+    - debug: msg="/usr/bin/python - {{ ubpyver.stdout }}"
+
+    - name: check python version
+      command: python --version
+      register: pyver
+      ignore_errors: yes
+
+    - debug: msg="python - {{ pyver.stdout }}"
+
+    - name: check python3 version
+      command: python3 --version
+      register: py3ver
+      ignore_errors: yes
+
+    - debug: msg="python3 - {{ py3ver.stdout }}"
+
+    - name: check pip version
+      command: pip --version
+      register: pipver
+      ignore_errors: yes
+
+    - debug: msg="pip - {{ pipver.stdout }}"
+
+    - name: check pip3 version
+      command: pip3.5 --version
+      register: pip3ver
+      ignore_errors: yes
+
+    - debug: msg="pip3 - {{ pip3ver.stdout }}"
+
+    - name: pip packages
       become: true
       pip:
         name:
+          - selinux
           - botocore
           - boto3
-        executable: pip3.5
+        executable: "/usr/bin/python -m pip"
 
     - name: copy github credentials from S3 Bucket
       aws_s3:
