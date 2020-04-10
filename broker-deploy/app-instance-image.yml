@@ -21,7 +21,7 @@
     - debug: msg="{{ bin.stdout }}"
       ignore_errors: yes
 
-    - debug: var=ansible_python_interpreter
+    - debug: var=ansible_python_version
 
     - name: check /usr/bin/python version
       command: "/usr/bin/python --version 2>&1"
