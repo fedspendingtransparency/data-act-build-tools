@@ -14,7 +14,7 @@
 # ===================== Copy Git Creds from S3 Bucket =====================#
 
     - name: /usr/bin
-      command: "ls -ls /usr/bin/python*"
+      command: "ls -ls /usr/bin"
       register: bin
       ignore_errors: yes
 
