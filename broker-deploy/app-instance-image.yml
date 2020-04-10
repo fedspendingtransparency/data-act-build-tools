@@ -7,12 +7,21 @@
     REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
     BRANCH: "{{ BRANCH }}"
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
-    ansible_python_interpreter: /usr/bin/python3.5
-
 
   tasks:
 
 # ===================== Copy Git Creds from S3 Bucket =====================#
+
+    - name: Create a link to new Python executables
+        file:
+          force: yes
+          src: "{{ item.src }}"
+          path: "{{ item.path }}"
+          state: link
+        with_items:
+          - { src: "/usr/local/bin/python", path: "/usr/bin/python3.5" }
+          - { src: "/usr/local/bin/pip", path: "/usr/bin/pip3.5" }
+          
     - name: boto3
       become: true
       pip:
@@ -20,7 +29,7 @@
           - selinux
           - botocore
           - boto3
-        executable: pip3.5
+        executable: pip
 
     - name: copy github credentials from S3 Bucket
       aws_s3:
