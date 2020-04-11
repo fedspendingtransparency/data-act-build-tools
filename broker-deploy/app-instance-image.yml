@@ -22,6 +22,7 @@
         state: link
       with_items:
         - { src: "/usr/bin/python3.5", path: "/usr/bin/python" }
+        - { src: "/usr/bin/python3.5", path: "/usr/bin/python3" }
         - { src: "/usr/bin/pip3.5", path: "/usr/bin/pip" }
         
     - name: python version
