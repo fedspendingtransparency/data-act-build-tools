@@ -21,8 +21,8 @@
         path: "{{ item.path }}"
         state: link
       with_items:
-        - { src: "/usr/local/bin/python3.5", path: "/usr/bin/python" }
-        - { src: "/usr/local/bin/pip3.5", path: "/usr/bin/pip" }
+        - { src: "/usr/bin/python3.5", path: "/usr/bin/python" }
+        - { src: "/usr/bin/pip3.5", path: "/usr/bin/pip" }
         
     - name: python version
       shell: "python --version"
