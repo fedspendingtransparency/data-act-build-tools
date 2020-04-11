@@ -7,7 +7,7 @@
     REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
     BRANCH: "{{ BRANCH }}"
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/bin/python3.5
 
   tasks:
 
