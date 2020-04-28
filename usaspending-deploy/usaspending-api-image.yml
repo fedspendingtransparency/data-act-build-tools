@@ -31,9 +31,7 @@
       register: result
 
     - debug:
-        msg: "{{result.stout}}"
-
-
+        msg: "{{result.stdout}}"
     
     - name: copy ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml to 
       fetch:
