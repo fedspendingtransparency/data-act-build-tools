@@ -27,7 +27,7 @@
     
     - name: copy ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml to 
       fetch:
-        src: "/root/workspace/usaspending-tools/usaspending-deploy/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
+        src: "/root/workspace/usaspending-deploy/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
         dest: /home/ec2-user/
         flat: true
 
