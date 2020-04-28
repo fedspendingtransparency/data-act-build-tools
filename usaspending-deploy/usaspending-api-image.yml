@@ -23,15 +23,7 @@
       sandbox: {env_long: sandbox}
 
   tasks:
-#===============================  Set http and https proxies  ===============================#
-
-    - name: assign ownership of usaspending-deploy to ec2-user
-      become: true
-      file:
-        path: /root/workspace/usaspending-deploy
-        owner: ec2-user
-        recurse: yes
-      delegate_to: localhost
+#===============================  Set http and https proxies  ===============================
 
     - name: test
       shell: "ls -ltr /root/workspace/usaspending-deploy"
