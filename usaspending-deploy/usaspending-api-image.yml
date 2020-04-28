@@ -24,6 +24,16 @@
 
   tasks:
 #===============================  Set http and https proxies  ===============================#
+
+    - name: test
+      shell: "ls -ltr /root/workspace"
+      delegate_to: localhost
+      register: result
+
+    - debug:
+        msg: "{{result.stout}}"
+
+
     
     - name: copy ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml to 
       fetch:
