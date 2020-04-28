@@ -2,7 +2,7 @@
 
 FROM centos:latest
 
-ARG packer_version_arg=1.4.0
+ARG packer_version_arg=1.4.3
 ARG ansible_version_arg=2.8.3
 ARG terraform_version_arg=0.12.24
 
