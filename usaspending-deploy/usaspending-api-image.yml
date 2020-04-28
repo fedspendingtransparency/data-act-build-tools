@@ -1,5 +1,4 @@
 #===============================  USASPENDING-API-IMAGE PLAYBOOK  ===============================#
-
 ---
 - hosts: all
 
@@ -10,63 +9,11 @@
     BRANCH: "{{ BRANCH }}"
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     CODE_HOME: /data-act/backend
-    CONFIG_HOME: /data-act/config
     REQ_DIR: "{{ CODE_HOME }}/requirements"
     ansible_python_interpreter: /usr/bin/python3
     DATADOG_YML_PATH: "/data-act/config/deploy/datadog.yaml"
 
-    envs:
-      master : {env_long: prod }
-      staging: {env_long: staging }
-      qat    : {env_long: qat }
-      dev    : {env_long: dev }
-      sandbox: {env_long: sandbox}
-
   tasks:
-#===============================  Set http and https proxies  ===============================
-
-    - name: Load variables from config repo
-      include_vars: "/root/workspace/usaspending-deploy/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
-
-    - name: create /etc/profile.d/proxy.sh to export proxy env vars
-      become: true
-      copy:
-        dest: /etc/profile.d/proxy.sh
-        mode: 0755
-        content: |
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          no_proxy={{ NO_PROXY_VAR }}
-          export http_proxy https_proxy no_proxy
-
-    - name: add proxy env vars to /etc/environment
-      become: true
-      blockinfile:
-        dest: /etc/environment
-        block: |
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          HTTP_PROXY={{ SQUID_ELB }}
-          HTTPS_PROXY={{ SQUID_ELB }}
-          no_proxy={{ NO_PROXY_VAR }}
-          NO_PROXY={{ NO_PROXY_VAR }}
-
-    - name: Execute proxy.sh
-      shell: /etc/profile.d/proxy.sh
-
-    - name: add proxy env to /etc/systemd/system.config
-      become: true
-      ini_file:
-        path: /etc/systemd/system.conf
-        section: Manager
-        option: DefaultEnvironment
-        value: >
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          HTTP_PROXY={{ SQUID_ELB }}
-          HTTPS_PROXY={{ SQUID_ELB }}
-          no_proxy={{ NO_PROXY_VAR }}
-          NO_PROXY={{ NO_PROXY_VAR }}
 
 #=============================== Copy Git Credentials from S3 Bucket ===============================#
 
