@@ -40,15 +40,13 @@
       git:
         repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/usaspending-config.git
         dest: /data-act/config
-        version: config/sandbox-private-subnet
         force: yes
 
     - name: pull repo - checkout build-tools repo from git
       become: true
       git:
-        repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/data-act-build-tools.git
+        repo: https://github.com/fedspendingtransparency/data-act-build-tools.git
         dest: /data-act/build-tools
-        version: config/private-subnet
         force: yes
 
     - name: assign ownership of api to ec2-user

@@ -11,14 +11,6 @@
     ansible_python_interpreter: /usr/bin/python3.5
 
   tasks:
-    - name: python3 symlink
-      become: true
-      file:
-        force: yes
-        src: /usr/bin/python3.5
-        path: /usr/bin/python3
-        state: link
-
     - name: copy github credentials from S3 Bucket
       aws_s3:
         mode: getstr
@@ -42,7 +34,6 @@
       git:
         repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/data-act-broker-config.git
         dest: /data-act/config
-        version: config/sandbox-private-subnet
         force: "yes"
 
     - name: Checkout build-tools repo from git
@@ -50,7 +41,6 @@
       git:
         repo: https://github.com/fedspendingtransparency/data-act-build-tools.git
         dest: /data-act/build-tools
-        version: config/private-subnet
         force: "yes"
 
     - name: Assign ownership of api to ec2-user
