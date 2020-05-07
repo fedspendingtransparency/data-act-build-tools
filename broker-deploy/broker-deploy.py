@@ -58,7 +58,7 @@ def deploy():
                                       '-machine-readable', packer_file])
 
     ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
-    ami_id = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
+    ami_id = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+21]
     print('Done. Packer AMI created: '+ami_id)
 
     if current_app_amis:
