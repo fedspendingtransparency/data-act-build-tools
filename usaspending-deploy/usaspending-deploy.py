@@ -58,7 +58,7 @@ def deploy():
                                       '-var', 'ansible_branch_var={}'.format('master' if deploy_env == 'prod' else deploy_env), 
                                       '-machine-readable', packer_file])
     ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
-    new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+12]
+    new_instance_ami = ami_line[ami_line.find('ami-'):ami_line.find('ami-')+21]
     print('Done. New AMI created: ' + new_instance_ami)
 
     # Set current=False tag for old AMIs
