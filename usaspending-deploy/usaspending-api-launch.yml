@@ -173,6 +173,9 @@
         - { regexp: '\s*STATIC_URL =.*',
             line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'" }
 
+        - { regexp: '\s*DEFAULT_DB_TIMEOUT_IN_SECONDS =.*',
+            line: "DEFAULT_DB_TIMEOUT_IN_SECONDS = '{{ DEFAULT_DB_TIMEOUT_IN_SECONDS }}'" } 
+
     - name: add settings.py env vars
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
