@@ -99,6 +99,11 @@
       become: true
       shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
+    - name: API | add DB_TIMEOUT_IN_SECONDS to uswgi ini
+      when: BUILD_TYPE == 'api'
+      become: true
+      shell: "echo env=DEFAULT_DB_TIMEOUT_IN_SECONDS={{ DEFAULT_DB_TIMEOUT_IN_SECONDS }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+
 #===============================  DataDog Configuration  ===============================#
 
     - name: Define Datadog APM env key for this app environment
@@ -172,9 +177,6 @@
 
         - { regexp: '\s*STATIC_URL =.*',
             line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'" }
-
-        - { regexp: '\s*DEFAULT_DB_TIMEOUT_IN_SECONDS =.*',
-            line: "DEFAULT_DB_TIMEOUT_IN_SECONDS = '{{ DEFAULT_DB_TIMEOUT_IN_SECONDS }}'" } 
 
     - name: add settings.py env vars
       lineinfile:
