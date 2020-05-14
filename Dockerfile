@@ -1,6 +1,6 @@
 # Contains packer/terraform/ansible dependencies in order to run the various *-deploy.py scripts in a container
 
-FROM centos:latest
+FROM centos:7
 
 ARG packer_version_arg=1.4.3
 ARG ansible_version_arg=2.8.3
