@@ -20,13 +20,14 @@
       broker: {app_long: broker, app_short: API}
       validator: {app_long: validator, app_short: Val}
 
-    # Domains are used for SSL cert identification
     envs:
       master:  {env_long: prod,    domain: 'broker-api.usaspending.gov' }
       staging: {env_long: staging, domain: 'broker-staging-api.usaspending.gov' }
       dev:     {env_long: dev,     domain: 'broker-dev-api.usaspending.gov' }
       qat:     {env_long: qat,     domain: 'broker-qat-api.usaspending.gov' }
       sandbox: {env_long: sandbox, domain: 'broker-sandbox-api.usaspending.gov'}
+    
+    ssl_bucket_name: usaspending-ssl
 
   tasks:
 
@@ -95,12 +96,12 @@
     - name: Copy public.pem from S3 Bucket
       when: APP == "broker"
       become: true
-      shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
+      shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
     - name: Copy private.pem from S3 Bucket
       when: APP == "broker"
       become: true
-      shell: "aws s3 cp s3://usaspending-ssl/{{ vars['envs'][BRANCH]['domain'] }}/private.pem /etc/cert.key --region us-gov-west-1"
+      shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/private.pem /etc/cert.key --region us-gov-west-1"
 
     - name: Assign ownership of cert.pem to ec2-user
       when: APP == "broker"

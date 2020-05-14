@@ -35,6 +35,8 @@
 
     ansible_python_interpreter: "/usr/bin/python3"
 
+    ssl_bucket_name: usaspending-ssl
+
   tasks:
 
     - name: Load variables from config repo
@@ -278,14 +280,14 @@
       - name: copy public.pem and private.pem from S3 Bucket
         aws_s3:
           mode: get
-          bucket: usaspending-ssl
+          bucket: "{{ ssl_bucket_name }}"
           region: us-gov-west-1
           object: "{{ item.object }}"
           dest: "{{ item.dest }}"
         with_items:
-          - { object: "/usaspending-api-gov/{{ DOMAIN }}/public.pem",
+          - { object: "/usaspending-api-{{ vars['envs'][BRANCH]['env_long'] }}/public.pem",
               dest: "/etc/cert.pem" }
-          - { object: "/usaspending-api-gov/{{ DOMAIN }}/private.pem",
+          - { object: "/usaspending-api-{{ vars['envs'][BRANCH]['env_long'] }}/private.pem",
               dest: "/etc/cert.key" }
 
 #===============================  Filebeat Configuration  ===============================#
