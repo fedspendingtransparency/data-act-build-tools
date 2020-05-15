@@ -76,6 +76,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
   alarm_name          = "${var.api_name_prefix}_requestshigh (${var.aws_amis[var.aws_region]})"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
+  cooldown            = "300"
   threshold           = "5000"
 
   metric_query {
@@ -135,6 +136,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests" {
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
   threshold           = "5000"
+  cooldown            = "300"
 
   metric_query {
     id          = "e1"
