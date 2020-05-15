@@ -76,7 +76,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
   alarm_name          = "${var.api_name_prefix}_requestshigh (${var.aws_amis[var.aws_region]})"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
-  threshold           = "10000"
+  threshold           = "5000"
 
   metric_query {
     id          = "e1"
@@ -117,7 +117,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
     }
   }
 
-  alarm_description = "Request Count per Instance Greater Than 10000 on ${var.api_name_prefix}"
+  alarm_description = "Request Count per Instance Greater Than 5000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_down.arn]
 }
 
@@ -134,7 +134,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests" {
   alarm_name          = "${var.api_name_prefix}_requestslow (${var.aws_amis[var.aws_region]})"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
-  threshold           = "10000"
+  threshold           = "5000"
 
   metric_query {
     id          = "e1"
@@ -175,7 +175,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests" {
     }
   }
 
-  alarm_description = "Request Count per Instance Less Than 10000 on ${var.api_name_prefix}"
+  alarm_description = "Request Count per Instance Less Than 5000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_down.arn]
 }
 
