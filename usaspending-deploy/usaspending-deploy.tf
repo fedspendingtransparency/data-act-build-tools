@@ -118,7 +118,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
   }
 
   alarm_description = "Request Count per Instance Greater Than 5000 on ${var.api_name_prefix}"
-  alarm_actions     = [aws_autoscaling_policy.api_scale_down.arn]
+  alarm_actions     = [aws_autoscaling_policy.api_scale_up.arn]
 }
 
 resource "aws_autoscaling_policy" "api_scale_down" {
