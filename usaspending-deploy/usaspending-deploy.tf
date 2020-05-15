@@ -72,21 +72,52 @@ resource "aws_autoscaling_policy" "api_scale_up" {
   autoscaling_group_name = aws_autoscaling_group.api_asg.name
 }
 
-resource "aws_cloudwatch_metric_alarm" "api_alarm_high_cpu" {
-  alarm_name          = "${var.api_name_prefix}_cpuhigh (${var.aws_amis[var.aws_region]})"
+resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
+  alarm_name          = "${var.api_name_prefix}_requestshigh (${var.aws_amis[var.aws_region]})"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = "120"
-  statistic           = "Average"
-  threshold           = "50"
+  evaluation_periods  = "1"
+  threshold           = "5000"
 
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.api_asg.name
+  metric_query {
+    id          = "e1"
+    expression  = "m1/m2"
+    label       = "Requests Per Host"
+    return_data = "true"
   }
 
-  alarm_description = "High CPU on ${var.api_name_prefix}"
+  metric_query {
+    id = "m1"
+
+    metric {
+      metric_name = "RequestCount"
+      namespace   = "AWS/ELB"
+      period      = "300"
+      stat        = "Sum"
+      unit        = "Count"
+
+      dimensions = {
+        LoadBalancerName = var.api_elb
+      }
+    }
+  }
+
+  metric_query {
+    id = "m2"
+
+    metric {
+      metric_name = "HealthyHostCount"
+      namespace   = "AWS/ELB"
+      period      = "300"
+      stat        = "Average"
+      unit        = "Count"
+
+      dimensions = {
+        LoadBalancerName = var.api_elb
+      }
+    }
+  }
+
+  alarm_description = "Request Count per Instance Greater Than 5000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_up.arn]
 }
 
@@ -94,26 +125,57 @@ resource "aws_autoscaling_policy" "api_scale_down" {
   name                   = "${var.api_name_prefix}_scaledown (${var.aws_amis[var.aws_region]})"
   scaling_adjustment     = -1
   adjustment_type        = "ChangeInCapacity"
-  cooldown               = 30
+  cooldown               = 300
   policy_type            = "SimpleScaling"
   autoscaling_group_name = aws_autoscaling_group.api_asg.name
 }
 
-resource "aws_cloudwatch_metric_alarm" "api_alarm_low_cpu" {
-  alarm_name          = "${var.api_name_prefix}_cpulow (${var.aws_amis[var.aws_region]})"
+resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests" {
+  alarm_name          = "${var.api_name_prefix}_requestslow (${var.aws_amis[var.aws_region]})"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = "60"
-  statistic           = "Maximum"
-  threshold           = "5"
+  threshold           = "5000"
 
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.api_asg.name
+  metric_query {
+    id          = "e1"
+    expression  = "m1/m2"
+    label       = "Requests Per Host"
+    return_data = "true"
   }
 
-  alarm_description = "All Instance CPU low ${var.api_name_prefix}"
+  metric_query {
+    id = "m1"
+
+    metric {
+      metric_name = "RequestCount"
+      namespace   = "AWS/ELB"
+      period      = "300"
+      stat        = "Sum"
+      unit        = "Count"
+
+      dimensions = {
+        LoadBalancerName = var.api_elb
+      }
+    }
+  }
+
+  metric_query {
+    id = "m2"
+
+    metric {
+      metric_name = "HealthyHostCount"
+      namespace   = "AWS/ELB"
+      period      = "300"
+      stat        = "Average"
+      unit        = "Count"
+
+      dimensions = {
+        LoadBalancerName = var.api_elb
+      }
+    }
+  }
+
+  alarm_description = "Request Count per Instance Less Than 5000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_down.arn]
 }
 
