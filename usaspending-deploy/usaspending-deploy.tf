@@ -46,6 +46,19 @@ resource "aws_autoscaling_group" "api_asg" {
   }
 }
 
+# When autoscaling decides to terminate an instance, instead of terminating it immediately, it will defer to the termination hook
+# and place the instance into a Termination:Wait state for the specified heartbeat_timeout of 600 seconds (10 minutes).
+# By that time, if the hook has not received a continue request, it will proceed with the default_result,
+# in this case CONTINUE to terminate the instance.
+# AWS Reference: https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html#preparing-for-notification
+resource "aws_autoscaling_lifecycle_hook" "api_hook_termination" {
+  name                    = "${var.api_name_prefix}-${var.aws_amis[var.aws_region]}"
+  autoscaling_group_name  = aws_autoscaling_group.api_asg.name
+  default_result          = "CONTINUE"
+  heartbeat_timeout       = 600
+  lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
+}
+
 resource "aws_launch_configuration" "api_lc" {
   name                 = "${var.api_name_prefix} (${var.aws_amis[var.aws_region]})"
   image_id             = var.aws_amis[var.aws_region]
@@ -67,7 +80,7 @@ resource "aws_autoscaling_policy" "api_scale_up" {
   name                   = "${var.api_name_prefix}_scaleup (${var.aws_amis[var.aws_region]})"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
+  cooldown               = 600
   policy_type            = "SimpleScaling"
   autoscaling_group_name = aws_autoscaling_group.api_asg.name
 }
@@ -75,8 +88,8 @@ resource "aws_autoscaling_policy" "api_scale_up" {
 resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
   alarm_name          = "${var.api_name_prefix}_requestshigh (${var.aws_amis[var.aws_region]})"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "1"
-  threshold           = "5000"
+  evaluation_periods  = "2"
+  threshold           = "10000"
 
   metric_query {
     id          = "e1"
@@ -117,7 +130,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
     }
   }
 
-  alarm_description = "Request Count per Instance Greater Than 5000 on ${var.api_name_prefix}"
+  alarm_description = "Request Count per Instance Greater Than 10000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_up.arn]
 }
 
@@ -134,7 +147,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests" {
   alarm_name          = "${var.api_name_prefix}_requestslow (${var.aws_amis[var.aws_region]})"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
-  threshold           = "5000"
+  threshold           = "10000"
 
   metric_query {
     id          = "e1"
@@ -175,7 +188,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests" {
     }
   }
 
-  alarm_description = "Request Count per Instance Less Than 5000 on ${var.api_name_prefix}"
+  alarm_description = "Request Count per Instance Less Than 10000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_down.arn]
 }
 
