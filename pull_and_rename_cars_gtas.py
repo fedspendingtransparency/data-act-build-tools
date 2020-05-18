@@ -37,21 +37,22 @@ def main():
             (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%m:%S"))
         )
 
-    s3 = boto3.client(service_name='s3', region_name='us-gov-west-1')
+    s3 = boto3.resource(service_name='s3', region_name='us-gov-west-1')
+    bucket_source = s3.Bucket(BUCKET_SOURCE)
 
-    all_files = s3.list_objects(Bucket=BUCKET_SOURCE)['Contents']
+    all_files = bucket_source.objects.all()
 
     if args.force_pull_latest:
-        recent_files = all_files
+        recent_files = list(all_files)
     else:
         recent_files = [x for x in all_files if (
-            datetime.datetime.utcnow() - x['LastModified'].replace(tzinfo=None) < 
+            datetime.datetime.utcnow() - x.last_modified.replace(tzinfo=None) <
             datetime.timedelta(hours=24))]
 
-    recent_files.sort(key=lambda tup: tup['LastModified'],reverse=True)
+    recent_files.sort(key=lambda tup: tup.last_modified, reverse=True)
 
     try:
-        recent_cars = [x for x in recent_files if re.search('PE\.CARS', x['Key'])][0]
+        recent_cars = [x for x in recent_files if re.search('PE\.CARS', x.key)][0]
         cars_exists = True
     except Exception as e:
         print('No CARS file posted in the last 24 hours, or no files found.')
@@ -62,8 +63,8 @@ def main():
         current_dir = os.getcwd()
         cars_file_name = os.path.join(current_dir, 'files', 'cars_tas.csv')
         os.makedirs('files', exist_ok=True)
-        print('Downloading ' + recent_cars['Key'] + ' as cars_tas.csv')
-        s3.download_file(BUCKET_SOURCE, recent_cars['Key'], cars_file_name)
+        print('Downloading ' + recent_cars.key + ' as cars_tas.csv')
+        bucket_source.download_file(recent_cars.key, cars_file_name)
         print('Download successful, beginning file cleanup.')
 
         # read CGAC values from csv
@@ -83,7 +84,7 @@ def main():
         data.to_csv(cars_file_name)
 
     try:
-        recent_gtas = [x for x in recent_files if re.search('PE\.GTAS', x['Key'])][0]
+        recent_gtas = [x for x in recent_files if re.search('PE\.GTAS', x.key)][0]
         gtas_exists = True
     except:
         print('No GTAS file posted in the last 24 hours, or no files found.')
@@ -91,12 +92,12 @@ def main():
         pass
 
     if gtas_exists:
-        gtas_year = recent_gtas['Key'].split('GTAS')[1][4:8]
-        gtas_period = recent_gtas['Key'].split('GTAS')[1][8:10]
+        gtas_year = recent_gtas.key.split('GTAS')[1][4:8]
+        gtas_period = recent_gtas.key.split('GTAS')[1][8:10]
         gtas_filename = '_'.join(('sf', '133', gtas_year,gtas_period)) + '.csv'
         os.makedirs('files', exist_ok=True)
-        print('Downloading ' + recent_gtas['Key'] + ' as ' + gtas_filename)
-        s3.download_file(BUCKET_SOURCE, recent_gtas['Key'], os.path.join(os.getcwd(), 'files', gtas_filename))
+        print('Downloading ' + recent_gtas.key + ' as ' + gtas_filename)
+        bucket_source.download_file(recent_gtas.key, os.path.join(os.getcwd(), 'files', gtas_filename))
         print('Download successful')
 
     if not cars_exists and not gtas_exists:
