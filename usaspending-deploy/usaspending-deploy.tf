@@ -46,6 +46,11 @@ resource "aws_autoscaling_group" "api_asg" {
   }
 }
 
+# When autoscaling decides to terminate an instance, instead of terminating it immediately, it will defer to the termination hook
+# and place the instance into a Termination:Wait state for the specified heartbeat_timeout of 600 seconds (10 minutes).
+# By that time, if the hook has not received a continue request, it will proceed with the default_result,
+# in this case CONTINUE to terminate the instance.
+# AWS Reference: https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html#preparing-for-notification
 resource "aws_autoscaling_lifecycle_hook" "api_hook_termination" {
   name                    = "${var.api_name_prefix}-${var.aws_amis[var.aws_region]}"
   autoscaling_group_name  = aws_autoscaling_group.api_asg.name
