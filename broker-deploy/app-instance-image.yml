@@ -18,23 +18,6 @@
       sandbox:     {env_long: sandbox}
 
   tasks:
-    - name: python3 symlink
-      become: true
-      file:
-        force: yes
-        src: /usr/bin/python3.5
-        path: /usr/bin/python3
-        state: link
-
-    - name: pip packages
-      become: true
-      pip:
-        name:
-          - selinux
-          - botocore
-          - boto3
-        executable: pip3.5
-
     - name: copy github credentials from S3 Bucket
       aws_s3:
         mode: getstr
@@ -63,7 +46,7 @@
     - name: Checkout build-tools repo from git
       become: true
       git:
-        repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/data-act-build-tools.git
+        repo: https://github.com/fedspendingtransparency/data-act-build-tools.git
         dest: /data-act/build-tools
         force: "yes"
 
@@ -80,57 +63,6 @@
         path: /tmp
         owner: ec2-user
         recurse: "yes"
-
-#===============================  Set http and https proxies  ===============================#
-
-    - name: copy ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml to 
-      fetch:
-        src: "{{ CONFIG_HOME }}/deployment/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
-        dest: /home/ec2-user/
-        flat: true
-
-    - name: Load variables from config repo
-      include_vars: "/home/ec2-user/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
-
-    - name: create /etc/profile.d/proxy.sh to export proxy env vars
-      become: true
-      copy:
-        dest: /etc/profile.d/proxy.sh
-        mode: 0755
-        content: |
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          no_proxy={{ NO_PROXY_VAR }}
-          export http_proxy https_proxy no_proxy
-    
-    - name: add proxy env vars to /etc/environment
-      become: true
-      blockinfile:
-        dest: /etc/environment
-        block: |
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          HTTP_PROXY={{ SQUID_ELB }}
-          HTTPS_PROXY={{ SQUID_ELB }}
-          no_proxy={{ NO_PROXY_VAR }}
-          NO_PROXY={{ NO_PROXY_VAR }}
-    
-    - name: Execute proxy.sh
-      shell: /etc/profile.d/proxy.sh
-
-    - name: add proxy env to /etc/systemd/system.config
-      become: true
-      ini_file:
-        path: /etc/systemd/system.conf
-        section: Manager
-        option: DefaultEnvironment
-        value: >
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          HTTP_PROXY={{ SQUID_ELB }}
-          HTTPS_PROXY={{ SQUID_ELB }}
-          no_proxy={{ NO_PROXY_VAR }}
-          NO_PROXY={{ NO_PROXY_VAR }}
 
 # ======================== Install PIP Packages ========================#
 
@@ -192,4 +124,55 @@
         minute: "0"
         hour: "1"
         job: '/usr/bin/freshclam --quiet && /data-act/config/clamav/clamscan_daily.sh'
+
+#===============================  Set http and https proxies  ===============================#
+
+    - name: copy ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml to 
+      fetch:
+        src: "{{ CONFIG_HOME }}/deployment/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
+        dest: /home/ec2-user/
+        flat: true
+
+    - name: Load variables from config repo
+      include_vars: "/home/ec2-user/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
+
+    - name: create /etc/profile.d/proxy.sh to export proxy env vars
+      become: true
+      copy:
+        dest: /etc/profile.d/proxy.sh
+        mode: 0755
+        content: |
+          http_proxy={{ SQUID_ELB }}
+          https_proxy={{ SQUID_ELB }}
+          no_proxy={{ NO_PROXY_VAR }}
+          export http_proxy https_proxy no_proxy
+    
+    - name: add proxy env vars to /etc/environment
+      become: true
+      blockinfile:
+        dest: /etc/environment
+        block: |
+          http_proxy={{ SQUID_ELB }}
+          https_proxy={{ SQUID_ELB }}
+          HTTP_PROXY={{ SQUID_ELB }}
+          HTTPS_PROXY={{ SQUID_ELB }}
+          no_proxy={{ NO_PROXY_VAR }}
+          NO_PROXY={{ NO_PROXY_VAR }}
+    
+    - name: Execute proxy.sh
+      shell: /etc/profile.d/proxy.sh
+
+    - name: add proxy env to /etc/systemd/system.config
+      become: true
+      ini_file:
+        path: /etc/systemd/system.conf
+        section: Manager
+        option: DefaultEnvironment
+        value: >
+          http_proxy={{ SQUID_ELB }}
+          https_proxy={{ SQUID_ELB }}
+          HTTP_PROXY={{ SQUID_ELB }}
+          HTTPS_PROXY={{ SQUID_ELB }}
+          no_proxy={{ NO_PROXY_VAR }}
+          NO_PROXY={{ NO_PROXY_VAR }}
 

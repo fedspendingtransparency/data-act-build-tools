@@ -400,4 +400,3 @@
     - name: enable & restart supervisord.service
       become: true
       shell: "systemctl enable supervisord && systemctl restart supervisord"
-
