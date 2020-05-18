@@ -75,7 +75,7 @@ resource "aws_autoscaling_policy" "api_scale_up" {
   name                   = "${var.api_name_prefix}_scaleup (${var.aws_amis[var.aws_region]})"
   scaling_adjustment     = 1
   adjustment_type        = "ChangeInCapacity"
-  cooldown               = 300
+  cooldown               = 600
   policy_type            = "SimpleScaling"
   autoscaling_group_name = aws_autoscaling_group.api_asg.name
 }
