@@ -15,7 +15,7 @@ ENV TERRAGRUNT_VERSION=${terragrunt_version_arg}
 RUN yum update -y && \
     yum install -y wget && \
     yum install -y unzip && \
-    yum install -y https://centos7.iuscommunity.org/ius-release.rpm && \
+    yum install -y https://repo.ius.io/ius-release-el7.rpm && \
     yum install -y python36u && \
     yum install -y python36u-pip && \
     yum install -y openssh-clients
