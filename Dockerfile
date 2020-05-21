@@ -41,6 +41,7 @@ RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
 # install terragrunt and create a symlink on /usr/local
 RUN wget https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64
 RUN mkdir -p /opt/terragrunt && mv terragrunt_linux_amd64 /opt/terragrunt/terragrunt
+RUN chmod +x /opt/terragrunt/terragrunt
 RUN ln -s /opt/terragrunt/terragrunt /usr/local/bin/terragrunt
 
 # install pip packages
