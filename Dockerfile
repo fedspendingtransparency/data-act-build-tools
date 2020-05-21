@@ -44,4 +44,4 @@ RUN mkdir -p /opt/terragrunt && mv terragrunt_linux_amd64 /opt/terragrunt/terrag
 RUN ln -s /opt/terragrunt/terragrunt /usr/local/bin/terragrunt
 
 # install pip packages
-RUN pip3 install boto3 sh argparse
+RUN pip3 install boto3 sh argparse awscli
