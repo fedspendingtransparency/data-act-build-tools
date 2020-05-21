@@ -5,10 +5,12 @@ FROM centos:7
 ARG packer_version_arg=1.5.6
 ARG ansible_version_arg=2.8.3
 ARG terraform_version_arg=0.12.24
+ARG terragrunt_version_arg=0.23.18
 
 ENV PACKER_VERSION=${packer_version_arg}
 ENV ANSIBLE_VERSION=${ansible_version_arg}
 ENV TERRAFORM_VERSION=${terraform_version_arg}
+ENV TERRAGRUNT_VERSION=${terragrunt_version_arg}
 
 RUN yum update -y && \
     yum install -y wget && \
@@ -35,6 +37,11 @@ RUN pip3 install ansible==${ANSIBLE_VERSION}
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 RUN unzip /root/workspace/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt/terraform
 RUN ln -s /opt/terraform/terraform /usr/local/bin/terraform
+
+# install terragrunt and create a symlink on /usr/local
+RUN wget https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64
+RUN mkdir -p /opt/terragrunt && mv terragrunt_linux_amd64 /opt/terragrunt/terragrunt
+RUN ln -s /opt/terragrunt/terragrunt /usr/local/bin/terragrunt
 
 # install pip packages
 RUN pip3 install boto3 sh argparse
