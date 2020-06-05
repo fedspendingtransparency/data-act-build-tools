@@ -159,7 +159,7 @@
     - name: chmod 0755 update_lifecycle_status.sh script
       become: true
       file:
-        path: /data-act/config/asg_lifecycle_hook/55
+        path: /data-act/config/asg_lifecycle_hook/update_lifecycle_status.sh
         owner: ec2-user
         mode: "0755"
 
