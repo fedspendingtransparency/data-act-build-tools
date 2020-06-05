@@ -7,6 +7,8 @@
 
   vars:
     BRANCH: "{{ BRANCH }}"
+    CONFIG_BRANCH: "{{ CONFIG_BRANCH }}"
+    TOOLS_BRANCH: "{{ TOOLS_BRANCH }}"
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
@@ -49,12 +51,24 @@
         dest: /data-act/config
         force: yes
 
+    - name: checkout config branch
+      become: true
+      shell: git checkout {{ CONFIG_BRANCH }}
+      args:
+        chdir: /data-act/config
+
     - name: pull repo - checkout build-tools repo from git
       become: true
       git:
         repo: https://github.com/fedspendingtransparency/data-act-build-tools.git
         dest: /data-act/build-tools
         force: yes
+
+    - name: checkout tools branch
+      become: true
+      shell: git checkout {{ TOOLS_BRANCH }}
+      args:
+        chdir: /data-act/build-tools
 
     - name: assign ownership of api to ec2-user
       become: true
