@@ -7,6 +7,8 @@
 
   vars:
     BRANCH: "{{ BRANCH }}"
+    CONFIG_BRANCH: "{{ CONFIG_BRANCH }}"
+    TOOLS_BRANCH: "{{ TOOLS_BRANCH }}"
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
@@ -46,6 +48,7 @@
       become: true
       git:
         repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/usaspending-config.git
+        version: "{{ CONFIG_BRANCH }}"
         dest: /data-act/config
         force: yes
 
@@ -53,6 +56,7 @@
       become: true
       git:
         repo: https://github.com/fedspendingtransparency/data-act-build-tools.git
+        version: "{{ TOOLS_BRANCH }}"
         dest: /data-act/build-tools
         force: yes
 
@@ -153,6 +157,21 @@
         minute: "0"
         hour: "1"
         job: '/usr/bin/freshclam --quiet && /data-act/config/clamav/clamscan_daily.sh'
+
+#===============================  LifeCycle Hook Actions  ===============================#
+
+    - name: chmod 0755 update_lifecycle_status.sh script
+      become: true
+      file:
+        path: /data-act/config/asg_lifecycle_hook/update_lifecycle_status.sh
+        owner: ec2-user
+        mode: "0755"
+
+    - name : create crontab for periodic check of lifecycle status
+      become: true
+      cron:
+        name: check every minute if instance is terminating and proceed when uwsgi processes are cleared
+        job: '/data-act/config/asg_lifecycle_hook/update_lifecycle_status.sh 2>&1 | /usr/bin/logger -t lifecycle_checks'
 
 #===============================  Logrotate  ===============================#
 
