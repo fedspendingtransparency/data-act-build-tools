@@ -84,8 +84,8 @@ def deploy():
     update_lc_ami(ami_id, tfvar_file, deploy_env)
 
     # Update Terraform User Data
-    update_terraform_user_data(deploy_env, 'api', tf_file)
-    update_terraform_user_data(deploy_env, 'val', tf_file)
+    update_startup_script(ansible_branch_var, 'broker', 'broker-start.sh')
+    update_startup_script(ansible_branch_var, 'validator', 'broker-start.sh')
 
     print('**************************************************************************')
     print(' Running terraform... ')
@@ -150,19 +150,26 @@ def update_lc_ami(new_ami='', tfvar_file='variables.tf.json', deploy_env='na'):
 
     return
 
-def update_terraform_user_data(environment, type, tf_file):
-    f = open(tf_file,'r')
+def update_startup_script(branch, app, file):
+    f = open(file,'r')
     filedata = f.read()
     f.close()
 
-    startup_shell_script = "broker-start-{}.sh".format(environment)
-    newdata = filedata.replace("broker-start-{}.sh".format(type), startup_shell_script)
+    app_var = "APP={}".format(app)
+    branch_var = "BRANCH={}".format(branch)
+    newdata = filedata.replace(
+        "BRANCH=REPLACED_DURING_DEPLOY",
+        branch_var
+    ).replace(
+        "APP=REPLACED_DURING_DEPLOY",
+        app_var
+    )
 
-    f = open(tf_file,'w')
+    f = open(file,'w')
     f.write(newdata)
     f.close()
 
-    print ('Updated {} with user data script for {} {}'.format(tf_file, environment, type))
+    print ('Updated startup script for {} ({})'.format(app, branch))
 
     return
 
