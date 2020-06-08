@@ -48,27 +48,17 @@
       become: true
       git:
         repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/usaspending-config.git
+        version: "{{ CONFIG_BRANCH }}"
         dest: /data-act/config
         force: yes
-
-    - name: checkout config branch
-      become: true
-      shell: git checkout {{ CONFIG_BRANCH }}
-      args:
-        chdir: /data-act/config
 
     - name: pull repo - checkout build-tools repo from git
       become: true
       git:
         repo: https://github.com/fedspendingtransparency/data-act-build-tools.git
+        version: "{{ TOOLS_BRANCH }}"
         dest: /data-act/build-tools
         force: yes
-
-    - name: checkout tools branch
-      become: true
-      shell: git checkout {{ TOOLS_BRANCH }}
-      args:
-        chdir: /data-act/build-tools
 
     - name: assign ownership of api to ec2-user
       become: true
