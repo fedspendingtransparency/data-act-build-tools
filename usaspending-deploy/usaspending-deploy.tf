@@ -65,7 +65,7 @@ resource "aws_launch_configuration" "api_lc" {
   instance_type        = var.api_instance_type
   iam_instance_profile = var.iam_profile
   security_groups      = split(",", var.sec_groups)
-  user_data            = file("usaspending-start-staging.sh")
+  user_data            = file("usaspending-start-api.sh")
   key_name             = var.key_name
   lifecycle {
     create_before_destroy = true
@@ -236,7 +236,7 @@ resource "aws_launch_configuration" "bd_lc" {
   instance_type        = var.bd_instance_type
   iam_instance_profile = var.iam_profile
   security_groups      = split(",", var.sec_groups)
-  user_data            = var.bd_user_data
+  user_data            = file("usaspending-start-bd.sh")
   key_name             = var.key_name
   lifecycle {
     create_before_destroy = true
