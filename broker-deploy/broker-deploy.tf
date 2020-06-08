@@ -97,7 +97,7 @@ resource "aws_launch_configuration" "api-lc" {
 
   # Security group
   security_groups = split(",", var.api_sec_groups)
-  user_data       = var.api_user_data
+  user_data       = file("broker-start-api.sh")
   key_name        = var.key_name
   lifecycle {
     create_before_destroy = true
@@ -112,7 +112,7 @@ resource "aws_launch_configuration" "val-lc" {
 
   # Security group
   security_groups = split(",", var.val_sec_groups)
-  user_data       = var.val_user_data
+  user_data       = file("broker-start-val.sh")
   key_name        = var.key_name
   lifecycle {
     create_before_destroy = true

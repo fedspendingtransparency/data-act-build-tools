@@ -83,6 +83,10 @@ def deploy():
     # Add new AMI id to terraform variables
     update_lc_ami(ami_id, tfvar_file, deploy_env)
 
+    # Update Terraform User Data
+    update_terraform_user_data(deploy_env, 'api', tf_file)
+    update_terraform_user_data(deploy_env, 'val', tf_file)
+
     print('**************************************************************************')
     print(' Running terraform... ')
     # Terraform appears to be pretty particular about variable and .tf files, so move the ones we need into
@@ -143,6 +147,22 @@ def update_lc_ami(new_ami='', tfvar_file='variables.tf.json', deploy_env='na'):
     tfvar_json = open(tfvar_file, "w+")
     tfvar_json.write(json.dumps(tfvar_data, indent=4))
     tfvar_json.close()
+
+    return
+
+def update_terraform_user_data(environment, type, tf_file):
+    f = open(tf_file,'r')
+    filedata = f.read()
+    f.close()
+
+    startup_shell_script = "broker-start-{}.sh".format(environment)
+    newdata = filedata.replace("broker-start-{}.sh".format(type), startup_shell_script)
+
+    f = open(tf_file,'w')
+    f.write(newdata)
+    f.close()
+
+    print ('Updated {} with user data script for {} {}'.format(tf_file, environment, type))
 
     return
 
