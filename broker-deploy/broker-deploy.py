@@ -83,9 +83,8 @@ def deploy():
     # Add new AMI id to terraform variables
     update_lc_ami(ami_id, tfvar_file, deploy_env)
 
-    # Update Terraform User Data
-    update_startup_script(ansible_branch_var, 'broker', 'broker-start.sh')
-    update_startup_script(ansible_branch_var, 'validator', 'broker-start.sh')
+    update_and_copy_startup_script(ansible_branch_var, 'broker', 'broker-start.sh', 'broker-start-api.sh')
+    update_and_copy__startup_script(ansible_branch_var, 'validator', 'broker-start.sh', 'broker-start-val.sh')
 
     print('**************************************************************************')
     print(' Running terraform... ')
@@ -150,8 +149,8 @@ def update_lc_ami(new_ami='', tfvar_file='variables.tf.json', deploy_env='na'):
 
     return
 
-def update_startup_script(branch, app, file):
-    f = open(file,'r')
+def update_and_copy_startup_script(branch, app, starting_file, new_file):
+    f = open(starting_file,'r')
     filedata = f.read()
     f.close()
 
@@ -165,7 +164,7 @@ def update_startup_script(branch, app, file):
         app_var
     )
 
-    f = open(file,'w')
+    f = open(new_file,'w')
     f.write(newdata)
     f.close()
 
