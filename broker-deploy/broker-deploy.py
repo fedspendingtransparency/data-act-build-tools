@@ -90,7 +90,7 @@ def deploy():
     update_lc_ami(ami_id, tfvar_file, deploy_env)
 
     update_and_copy_startup_script(ansible_branch_var, 'broker', 'broker-start.sh', 'broker-start-api.sh')
-    update_and_copy__startup_script(ansible_branch_var, 'validator', 'broker-start.sh', 'broker-start-val.sh')
+    update_and_copy_startup_script(ansible_branch_var, 'validator', 'broker-start.sh', 'broker-start-val.sh')
 
     print('**************************************************************************')
     print(' Running terraform... ')
