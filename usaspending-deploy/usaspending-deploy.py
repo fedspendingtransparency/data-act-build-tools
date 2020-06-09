@@ -40,7 +40,8 @@ def deploy():
     tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
     tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
-    startup_script = "usaspending-start-{}.sh".format(deploy_env)
+    api_startup_script = "usaspending-start-api-{}.sh".format(deploy_env)
+    bd_startup_script = "usaspending-start-bd-{}.sh".format(deploy_env)
 
     # Get Old AMIs, for setting current=False after new one is created
     old_instance_amis = ec2_client.describe_images(Filters=[
@@ -91,7 +92,8 @@ def deploy():
     os.mkdir(deploy_env)
     shutil.copy(tf_file,    deploy_env)
     shutil.copy(tfvar_file, deploy_env)
-    shutil.copy(startup_script, deploy_env)
+    shutil.copy(api_startup_script, deploy_env)
+    shutil.copy(bd_startup_script, deploy_env)
     os.chdir(deploy_env)
 
     # Run Terraform plan and apply
@@ -155,7 +157,7 @@ def update_terraform_user_data(environment, type, tf_file):
     filedata = f.read()
     f.close()
 
-    startup_shell_script = "usaspending-start-{}.sh".format(environment)
+    startup_shell_script = "usaspending-start-{}-{}.sh".format(type, environment)
     newdata = filedata.replace("usaspending-start-{}.sh".format(type), startup_shell_script)
 
     f = open(tf_file,'w')
