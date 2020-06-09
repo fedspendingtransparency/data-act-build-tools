@@ -6,6 +6,8 @@
   vars:
     REPO: https://github.com/fedspendingtransparency/data-act-broker-backend.git
     BRANCH: "{{ BRANCH }}"
+    CONFIG_BRANCH: "{{ CONFIG_BRANCH }}"
+    TOOLS_BRANCH: "{{ TOOLS_BRANCH }}"
     CONFIG_HOME: /data-act/config
     DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
     ansible_python_interpreter: /usr/bin/python3.5
@@ -40,6 +42,7 @@
       become: true
       git:
         repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/data-act-broker-config.git
+        version: "{{ CONFIG_BRANCH }}"
         dest: /data-act/config
         force: "yes"
 
@@ -47,6 +50,7 @@
       become: true
       git:
         repo: https://github.com/fedspendingtransparency/data-act-build-tools.git
+        version: "{{ TOOLS_BRANCH }}"
         dest: /data-act/build-tools
         force: "yes"
 
