@@ -24,8 +24,12 @@ def deploy():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--deploy_env', required=True, choices=['sandbox', 'dev', 'qat', 'staging', 'prod'])
+    parser.add_argument('--config_branch', required=False, default='master')
+    parser.add_argument('--tools_branch', required=False, default='master')
     args = parser.parse_args()
     deploy_env = args.deploy_env
+    config_branch = args.config_branch
+    tools_branch = args.tools_branch
 
     tfvar_file = deploy_env + '-variables.tf.json'
     tfvar_json = open(tfvar_file, "r")
@@ -54,7 +58,9 @@ def deploy():
 
     packer_output = real_time_command([packer_exec_path, 'build', 
                                       '-var', 'environment_ami_tag={}'.format(deploy_env), 
-                                      '-var', 'ansible_branch_var={}'.format(ansible_branch_var), 
+                                      '-var', 'ansible_branch_var={}'.format(ansible_branch_var),
+                                      '-var', 'config_branch={}'.format(config_branch),
+                                      '-var', 'tools_branch={}'.format(tools_branch),
                                       '-machine-readable', packer_file])
 
     ami_line = [line for line in packer_output.split('\n') if "amazon-ebs: AMIs were created:" in line][0]
