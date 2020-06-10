@@ -197,7 +197,7 @@ resource "aws_autoscaling_group" "bd_asg" {
   max_size                  = var.bd_asg_max
   min_size                  = var.bd_asg_min
   desired_capacity          = var.bd_asg_desired
-  enabled_metrics           = var.bd_enabled_metrics
+  enabled_metrics           = split(",", var.bd_enabled_metrics)
   health_check_type         = "EC2"
   health_check_grace_period = 0
   launch_configuration      = aws_launch_configuration.bd_lc.name
@@ -269,7 +269,7 @@ resource "aws_autoscaling_policy" "bd_scale_down" {
 resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_low" {
   alarm_name          = "${var.bd_name_prefix}_queue_low (${var.aws_amis[var.aws_region]})"
   alarm_description   = <<EOF
-    The messages in queue are now below 5 for the previous 10 minutes. 
+    The messages in flight average is now below 5 for the previous 10 minutes. 
   EOF
   comparison_operator = "LessThanThreshold"
   alarm_actions       = [aws_autoscaling_policy.bd_scale_down.arn]
@@ -319,7 +319,7 @@ resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_low" {
 resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_high" {
   alarm_name          = "${var.bd_name_prefix}_queue_high (${var.aws_amis[var.aws_region]})"
   alarm_description   = <<EOF
-    The messages in flight have been above 5 for more than 10 minutes. 
+    The messages in flight average is now above 5 for more than 10 minutes. 
   EOF
   comparison_operator = "LessThanThreshold"
   alarm_actions       = [aws_autoscaling_policy.bd_scale_up.arn]
