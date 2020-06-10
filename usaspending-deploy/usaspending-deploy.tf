@@ -321,7 +321,7 @@ resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_high" {
   alarm_description   = <<EOF
     The messages in flight average is now above 5 for more than 10 minutes. 
   EOF
-  comparison_operator = "LessThanThreshold"
+  comparison_operator = "GreaterThanThreshold"
   alarm_actions       = [aws_autoscaling_policy.bd_scale_up.arn]
   evaluation_periods  = "2"
   threshold           = "5"
