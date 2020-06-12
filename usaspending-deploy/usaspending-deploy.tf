@@ -307,7 +307,6 @@ resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_low" {
       namespace   = "AWS/AutoScaling"
       period      = "300"
       stat        = "Average"
-      unit        = "Count"
 
       dimensions = {
         AutoScalingGroupName = aws_autoscaling_group.bd_asg.name
