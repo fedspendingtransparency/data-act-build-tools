@@ -364,15 +364,3 @@ resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_high" {
     }
   }
 }
-{
-    "metrics": [
-        [ { "expression": "m1/m2", "label": "Expression1", "id": "e1", "yAxis": "left" } ],
-        [ "AWS/SQS", "ApproximateNumberOfMessagesNotVisible", "QueueName", "usaspending-bulk-download-sandbox", { "id": "m1", "unit": "Count" } ],
-        [ "AWS/AutoScaling", "GroupInServiceInstances", "AutoScalingGroupName", "nonprod_usaspending_sandbox_bd (ami-0e1686c0aed74621d)", { "id": "m2", "stat": "Average" } ]
-    ],
-    "view": "timeSeries",
-    "stacked": false,
-    "period": 60,
-    "region": "us-gov-west-1",
-    "stat": "Sum"
-}
