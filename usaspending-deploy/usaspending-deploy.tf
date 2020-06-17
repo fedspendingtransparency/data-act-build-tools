@@ -197,6 +197,7 @@ resource "aws_autoscaling_group" "bd_asg" {
   max_size                  = var.bd_asg_max
   min_size                  = var.bd_asg_min
   desired_capacity          = var.bd_asg_desired
+  enabled_metrics           = split(",", var.bd_enabled_metrics)
   health_check_type         = "EC2"
   health_check_grace_period = 0
   launch_configuration      = aws_launch_configuration.bd_lc.name
@@ -256,24 +257,6 @@ resource "aws_autoscaling_policy" "bd_scale_up" {
   autoscaling_group_name = aws_autoscaling_group.bd_asg.name
 }
 
-resource "aws_cloudwatch_metric_alarm" "bd_alarm_high_cpu" {
-  alarm_name          = "${var.bd_name_prefix}_cpuhigh (${var.aws_amis[var.aws_region]})"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "2"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = "120"
-  statistic           = "Average"
-  threshold           = "50"
-
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.bd_asg.name
-  }
-
-  alarm_description = "High CPU on ${var.bd_name_prefix}"
-  alarm_actions     = [aws_autoscaling_policy.bd_scale_up.arn]
-}
-
 resource "aws_autoscaling_policy" "bd_scale_down" {
   name                   = "${var.bd_name_prefix}_scaledown (${var.aws_amis[var.aws_region]})"
   scaling_adjustment     = -1
@@ -283,21 +266,100 @@ resource "aws_autoscaling_policy" "bd_scale_down" {
   autoscaling_group_name = aws_autoscaling_group.bd_asg.name
 }
 
-resource "aws_cloudwatch_metric_alarm" "bd_alarm_low_cpu" {
-  alarm_name          = "${var.bd_name_prefix}_cpulow (${var.aws_amis[var.aws_region]})"
-  comparison_operator = "LessThanOrEqualToThreshold"
+resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_low" {
+  alarm_name          = "${var.bd_name_prefix}_queue_low (${var.aws_amis[var.aws_region]})"
+  alarm_description   = <<EOF
+    The messages in flight average is now below 5 for the previous 10 minutes. 
+  EOF
+  comparison_operator = "LessThanThreshold"
+  alarm_actions       = [aws_autoscaling_policy.bd_scale_down.arn]
   evaluation_periods  = "2"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = "60"
-  statistic           = "Maximum"
   threshold           = "5"
 
-  dimensions = {
-    AutoScalingGroupName = aws_autoscaling_group.bd_asg.name
+  metric_query {
+    id          = "e1"
+    expression  = "m1/m2"
+    label       = "Average in flight per host"
+    return_data = "true"
   }
 
-  alarm_description = "All Instance CPU low ${var.bd_name_prefix}"
-  alarm_actions     = [aws_autoscaling_policy.bd_scale_down.arn]
+  metric_query {
+    id = "m1"
+
+    metric {
+      metric_name = "ApproximateNumberOfMessagesNotVisible"
+      namespace   = "AWS/SQS"
+      period      = "300"
+      stat        = "Sum"
+      unit        = "Count"
+
+      dimensions = {
+        QueueName = "usaspending-bulk-download-${var.env_tag}"
+      }
+    }
+  }
+
+  metric_query {
+    id = "m2"
+
+    metric {
+      metric_name = "GroupInServiceInstances"
+      namespace   = "AWS/AutoScaling"
+      period      = "300"
+      stat        = "Average"
+
+      dimensions = {
+        AutoScalingGroupName = aws_autoscaling_group.bd_asg.name
+      }
+    }
+  }
 }
 
+resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_high" {
+  alarm_name          = "${var.bd_name_prefix}_queue_high (${var.aws_amis[var.aws_region]})"
+  alarm_description   = <<EOF
+    The messages in flight average is now above 5 for more than 10 minutes. 
+  EOF
+  comparison_operator = "GreaterThanThreshold"
+  alarm_actions       = [aws_autoscaling_policy.bd_scale_up.arn]
+  evaluation_periods  = "2"
+  threshold           = "5"
+
+  metric_query {
+    id          = "e1"
+    expression  = "m1/m2"
+    label       = "Average in flight per host"
+    return_data = "true"
+  }
+
+  metric_query {
+    id = "m1"
+
+    metric {
+      metric_name = "ApproximateNumberOfMessagesNotVisible"
+      namespace   = "AWS/SQS"
+      period      = "300"
+      stat        = "Sum"
+      unit        = "Count"
+
+      dimensions = {
+        QueueName = "usaspending-bulk-download-${var.env_tag}"
+      }
+    }
+  }
+
+  metric_query {
+    id = "m2"
+
+    metric {
+      metric_name = "GroupInServiceInstances"
+      namespace   = "AWS/AutoScaling"
+      period      = "300"
+      stat        = "Sum"
+
+      dimensions = {
+        AutoScalingGroupName = aws_autoscaling_group.bd_asg.name
+      }
+    }
+  }
+}
