@@ -271,11 +271,12 @@
           regexp: 'TIMEOUT-IN-SECONDS'
           replace: "{{ NONPROD_CACHE_TIMEOUT }}"
 
-      - name: enable cares features
-        lineinfile:
-          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-          regexp: '\s*ENABLE_CARES_ACT_FEATURES\s*=.*'
-          line: "ENABLE_CARES_ACT_FEATURES = True"
+    - name: bulk-download | cares settings (nonprod)
+      when: BRANCH in ['dev','sandbox']
+      lineinfile:
+        dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
+        regexp: '\s*ENABLE_CARES_ACT_FEATURES\s*=.*'
+        line: "ENABLE_CARES_ACT_FEATURES = True"
 
 
 #===============================  SSL Certs  ===============================#
