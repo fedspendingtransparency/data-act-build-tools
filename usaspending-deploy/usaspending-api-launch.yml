@@ -271,7 +271,7 @@
           regexp: 'TIMEOUT-IN-SECONDS'
           replace: "{{ NONPROD_CACHE_TIMEOUT }}"
 
-    - name: bulk-download | cares settings (nonprod)
+    - name: API and bulk-download | cares settings (nonprod)
       when: BRANCH in ['dev','sandbox']
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
