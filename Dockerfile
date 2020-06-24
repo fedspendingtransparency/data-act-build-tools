@@ -39,7 +39,7 @@ RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERS
 
 
 # install ansibleA
-RUAN pip3.6 install pip --upgrade
+RUN pip3.6 install pip --upgrade
 RUN pip3 install ansible==${ANSIBLE_VERSION}
 
 # install terraform and create an symlink on /usr/local
