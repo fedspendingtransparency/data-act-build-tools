@@ -33,7 +33,7 @@ RUN ln -s /opt/packer/packer /usr/local/bin/packer
 
 # install packer plugins
 RUN mkdir -p ~/.packer.d/plugins
-RUN wget https://github.com/wata727/packer-post-processor-amazon-ami-management/releases/download/v_${AMI_MANAGER_VERSION}/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -P /tmp/
+RUN wget https://github.com/wata727/packer-post-processor-amazon-ami-management/releases/download/v${AMI_MANAGER_VERSION}/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -P /tmp/
 RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
@@ -55,4 +55,5 @@ RUN ln -s /opt/terragrunt/terragrunt /usr/local/bin/terragrunt
 
 # install pip packages
 RUN pip3 install boto3 sh argparse awscli
+
 
