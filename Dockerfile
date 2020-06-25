@@ -37,8 +37,7 @@ RUN wget https://github.com/wata727/packer-post-processor-amazon-ami-management/
 RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
-
-# install ansibleA
+# install ansible
 RUN pip3.6 install pip --upgrade
 RUN pip3 install ansible==${ANSIBLE_VERSION}
 
@@ -55,5 +54,3 @@ RUN ln -s /opt/terragrunt/terragrunt /usr/local/bin/terragrunt
 
 # install pip packages
 RUN pip3 install boto3 sh argparse awscli
-
-
