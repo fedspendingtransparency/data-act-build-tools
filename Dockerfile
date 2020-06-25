@@ -6,11 +6,13 @@ ARG packer_version_arg=1.5.6
 ARG ansible_version_arg=2.8.3
 ARG terraform_version_arg=0.12.24
 ARG terragrunt_version_arg=0.23.18
+ARG ami_manager_arg=0.8.0
 
 ENV PACKER_VERSION=${packer_version_arg}
 ENV ANSIBLE_VERSION=${ansible_version_arg}
 ENV TERRAFORM_VERSION=${terraform_version_arg}
 ENV TERRAGRUNT_VERSION=${terragrunt_version_arg}
+ENV AMI_MANAGER_VERSION=${ami_manager_arg}
 
 RUN yum update -y && \
     yum install -y wget && \
@@ -28,6 +30,12 @@ ENV USER ec2-user
 RUN wget https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip
 RUN unzip /root/workspace/packer_${PACKER_VERSION}_linux_amd64.zip -d /opt/packer/
 RUN ln -s /opt/packer/packer /usr/local/bin/packer
+
+# install packer plugins
+RUN mkdir -p ~/.packer.d/plugins
+RUN wget https://github.com/wata727/packer-post-processor-amazon-ami-management/releases/download/v${AMI_MANAGER_VERSION}/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -P /tmp/
+RUN cd ~/.packer.d/plugins
+RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
 # install ansible
 RUN pip3.6 install pip --upgrade
