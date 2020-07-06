@@ -306,7 +306,7 @@ resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_low" {
       metric_name = "GroupInServiceInstances"
       namespace   = "AWS/AutoScaling"
       period      = "300"
-      stat        = "Average"
+      stat        = "Maximum"
 
       dimensions = {
         AutoScalingGroupName = aws_autoscaling_group.bd_asg.name
@@ -355,7 +355,7 @@ resource "aws_cloudwatch_metric_alarm" "bd_sqs_queue_high" {
       metric_name = "GroupInServiceInstances"
       namespace   = "AWS/AutoScaling"
       period      = "300"
-      stat        = "Sum"
+      stat        = "Maximum"
 
       dimensions = {
         AutoScalingGroupName = aws_autoscaling_group.bd_asg.name
