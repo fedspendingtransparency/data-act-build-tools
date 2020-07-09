@@ -105,6 +105,7 @@ resource "aws_launch_configuration" "api-lc" {
   root_block_device {
     volume_size = var.api_ebs_size
     volume_type = var.api_ebs_type
+    iops        = var.api_ebs_iops
   }
 }
 
@@ -124,6 +125,7 @@ resource "aws_launch_configuration" "val-lc" {
   root_block_device {
     volume_size = var.val_ebs_size
     volume_type = var.val_ebs_type
+    iops        = var.val_ebs_iops
   }
 }
 
