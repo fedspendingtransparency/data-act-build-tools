@@ -102,6 +102,7 @@ resource "aws_launch_configuration" "api-lc" {
   lifecycle {
     create_before_destroy = true
   }
+  ebs_optimized = true
   root_block_device {
     volume_size = var.api_ebs_size
     volume_type = var.api_ebs_type
@@ -118,6 +119,7 @@ resource "aws_launch_configuration" "val-lc" {
   security_groups = split(",", var.val_sec_groups)
   user_data       = var.val_user_data
   key_name        = var.key_name
+  ebs_optimized = true
   lifecycle {
     create_before_destroy = true
   }
