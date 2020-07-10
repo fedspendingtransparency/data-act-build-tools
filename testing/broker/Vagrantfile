@@ -1,0 +1,96 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+require 'yaml'
+
+current_dir  = File.dirname(File.expand_path(__FILE__))
+local_vars = YAML.load_file("#{current_dir}/../../../data-act-config/config/local-vars.yml")
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/centos7"
+    config.vm.hostname = "broker-build-test"
+
+    config.vm.provider "virtualbox" do |vb| 
+        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+        vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"] 
+        vb.memory = "4024" 
+        vb.cpus = "1" 
+    end
+
+    config.vm.synced_folder "~/.aws", "/root/.aws/", type: "rsync"
+    config.vm.synced_folder "../../..", "/home/vagrant/repos", type: "rsync",
+        rsync__exclude: [".git/", "**/.terragrunt-cache/"],
+        rsync__auto: true
+
+    config.vm.provision "shell", inline: <<-EOF
+        yum install -y python-pip
+        cp -R /root/.aws /home/vagrant/.aws
+        chown -R vagrant:vagrant /home/vagrant/.aws
+    EOF
+
+    config.vm.provision "shell", env: {
+        "TEMP_PROF" => local_vars['aws_profile'],
+        "TEMP_REGION" => local_vars['aws_region']
+    }, inline: <<-EOF
+        yum install -y python-pip
+        pip install --upgrade pip
+        useradd -m -d /home/ec2-user ec2-user
+        cp -R /root/.aws /home/vagrant/.aws
+        cp -R /root/.aws /home/ec2-user/.aws
+        chown -R root:root /root/.aws 
+        chown -R ec2-user:ec2-user /home/ec2-user/.aws 
+        chown -R vagrant:vagrant /home/vagrant/.aws
+        echo "export AWS_PROFILE=$TEMP_PROF" >> /etc/profile.d/vagrant.sh
+        echo "export AWS_DEFAULT_PROFILE=$TEMP_PROF" >> /etc/profile.d/vagrant.sh
+        echo "export AWS_REGION=$TEMP_REGION" >> /etc/profile.d/vagrant.sh
+        chmod +x /etc/profile.d/vagrant.sh
+    EOF
+
+    config.vm.provision "ansible_local" do |ansible|
+        ansible.provisioning_path = "/home/vagrant/repos/data-act-config/provisioning/base-ami"
+        ansible.become = true
+        ansible.galaxy_role_file = "requirements.yml"
+        ansible.galaxy_roles_path = "/etc/ansible/roles"
+        ansible.galaxy_command = "sudo ansible-galaxy install --role-file=%{role_file} --roles-path=%{roles_path} --force"
+        ansible.playbook = "provision-%s.yml" % local_vars['application']
+        ansible.extra_vars = {
+            local_testing: true,
+            account: local_vars['account'],
+            aws_profile: local_vars['aws_profile'],
+            aws_region: local_vars['aws_region'],
+            application: local_vars['application'],
+            vpc: local_vars['vpc'],
+        }
+    end
+
+    config.vm.provision "shell", inline: <<-EOF
+      sudo pip3.5 install awscli boto boto3 --force-reinstall --upgrade
+      sudo pip3.5 install awscli --force-reinstall --upgrade
+      EOF
+
+    config.vm.provision "ansible_local" do |ansible|
+        ansible.provisioning_path = "/home/vagrant/repos/data-act-build-tools/broker-deploy"
+        ansible.become = true   
+        ansible.playbook = "app-instance-image.yml"
+        ansible.extra_vars = {
+            local_testing: true,
+            BRANCH: "master",
+            CONFIG_BRANCH: "master",
+            TOOLS_BRANCH: "master"
+        } 
+    end
+
+    config.vm.provision "ansible_local" do |ansible|
+        ansible.provisioning_path = "/home/vagrant/repos/data-act-build-tools/broker-deploy"
+        ansible.become = true 
+        ansible.playbook = "app-instance-launch.yml"
+        ansible.extra_vars = {
+            local_testing: true,
+            target: "all",
+            APP: "broker",
+            BRANCH: "dev",
+            aws_profile: local_vars['aws_profile'],
+            aws_region: local_vars['aws_region'],
+            INSTANCE_ID: "test"
+        } 
+    end
+end

@@ -7,7 +7,7 @@
 #=======================================================================#
 
 ---
-- hosts: "localhost"
+- hosts: "{{ target|default(\"localhost\", true) }}"
   user: ec2-user
   become_method: sudo
 

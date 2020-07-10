@@ -10,10 +10,12 @@
     CONFIG_BRANCH: "{{ CONFIG_BRANCH }}"
     TOOLS_BRANCH: "{{ TOOLS_BRANCH }}"
     REPO: https://github.com/fedspendingtransparency/usaspending-api.git
+    TOOLS_REPO: https://github.com/fedspendingtransparency/data-act-build-tools.git
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
     ansible_python_interpreter: /usr/bin/python3
     DATADOG_YML_PATH: "/data-act/config/deploy/datadog.yaml"
+    GIT_TOKEN: github-data-act-service-account-token
 
     envs:
       master : {env_long: prod }
@@ -24,55 +26,38 @@
 
   tasks:
 
-#=============================== Copy Git Credentials from S3 Bucket ===============================#
+#=============================== Copy Git Credentials from SSM ===============================#
 
-    - name: copy github credentials from S3 Bucket
-      aws_s3:
-        mode: getstr
-        bucket: da-config
-        object: /shared/github-data-act-service-account.pat
-        region: us-gov-west-1
-      register: pat
+    - name: copy github credentials from SSM
+      set_fact:
+        pat_token: "{{ lookup('aws_ssm', GIT_TOKEN) }}"
 
 #===============================  Git Checkout  ===============================#
+    - name: Set usaspending url
+      set_fact: 
+        CONFIG_URL: https://pat:{{ pat_token }}@github.com/fedspendingtransparency/usaspending-config.git
 
-    - name: checkout backend from git
+    - name: Checkout required repos
       become: true
       git:
-        repo: "{{ REPO }}"
-        version: "{{ BRANCH }}"
-        dest: "{{ CODE_HOME }}"
-        force: yes
+        repo: "{{ item.repo }}"
+        version: "{{ item.version }}"
+        dest: "{{ item.dest }}"
+        force: "yes"
+      with_items:
+        - { repo: "{{ REPO }}", version: "{{ BRANCH }}", dest: "{{ CODE_HOME }}" }
+        - { repo: "{{ CONFIG_URL }}", version: "{{ CONFIG_BRANCH }}", dest: "/data-act/config" }
+        - { repo: "{{ TOOLS_REPO }}", version: "{{ TOOLS_BRANCH }}", dest: "/data-act/build-tools" }
 
-    - name: checkout usaspending-config from git
-      become: true
-      git:
-        repo: https://pat:{{ pat.contents }}@github.com/fedspendingtransparency/usaspending-config.git
-        version: "{{ CONFIG_BRANCH }}"
-        dest: /data-act/config
-        force: yes
-
-    - name: pull repo - checkout build-tools repo from git
-      become: true
-      git:
-        repo: https://github.com/fedspendingtransparency/data-act-build-tools.git
-        version: "{{ TOOLS_BRANCH }}"
-        dest: /data-act/build-tools
-        force: yes
-
-    - name: assign ownership of api to ec2-user
+    - name: assign file ownership to ec2-user
       become: true
       file:
-        path: /data-act/
+        path: "{{ item }}"
         owner: ec2-user
         recurse: yes
-
-    - name: assign ownership of tmp to ec2-user
-      become: true
-      file:
-        path: /tmp
-        owner: ec2-user
-        recurse: yes
+      with_items: 
+        - /data-act/
+        - /tmp
 
 #===============================  Install PIP Packages  ===============================#
 
@@ -110,23 +95,16 @@
 
 #===============================  Configure DataDog Key  ===============================#
 
-    - name: copy datadog_key from S3
-      aws_s3:
-        mode: get
-        bucket: da-config
-        object: /shared/datadog_key
-        dest: /data-act/config/datadog_key
-        region: us-gov-west-1
-
-    - name: save the contents of datadog_key file
-      shell: cat /data-act/config/datadog_key
-      register: dd_key
+    - name: get datadog_key from SSM
+      set_fact: 
+        dd_key: "{{ lookup('aws_ssm', 'datadog_key') }}"
 
     - name: add Datadog license key to datadog.yaml
       lineinfile:
         dest: "{{ DATADOG_YML_PATH }}"
         regexp: '\s*api_key: .*'
-        line: "api_key: {{ dd_key.stdout }}"
+        line: "api_key: {{ dd_key }}"
+        create: yes
 
     - name: copy datadog.yml to its home location
       become: true
@@ -183,51 +161,52 @@
         remote_src: true
 
 #===============================  Set http and https proxies  ===============================
+    - name: http setup 
+      block: 
+        - name: copy ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml to 
+          fetch:
+            src: "/data-act/config/deploy/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
+            dest: /home/ec2-user/
+            flat: true
 
-    - name: copy ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml to 
-      fetch:
-        src: "/data-act/config/deploy/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
-        dest: /home/ec2-user/
-        flat: true
+        - name: Load variables from config repo
+          include_vars: "/home/ec2-user/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
 
-    - name: Load variables from config repo
-      include_vars: "/home/ec2-user/ansible-vars-{{ vars['envs'][BRANCH]['env_long'] }}.yml"
+        - name: create /etc/profile.d/proxy.sh to export proxy env vars
+          become: true
+          copy:
+            dest: /etc/profile.d/proxy.sh
+            mode: 0755
+            content: |
+              http_proxy={{ SQUID_ELB }}
+              https_proxy={{ SQUID_ELB }}
+              no_proxy={{ NO_PROXY_VAR }}
+              export http_proxy https_proxy no_proxy
+        - name: add proxy env vars to /etc/environment
+          become: true
+          blockinfile:
+            dest: /etc/environment
+            block: |
+              http_proxy={{ SQUID_ELB }}
+              https_proxy={{ SQUID_ELB }}
+              HTTP_PROXY={{ SQUID_ELB }}
+              HTTPS_PROXY={{ SQUID_ELB }}
+              no_proxy={{ NO_PROXY_VAR }}
+              NO_PROXY={{ NO_PROXY_VAR }}
+        - name: Execute proxy.sh
+          shell: /etc/profile.d/proxy.sh
 
-    - name: create /etc/profile.d/proxy.sh to export proxy env vars
-      become: true
-      copy:
-        dest: /etc/profile.d/proxy.sh
-        mode: 0755
-        content: |
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          no_proxy={{ NO_PROXY_VAR }}
-          export http_proxy https_proxy no_proxy
-    - name: add proxy env vars to /etc/environment
-      become: true
-      blockinfile:
-        dest: /etc/environment
-        block: |
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          HTTP_PROXY={{ SQUID_ELB }}
-          HTTPS_PROXY={{ SQUID_ELB }}
-          no_proxy={{ NO_PROXY_VAR }}
-          NO_PROXY={{ NO_PROXY_VAR }}
-    - name: Execute proxy.sh
-      shell: /etc/profile.d/proxy.sh
-
-    - name: add proxy env to /etc/systemd/system.config
-      become: true
-      ini_file:
-        path: /etc/systemd/system.conf
-        section: Manager
-        option: DefaultEnvironment
-        value: >
-          http_proxy={{ SQUID_ELB }}
-          https_proxy={{ SQUID_ELB }}
-          HTTP_PROXY={{ SQUID_ELB }}
-          HTTPS_PROXY={{ SQUID_ELB }}
-          no_proxy={{ NO_PROXY_VAR }}
-          NO_PROXY={{ NO_PROXY_VAR }}
-
+        - name: add proxy env to /etc/systemd/system.config
+          become: true
+          ini_file:
+            path: /etc/systemd/system.conf
+            section: Manager
+            option: DefaultEnvironment
+            value: >
+              http_proxy={{ SQUID_ELB }}
+              https_proxy={{ SQUID_ELB }}
+              HTTP_PROXY={{ SQUID_ELB }}
+              HTTPS_PROXY={{ SQUID_ELB }}
+              no_proxy={{ NO_PROXY_VAR }}
+              NO_PROXY={{ NO_PROXY_VAR }}
+      when: local_testing is defined and not local_testing

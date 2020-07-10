@@ -6,7 +6,8 @@
 # ===================================================================#
 
 ---
-- hosts: "localhost"
+- hosts: "{{ target|default(\"localhost\", true) }}"
+
   user: ec2-user
   become_method: sudo
 
@@ -71,51 +72,60 @@
 
     # ===================== Nginx Config =====================#
 
-    - name: Copy broker nginx config
+    - name: config nginx for broker
+      block: 
+        - name: Copy broker nginx config
+          become: true
+          copy:
+            src: "/data-act/config/nginx/nginx_broker_api.conf"
+            dest: "/etc/nginx/nginx.conf"
+            remote_src: true
+
+        - name: Update nginx config to set correct server_name
+          become: true
+          replace:
+            dest: "/etc/nginx/nginx.conf"
+            regexp: 'server_name INSERT_WITH_ANSIBLE;'
+            replace: "server_name {{ vars['envs'][BRANCH]['domain'] }};"
       when: APP == "broker"
-      become: true
+
+    # ===================== Manage Secrets =====================#
+
+    - name: download dev secrets from aws ssm 
+      set_fact:
+        temp_secrets: "{{ lookup('aws_ssm', get_secret) }}"
+      vars: 
+        get_secret: "{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml"
+
+    - name: Create secrets file from ansible fact
       copy:
-        src: "/data-act/config/nginx/nginx_broker_api.conf"
-        dest: "/etc/nginx/nginx.conf"
-        remote_src: true
-
-    - name: Update nginx config to set correct server_name
-      when: APP == "broker"
-      become: true
-      replace:
-        dest: "/etc/nginx/nginx.conf"
-        regexp: 'server_name INSERT_WITH_ANSIBLE;'
-        replace: "server_name {{ vars['envs'][BRANCH]['domain'] }};"
-
-    - name: download secrets from S3 bucket
-      become: true
-      shell: "aws s3 cp s3://da-config/broker/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml /data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml --region us-gov-west-1"
+        dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml"
+        content: "{{ temp_secrets }}"
 
     # ===================== SSL Certs (not used for Validator) =====================#
+    
+    - name: Config SSL for broker
+      block: 
+        - name: Copy public.pem from S3 Bucket
+          become: true
+          shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
-    - name: Copy public.pem from S3 Bucket
-      when: APP == "broker"
-      become: true
-      shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
+        - name: Copy private.pem from S3 Bucket
+          become: true
+          shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/private.pem /etc/cert.key --region us-gov-west-1"
 
-    - name: Copy private.pem from S3 Bucket
-      when: APP == "broker"
-      become: true
-      shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/private.pem /etc/cert.key --region us-gov-west-1"
+        - name: Assign ownership of cert.pem to ec2-user
+          become: true
+          file:
+            path: /etc/cert.pem
+            owner: ec2-user
 
-    - name: Assign ownership of cert.pem to ec2-user
+        - name: Assign ownership of cert.key to ec2-user
+          become: true
+          file:
+            path: /etc/cert.key
+            owner: ec2-user
       when: APP == "broker"
-      become: true
-      file:
-        path: /etc/cert.pem
-        owner: ec2-user
-
-    - name: Assign ownership of cert.key to ec2-user
-      when: APP == "broker"
-      become: true
-      file:
-        path: /etc/cert.key
-        owner: ec2-user
 
     # ===================== DataDog Configuration =====================#
 
@@ -212,32 +222,27 @@
 
     # ===================== Logging =====================#
 
-    - name: Create app json log if it doesn't exist
+    - name: Create log files if it doesn't exist
       become: true
       file:
-        path: /data-act/app.json-log
+        path: "{{ item }}"
         owner: ec2-user
         state: touch
-
-    - name: Create app info log if it doesn't exist
-      become: true
-      file:
-        path: /data-act/info.log
-        owner: ec2-user
-        state: touch
+      with_items: 
+        - /data-act/app.json-log
+        - /data-act/info.log
 
     # ===================== Enable and Restart Services =====================#
 
-    - name: Enable & restart datadog-agent service
+    - name: Enable & restart services
       become: true
-      shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
-
-    - name: Enable & restart filebeat service
-      become: true
-      shell: "systemctl enable filebeat && systemctl restart filebeat"
-
-    - name: Enable & restart supervisord.service
-      become: true
-      shell: "systemctl enable supervisord && systemctl restart supervisord"
-
+      systemd: 
+        name: "{{ item }}"
+        state: restarted
+        enabled: yes
+      with_items: 
+        - datadog-agent
+        - filebeat
+        - supervisord
+    
 # ===================== EOF =====================#
