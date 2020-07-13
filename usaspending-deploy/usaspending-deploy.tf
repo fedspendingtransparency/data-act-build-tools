@@ -67,6 +67,7 @@ resource "aws_launch_configuration" "api_lc" {
   security_groups      = split(",", var.sec_groups)
   user_data            = file("usaspending-start-staging.sh")
   key_name             = var.key_name
+  ebs_optimized        = true
   lifecycle {
     create_before_destroy = true
   }
@@ -239,6 +240,7 @@ resource "aws_launch_configuration" "bd_lc" {
   security_groups      = split(",", var.sec_groups)
   user_data            = var.bd_user_data
   key_name             = var.key_name
+  ebs_optimized        = true
   lifecycle {
     create_before_destroy = true
   }
