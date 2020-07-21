@@ -95,7 +95,7 @@
       set_fact:
         temp_secrets: "{{ lookup('aws_ssm', get_secret) }}"
       vars: 
-        get_secret: "{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml"
+        get_secret: "broker_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
 
     - name: Create secrets file from ansible fact
       copy:

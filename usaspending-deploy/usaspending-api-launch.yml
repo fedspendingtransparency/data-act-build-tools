@@ -79,15 +79,17 @@
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
 
-    - name: copy git credentials from S3 Bucket
-      become: true
-      aws_s3:
-        mode: get
-        bucket: da-config
-        object: "/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
-        dest: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
-        region: us-gov-west-1
+    - name: download secrets from aws ssm 
+      set_fact:
+        temp_secrets: "{{ lookup('aws_ssm', get_secret) }}"
+      vars: 
+        get_secret: "usaspending-api-{{ vars['envs'][BRANCH]['env_long'] }}-secrets"
 
+    - name: Create secrets file from ansible fact
+      copy:
+        dest: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
+        content: "{{ temp_secrets }}"
+        
     - name: load secrets
       include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
 
