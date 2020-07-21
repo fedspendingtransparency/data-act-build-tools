@@ -93,7 +93,7 @@
 
     - name: download secrets from aws ssm 
       set_fact:
-        temp_secrets: "{{ lookup('aws_ssm', get_secret) }}"
+        temp_secrets: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
       vars: 
         get_secret: "broker_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
 
