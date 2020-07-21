@@ -151,22 +151,22 @@
     # the BRANCH variable tends to be used to represent an "environment" in this playbook, so often is 'dev'
     - name: Disable datadog apm if env is sandbox or dev
       become: true
-      when: BRANCH == "dev" or BRANCH == "sandbox"
+      when: BRANCH == "dev"
       lineinfile:
         dest: "/etc/datadog-agent/datadog.yaml"
         regexp: "^  enabled: true"
         insertafter: "^apm_config:.*"
         line: "  enabled: false"
 
-    - name: (API) instrument datadog with the application if env is prod or staging in app.py
-      when: BRANCH == "master" or BRANCH == "staging" or BRANCH == "qat"
+    - name: (API) instrument datadog with the application if env is anything but dev (qat, sandbox, staging, master/prod)
+      when: BRANCH != "dev"
       replace:
         dest: "/data-act/backend/dataactbroker/app.py"
         regexp: "^tracer\\.enabled = False"
         replace: "tracer.enabled = True"
 
-    - name: (VAL) instrument datadog with the application if env is prod or staging in app.py
-      when: BRANCH == "master" or BRANCH == "staging" or BRANCH == "qat"
+    - name: (VAL) instrument datadog with the application if env is anything but dev (qat, sandbox, staging, master/prod)
+      when: BRANCH != "dev"
       replace:
         dest: "/data-act/backend/dataactvalidator/app.py"
         regexp: "^tracer\\.enabled = False"
