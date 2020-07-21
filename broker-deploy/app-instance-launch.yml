@@ -91,7 +91,7 @@
 
     # ===================== Manage Secrets =====================#
 
-    - name: download dev secrets from aws ssm 
+    - name: download secrets from aws ssm 
       set_fact:
         temp_secrets: "{{ lookup('aws_ssm', get_secret) }}"
       vars: 
