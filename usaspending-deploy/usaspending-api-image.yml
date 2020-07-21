@@ -30,7 +30,7 @@
 
     - name: copy github credentials from SSM
       set_fact:
-        pat_token: "{{ lookup('aws_ssm', GIT_TOKEN, region=us-gov-west-1) }}"
+        pat_token: "{{ lookup('aws_ssm', GIT_TOKEN, region='us-gov-west-1') }}"
 
 #===============================  Git Checkout  ===============================#
     - name: Set usaspending url
@@ -97,7 +97,7 @@
 
     - name: get datadog_key from SSM
       set_fact: 
-        dd_key: "{{ lookup('aws_ssm', 'datadog_key', region=us-gov-west-1) }}"
+        dd_key: "{{ lookup('aws_ssm', 'datadog_key', region='us-gov-west-1') }}"
 
     - name: add Datadog license key to datadog.yaml
       lineinfile:
