@@ -22,7 +22,7 @@
 
     envs:
       master: {env_long: prod, env_short: prod}
-      stg: {env_long: staging, env_short: stg}
+      staging: {env_long: staging, env_short: stg}
       qat: {env_long: qat, env_short: qat}
       dev: {env_long: dev, env_short: dev}
       sandbox: {env_long: sandbox, env_short: sbx}
