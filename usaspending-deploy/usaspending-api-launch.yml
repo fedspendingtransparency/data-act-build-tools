@@ -1,7 +1,7 @@
 #===============================  USASPENDING-API-LAUNCH PLAYBOOK  ===============================#
 
 #===============================  Notes  ===============================#
-#  - Branch options: sandbox, dev, stg, master, used for filebeat index #
+#  - Branch options: sandbox, dev, staging, master, used for filebeat index #
 #  - 'envs' used for filebeat to translate                              #
 #  - You MUST provide a DOMAIN_NAME for ALLOWED_HOSTS and SSL           #
 #=======================================================================#
@@ -21,11 +21,11 @@
     INSTANCE_ID: "{{ INSTANCE_ID }}"
 
     envs:
-      master: {env_long: prod, env_short: prod}
-      staging: {env_long: staging, env_short: stg}
-      qat: {env_long: qat, env_short: qat}
-      dev: {env_long: dev, env_short: dev}
-      sandbox: {env_long: sandbox, env_short: sbx}
+      master : {env_long: prod}
+      staging: {env_long: staging}
+      qat    : {env_long: qat}
+      dev    : {env_long: dev}
+      sandbox: {env_long: sandbox}
 
     CODE_HOME: /data-act/backend
     CONFIG_HOME: /data-act/config
@@ -147,7 +147,7 @@
         line: "  enabled: false"
 
     - name: Enable Datadog in settings.py if env is prod or staging
-      when: BRANCH in ["master", "stg", "qat"]
+      when: BRANCH in ["master", "staging", "qat"]
       replace:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '^(DATADOG_TRACE = {\n[^}]*\s+)"ENABLED": False,'
@@ -209,7 +209,7 @@
         line: "ALLOWED_HOSTS = ['{{ ALLOWED_HOSTS|d('') }}']"
 
     - name: API | turn debug off in production or staging
-      when: BRANCH in ['master','stg','qat'] and BUILD_TYPE == 'api'
+      when: BRANCH in ['master','staging','qat'] and BUILD_TYPE == 'api'
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
         regexp: '\s*DEBUG =.*'
@@ -230,7 +230,7 @@
           line: "HOST = '{{ SITE }}'"
 
     - name: API | cache settings (staging/prod, elasticache)
-      when: BRANCH in ['master','stg','qat'] and BUILD_TYPE == 'api'
+      when: BRANCH in ['master','staging','qat'] and BUILD_TYPE == 'api'
       block:
       - name: enable elasticache
         lineinfile:
@@ -313,7 +313,7 @@
       replace:
         dest: /etc/filebeat/filebeat.yml
         regexp: 'index: filebeat'
-        replace: "index: usaspending-api-{{ vars['envs'][BRANCH]['env_short'] }}"
+        replace: "index: usaspending-api-{{ vars['envs'][BRANCH]['env_long'] }}"
 
     - name: BD | update filebeat config to set correct index
       when: BUILD_TYPE == 'bulk-download'

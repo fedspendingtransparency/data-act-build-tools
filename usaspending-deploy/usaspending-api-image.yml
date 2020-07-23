@@ -40,7 +40,7 @@
       become: true
       git:
         repo: "{{ REPO }}"
-        version: "qat"
+        version: "{{ BRANCH }}"
         dest: "{{ CODE_HOME }}"
         force: yes
 
