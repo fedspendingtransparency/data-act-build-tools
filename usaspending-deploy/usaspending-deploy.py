@@ -59,7 +59,7 @@ def deploy():
 
     packer_output = real_time_command([packer_exec_path, 'build', 
                                       '-var', 'environment_ami_tag={}'.format(deploy_env), 
-                                      '-var', 'ansible_branch_var=ftr/dev-5130-throttling-v1'
+                                      '-var', 'ansible_branch_var=ftr/dev-5130-throttling-v1',
                                       '-var', 'config_branch={}'.format(config_branch),
                                       '-var', 'tools_branch={}'.format(tools_branch),
                                       '-machine-readable', packer_file])
