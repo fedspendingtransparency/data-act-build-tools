@@ -21,11 +21,12 @@
     INSTANCE_ID: "{{ INSTANCE_ID }}"
 
     envs:
-      master : {env_long: prod}
-      staging: {env_long: staging}
-      qat    : {env_long: qat}
-      dev    : {env_long: dev}
-      sandbox: {env_long: sandbox}
+      master                     : {env_long: prod }
+      staging                    : {env_long: staging }
+      qat                        : {env_long: qat }
+      dev                        : {env_long: dev }
+      ftr/dev-5130-throttling-v1 : {env_long: dev }
+      sandbox                    : {env_long: sandbox}
 
     CODE_HOME: /data-act/backend
     CONFIG_HOME: /data-act/config

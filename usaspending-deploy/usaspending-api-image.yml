@@ -16,11 +16,12 @@
     DATADOG_YML_PATH: "/data-act/config/deploy/datadog.yaml"
 
     envs:
-      master : {env_long: prod }
-      staging: {env_long: staging }
-      qat    : {env_long: qat }
-      dev    : {env_long: dev }
-      sandbox: {env_long: sandbox}
+      master                     : {env_long: prod }
+      staging                    : {env_long: staging }
+      qat                        : {env_long: qat }
+      dev                        : {env_long: dev }
+      ftr/dev-5130-throttling-v1 : {env_long: dev }
+      sandbox                    : {env_long: sandbox}
 
   tasks:
 
