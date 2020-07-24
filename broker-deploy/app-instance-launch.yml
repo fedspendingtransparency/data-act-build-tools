@@ -75,18 +75,17 @@
     - name: config nginx for broker
       block: 
         - name: Copy broker nginx config
-          become: true
           copy:
             src: "/data-act/config/nginx/nginx_broker_api.conf"
             dest: "/etc/nginx/nginx.conf"
             remote_src: true
 
         - name: Update nginx config to set correct server_name
-          become: true
           replace:
             dest: "/etc/nginx/nginx.conf"
             regexp: 'server_name INSERT_WITH_ANSIBLE;'
             replace: "server_name {{ vars['envs'][BRANCH]['domain'] }};"
+      become: true
       when: APP == "broker"
 
     # ===================== Manage Secrets =====================#
@@ -107,70 +106,68 @@
     - name: Config SSL for broker
       block: 
         - name: Copy public.pem from S3 Bucket
-          become: true
           shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
         - name: Copy private.pem from S3 Bucket
-          become: true
           shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/private.pem /etc/cert.key --region us-gov-west-1"
 
         - name: Assign ownership of cert.pem to ec2-user
-          become: true
           file:
             path: /etc/cert.pem
             owner: ec2-user
 
         - name: Assign ownership of cert.key to ec2-user
-          become: true
           file:
             path: /etc/cert.key
             owner: ec2-user
+      become: true
       when: APP == "broker"
 
     # ===================== DataDog Configuration =====================#
 
-    - name: Define Datadog APM env key for this app environment
+    - name: Configure datadog
       become: true
-      lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: "  env: .*"
-        line: "  env: broker_{{ vars['envs'][BRANCH]['env_long'] | lower }}"
+      block: 
+        - name: Define Datadog APM env key for this app environment
+          lineinfile:
+            dest: "/etc/datadog-agent/datadog.yaml"
+            regexp: "  env: .*"
+            line: "  env: broker_{{ vars['envs'][BRANCH]['env_long'] | lower }}"
 
-    - name: Add custom tags to datadog.yaml
-      become: true
-      lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: '  - "{{ item.tagname }}:.*"'
-        line: '  - "{{ item.tagname }}:{{ item.value }}"'
-      with_items:
-        - { tagname: 'deploy_name', value: "broker_{{ vars['envs'][BRANCH]['env_long'] | lower }}_{{ vars['apps'][APP]['app_short'] | lower }}" }
-        - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
+        - name: Add custom tags to datadog.yaml
+          lineinfile:
+            dest: "/etc/datadog-agent/datadog.yaml"
+            regexp: '  - "{{ item.tagname }}:.*"'
+            line: '  - "{{ item.tagname }}:{{ item.value }}"'
+          with_items:
+            - { tagname: 'deploy_name', value: "broker_{{ vars['envs'][BRANCH]['env_long'] | lower }}_{{ vars['apps'][APP]['app_short'] | lower }}" }
+            - { tagname: 'deployed_ec2_instance_id', value: "{{ INSTANCE_ID }}" }
 
     # NOTE: Carefully note the BRANCH variable passed to this playbook.While broker's branch for d
     # While Broker's Git branch for development work is called 'development',
     # the BRANCH variable tends to be used to represent an "environment" in this playbook, so often is 'dev'
-    - name: Disable datadog apm if env is sandbox or dev
-      become: true
+    - name: Disable datadog in Dev
+      block: 
+        - name: Disable datadog apm if env is sandbox or dev
+          become: true
+          lineinfile:
+            dest: "/etc/datadog-agent/datadog.yaml"
+            regexp: "^  enabled: true"
+            insertafter: "^apm_config:.*"
+            line: "  enabled: false"
+
+        - name: (API) instrument datadog with the application if env is anything but dev (qat, sandbox, staging, master/prod)
+          replace:
+            dest: "/data-act/backend/dataactbroker/app.py"
+            regexp: "^tracer\\.enabled = False"
+            replace: "tracer.enabled = True"
+
+        - name: (VAL) instrument datadog with the application if env is anything but dev (qat, sandbox, staging, master/prod)
+          replace:
+            dest: "/data-act/backend/dataactvalidator/app.py"
+            regexp: "^tracer\\.enabled = False"
+            replace: "tracer.enabled = True"
       when: BRANCH == "dev"
-      lineinfile:
-        dest: "/etc/datadog-agent/datadog.yaml"
-        regexp: "^  enabled: true"
-        insertafter: "^apm_config:.*"
-        line: "  enabled: false"
-
-    - name: (API) instrument datadog with the application if env is anything but dev (qat, sandbox, staging, master/prod)
-      when: BRANCH != "dev"
-      replace:
-        dest: "/data-act/backend/dataactbroker/app.py"
-        regexp: "^tracer\\.enabled = False"
-        replace: "tracer.enabled = True"
-
-    - name: (VAL) instrument datadog with the application if env is anything but dev (qat, sandbox, staging, master/prod)
-      when: BRANCH != "dev"
-      replace:
-        dest: "/data-act/backend/dataactvalidator/app.py"
-        regexp: "^tracer\\.enabled = False"
-        replace: "tracer.enabled = True"
 
     - name: Ensure dd-agent ownership for datadog directory
       become: true
@@ -183,35 +180,33 @@
 
     # ===================== Setup supervisord.service =====================#
 
-    - name: Make supervisord.service directory
+    - name: Configure supervisord 
       become: true
-      file:
-        path: /etc/supervisord/conf.d
-        recurse: true
-        state: directory
+      block: 
+        - name: Make supervisord.service directory
+          file:
+            path: /etc/supervisord/conf.d
+            recurse: true
+            state: directory
 
-    - name: Supervisord.service conf
-      become: true
-      shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
+        - name: Supervisord.service conf
+          shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
 
-    - name: Supervisord.service conf.d append
-      become: true
-      shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
+        - name: Supervisord.service conf.d append
+          shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
 
-    - name: Supervisord.service config file location (validator)
-      when: APP == 'validator'
-      become: true
-      replace:
-        dest: /data-act/config/supervisord.service/supervisord.service
-        regexp: 'ExecStart=/bin/supervisord.*'
-        replace: "ExecStart=/bin/supervisord -c /data-act/backend/dataactvalidator/config/supervisord.conf"
+        - name: Supervisord.service config file location (validator)
+          when: APP == 'validator'
+          replace:
+            dest: /data-act/config/supervisord.service/supervisord.service
+            regexp: 'ExecStart=/bin/supervisord.*'
+            replace: "ExecStart=/bin/supervisord -c /data-act/backend/dataactvalidator/config/supervisord.conf"
 
-    - name: Supervisord.service copy
-      become: true
-      copy:
-        remote_src: true
-        src: /data-act/config/supervisord.service/supervisord.service
-        dest: /usr/lib/systemd/system/supervisord.service
+        - name: Supervisord.service copy
+          copy:
+            remote_src: true
+            src: /data-act/config/supervisord.service/supervisord.service
+            dest: /usr/lib/systemd/system/supervisord.service
 
     - name: Modify supervisord configuration to add ENV variable
       ini_file:

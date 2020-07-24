@@ -60,38 +60,35 @@
         - /tmp
 
 #===============================  Install PIP Packages  ===============================#
-
-    - name: update pip
+    - name: Configure PIP
       become: true
-      shell: pip3 install --upgrade pip
+      block: 
+        - name: update pip
+          shell: pip3 install --upgrade pip
 
-    - name: install python packages based on requirements.txt
-      become: true
-      pip:
-        requirements: "{{ REQ_DIR }}/requirements-app.txt"
-        executable: pip3
+        - name: install python packages based on requirements.txt
+          pip:
+            requirements: "{{ REQ_DIR }}/requirements-app.txt"
+            executable: pip3
 
-    - name: install python packages based on requirements-server.txt
-      become: true
-      pip:
-        requirements: "{{ REQ_DIR }}/requirements-server.txt"
-        executable: pip3
+        - name: install python packages based on requirements-server.txt
+          pip:
+            requirements: "{{ REQ_DIR }}/requirements-server.txt"
+            executable: pip3
 
-    - name: ensure the correct directory structure for tmp nginx files
-      become: true
-      file:
-        path: /var/lib/nginx/tmp
-        state: directory
-        owner: ec2-user
-        mode: "u+wrx"
-        recurse: yes
+        - name: ensure the correct directory structure for tmp nginx files
+          file:
+            path: /var/lib/nginx/tmp
+            state: directory
+            owner: ec2-user
+            mode: "u+wrx"
+            recurse: yes
 
-    - name: set starting directory to CODE_HOME
-      become: true
-      lineinfile:
-        dest: /home/ec2-user/.bashrc
-        line: "cd {{ CODE_HOME }}"
-        insertafter: EOF
+        - name: set starting directory to CODE_HOME
+          lineinfile:
+            dest: /home/ec2-user/.bashrc
+            line: "cd {{ CODE_HOME }}"
+            insertafter: EOF
 
 #===============================  Configure DataDog Key  ===============================#
 
@@ -114,42 +111,41 @@
         remote_src: true
 
 #=============================== Configure ClamAv  ===============================#
-
-    - name: Create /var/log/clamav
+    - name: Configure ClamAV
       become: true
-      file:
-        path: /var/log/clamav
-        state: directory
+      block:
+        - name: Create /var/log/clamav
+          file:
+            path: /var/log/clamav
+            state: directory
 
-    - name: chmod 0755 clamscan_daily
-      become: true
-      file:
-        path: /data-act/config/clamav/clamscan_daily.sh
-        owner: ec2-user
-        mode: "0755"
+        - name: chmod 0755 clamscan_daily
+          file:
+            path: /data-act/config/clamav/clamscan_daily.sh
+            owner: ec2-user
+            mode: "0755"
 
-    - name : create Crontab to run daily scans
-      become: true
-      cron:
-        name: add clamscan_daily.sh and freshclam to crontab
-        minute: "0"
-        hour: "1"
-        job: '/usr/bin/freshclam --quiet && /data-act/config/clamav/clamscan_daily.sh'
+        - name : create Crontab to run daily scans
+          cron:
+            name: add clamscan_daily.sh and freshclam to crontab
+            minute: "0"
+            hour: "1"
+            job: '/usr/bin/freshclam --quiet && /data-act/config/clamav/clamscan_daily.sh'
 
 #===============================  LifeCycle Hook Actions  ===============================#
-
-    - name: chmod 0755 update_lifecycle_status.sh script
+    - name: Configure LifeCycle Hooks
       become: true
-      file:
-        path: /data-act/config/asg_lifecycle_hook/update_lifecycle_status.sh
-        owner: ec2-user
-        mode: "0755"
+      block: 
+        - name: chmod 0755 update_lifecycle_status.sh script
+          file:
+            path: /data-act/config/asg_lifecycle_hook/update_lifecycle_status.sh
+            owner: ec2-user
+            mode: "0755"
 
-    - name : create crontab for periodic check of lifecycle status
-      become: true
-      cron:
-        name: check every minute if instance is terminating and proceed when uwsgi processes are cleared
-        job: '/data-act/config/asg_lifecycle_hook/update_lifecycle_status.sh 2>&1 | /usr/bin/logger -t lifecycle_checks'
+        - name : create crontab for periodic check of lifecycle status
+          cron:
+            name: check every minute if instance is terminating and proceed when uwsgi processes are cleared
+            job: '/data-act/config/asg_lifecycle_hook/update_lifecycle_status.sh 2>&1 | /usr/bin/logger -t lifecycle_checks'
 
 #===============================  Logrotate  ===============================#
 
@@ -182,6 +178,7 @@
               https_proxy={{ SQUID_ELB }}
               no_proxy={{ NO_PROXY_VAR }}
               export http_proxy https_proxy no_proxy
+              
         - name: add proxy env vars to /etc/environment
           become: true
           blockinfile:
