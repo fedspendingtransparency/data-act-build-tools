@@ -230,8 +230,7 @@
           regexp: '\s*HOST =.*'
           line: "HOST = '{{ SITE }}'"
 
-    - name: API | cache settings (staging/prod, elasticache)
-      when: BRANCH in ['master','staging','qat'] and BUILD_TYPE == 'api'
+    - name: API | cache settings
       block:
       - name: enable elasticache
         lineinfile:
@@ -256,21 +255,6 @@
           dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
           regexp: 'TIMEOUT-IN-SECONDS'
           replace: "{{ PROD_CACHE_TIMEOUT }}"
-
-    - name: API | cache settings (nonprod)
-      when: BRANCH in ['dev','sandbox'] and BUILD_TYPE == 'api'
-      block:
-      - name: enable local cache
-        lineinfile:
-          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-          regexp: '\s*CACHE_ENVIRONMENT\s*=.*'
-          line: "CACHE_ENVIRONMENT = 'local'"
-
-      - name: replace TIMEOUT-IN-SECONDS
-        replace:
-          dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
-          regexp: 'TIMEOUT-IN-SECONDS'
-          replace: "{{ NONPROD_CACHE_TIMEOUT }}"
 
     - name: API and bulk-download | cares settings (nonprod)
       when: BRANCH in ['dev','sandbox']
