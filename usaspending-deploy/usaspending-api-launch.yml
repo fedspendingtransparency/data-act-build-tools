@@ -42,6 +42,12 @@
     - name: Load variables from config repo
       include_vars: "{{ CONFIG_HOME }}/deploy/ansible-vars-{{ ANSIBLE_VARS_ENV }}.yml"
 
+# ==============================  Welcome Banner  =============================#
+    - name: Create the welcome banner
+      template:
+        src: "{{ CONFIG_HOME }}/deploy/banner/motd.sh.j2"
+        dest: "/etc/profile.d/motd.sh"
+
 #===============================  Nginx Config  ===============================#
     - name: API | Nginx configs for usaspending api
       when: BUILD_TYPE == 'api'

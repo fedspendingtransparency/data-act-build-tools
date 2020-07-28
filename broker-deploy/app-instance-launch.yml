@@ -31,6 +31,12 @@
 
   tasks:
 
+    # ===================== Welcome Banner ==============#
+    - name: Create the welcome banner
+      template:
+        src: "/data-act/config/banner/motd.sh.j2"
+        dest: "/etc/profile.d/motd.sh"
+
     # ===================== Configs =====================#
     - name: Copy core config
       copy:
