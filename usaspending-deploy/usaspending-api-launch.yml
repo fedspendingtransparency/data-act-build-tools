@@ -7,7 +7,7 @@
 #=======================================================================#
 
 ---
-- hosts: "localhost"
+- hosts: "{{ target|default(\"localhost\", true) }}"
   user: ec2-user
   become_method: sudo
 
@@ -85,32 +85,34 @@
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
 
-    - name: copy git credentials from S3 Bucket
-      become: true
-      aws_s3:
-        mode: get
-        bucket: da-config
-        object: "/usaspending/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
-        dest: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
-        region: us-gov-west-1
+    - name: download secrets from aws ssm 
+      set_fact:
+        temp_secrets: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
+      vars: 
+        get_secret: "usaspending-api-{{ vars['envs'][BRANCH]['env_long'] }}-secrets"
 
+    - name: Create secrets file from ansible fact
+      copy:
+        dest: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
+        content: "{{ temp_secrets }}"
+        
     - name: load secrets
       include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}-usaspending-api-secrets.yml"
 
-    - name: API | add DB_SOURCE to uswgi ini
-      when: BUILD_TYPE == 'api'
-      become: true
-      shell: "echo env=DB_SOURCE={{ DB_SOURCE }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+    - name: API | build uswgi.ini
+      block: 
+        - name: API | add DB_SOURCE to uswgi ini
+          become: true
+          shell: "echo env=DB_SOURCE={{ DB_SOURCE }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
-    - name: API | add DB_R1 to uswgi ini
-      when: BUILD_TYPE == 'api'
-      become: true
-      shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+        - name: API | add DB_R1 to uswgi ini
+          become: true
+          shell: "echo env=DB_R1={{ DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
-    - name: API | add DB_TIMEOUT_IN_SECONDS to uswgi ini
+        - name: API | add DB_TIMEOUT_IN_SECONDS to uswgi ini
+          become: true
+          shell: "echo env=DEFAULT_DB_TIMEOUT_IN_SECONDS={{ DEFAULT_DB_TIMEOUT_IN_SECONDS }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
       when: BUILD_TYPE == 'api'
-      become: true
-      shell: "echo env=DEFAULT_DB_TIMEOUT_IN_SECONDS={{ DEFAULT_DB_TIMEOUT_IN_SECONDS }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
 #===============================  DataDog Configuration  ===============================#
 
@@ -355,47 +357,46 @@
       become: true
       shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
 
-    - name: BD | Set supervisord.service config file location
-      when: BUILD_TYPE == 'bulk-download'
-      become: true
-      replace:
-        dest: "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
-        regexp: 'ExecStart=/bin/supervisord.*'
-        replace: "ExecStart=/bin/supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
-    
-    - name: BD | Set supervisord.service config file location
-      when: BUILD_TYPE == 'bulk-download'
-      become: true
-      replace:
-        dest: "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
-        regexp: 'ExecStart=/bin/supervisord.*'
-        replace: "ExecStart=/bin/supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
+    - name: Configure Bulk Downloader
+      block: 
+        - name: BD | Set supervisord.service config file location
+          become: true
+          replace:
+            dest: "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+            regexp: 'ExecStart=/bin/supervisord.*'
+            replace: "ExecStart=/bin/supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
+        
+        - name: BD | Set supervisord.service config file location
+          become: true
+          replace:
+            dest: "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+            regexp: 'ExecStart=/bin/supervisord.*'
+            replace: "ExecStart=/bin/supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
 
-    - name: BD | Set supervisord.service config file location and working dir
-      when: BUILD_TYPE == 'bulk-download'
-      become: true
-      ini_file:
-        dest: "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
-        section: Service
-        option: "{{ item.option }}"
-        value: "{{ item.value }}"
-      with_items:
-        - { option: "ExecStart", value: "/bin/supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf" }
-        - { option: "WorkingDirectory", value: "{{ CODE_HOME }}/usaspending_api/" }
+        - name: BD | Set supervisord.service config file location and working dir
+          become: true
+          ini_file:
+            dest: "{{ CONFIG_HOME }}/supervisord.service/supervisord.service"
+            section: Service
+            option: "{{ item.option }}"
+            value: "{{ item.value }}"
+          with_items:
+            - { option: "ExecStart", value: "/bin/supervisord -c {{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf" }
+            - { option: "WorkingDirectory", value: "{{ CODE_HOME }}/usaspending_api/" }
 
-    - name: BD | Insert environment variables into supervisord.conf
+        - name: BD | Insert environment variables into supervisord.conf
+          become: true
+          replace:
+            dest: "{{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
+            regexp: "%\\(ENV_{{ item.varname }}\\)s"
+            replace: "{{ item.value }}"
+          with_items:
+            - { varname: "NUM_PROCS", value: "{{ NUM_PROCS }}" }
+            - { varname: "DATABASE_URL_VAR", value: "{{ DB_SOURCE }}" }
+            - { varname: "DOWNLOAD_DATABASE_URL", value: "{{ DOWNLOAD_DATABASE_URL }}" }
+          register: item_result
+          failed_when: not item_result.changed  # make sure all these are found and replaced (makes this not a repeatable task)
       when: BUILD_TYPE == 'bulk-download'
-      become: true
-      replace:
-        dest: "{{ CODE_HOME }}/usaspending_api/bulk_download/config/supervisord.conf"
-        regexp: "%\\(ENV_{{ item.varname }}\\)s"
-        replace: "{{ item.value }}"
-      with_items:
-        - { varname: "NUM_PROCS", value: "{{ NUM_PROCS }}" }
-        - { varname: "DATABASE_URL_VAR", value: "{{ DB_SOURCE }}" }
-        - { varname: "DOWNLOAD_DATABASE_URL", value: "{{ DOWNLOAD_DATABASE_URL }}" }
-      register: item_result
-      failed_when: not item_result.changed  # make sure all these are found and replaced (makes this not a repeatable task)
 
     - name: supervisord.service copy
       copy:
@@ -405,14 +406,13 @@
 
 #===============================  Enable and Restart Services  ===============================#
 
-    - name: enable & restart datadog-agent service
+    - name: enable services
       become: true
-      shell: "systemctl enable datadog-agent && systemctl restart datadog-agent"
-
-    - name: enable & restart filebeat service
-      become: true
-      shell: "systemctl enable filebeat && systemctl restart filebeat"
-
-    - name: enable & restart supervisord.service
-      become: true
-      shell: "systemctl enable supervisord && systemctl restart supervisord"
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+        enabled: yes
+      with_items:
+        - datadog-agent
+        - filebeat
+        - supervisord
