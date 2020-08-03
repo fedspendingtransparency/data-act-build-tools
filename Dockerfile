@@ -3,7 +3,7 @@
 FROM centos:7
 
 ARG packer_version_arg=1.5.6
-ARG ansible_version_arg=2.8.3
+ARG ansible_version_arg=2.9.10
 ARG terraform_version_arg=0.12.24
 ARG terragrunt_version_arg=0.23.18
 ARG ami_manager_arg=0.8.0
