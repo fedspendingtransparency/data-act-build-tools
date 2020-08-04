@@ -57,4 +57,4 @@ RUN pip3 install boto3 sh argparse awscli
 
 # install ansible-galaxy packages
 COPY requirements.yml /tmp/
-RUN ansible-galaxy install -c --roles-path /etc/ansible/roles -r /tmp/requirements.yml 
+RUN ansible-galaxy install --roles-path /etc/ansible/roles -r /tmp/requirements.yml 
