@@ -62,3 +62,7 @@ RUN pip install boto3 botocore
 # install ansible-galaxy packages
 COPY requirements.yml /tmp/
 RUN ansible-galaxy install --roles-path /etc/ansible/roles -r /tmp/requirements.yml 
+
+# set global python interpreter 
+RUN echo "[defaults]" >> /etc/ansible/ansible.cfg
+RUN echo "ansible_python_interpreter=/usr/bin/python3" >> /etc/ansible/ansible.cfg
