@@ -21,7 +21,8 @@ RUN yum update -y && \
     yum install -y python36u && \
     yum install -y python36u-pip && \
     yum install -y openssh-clients && \
-    yum install -y python36u-setuptools
+    yum install -y python36u-setuptools && \
+    yum install -y python-setuptools
 
 WORKDIR /root/workspace
 # this variable is used to run packer
