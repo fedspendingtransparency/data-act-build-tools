@@ -20,7 +20,8 @@ RUN yum update -y && \
     yum install -y https://repo.ius.io/ius-release-el7.rpm && \
     yum install -y python36u && \
     yum install -y python36u-pip && \
-    yum install -y openssh-clients
+    yum install -y openssh-clients && \
+    yum install -y python36u-setuptools
 
 WORKDIR /root/workspace
 # this variable is used to run packer
@@ -53,7 +54,7 @@ RUN chmod +x /opt/terragrunt/terragrunt
 RUN ln -s /opt/terragrunt/terragrunt /usr/local/bin/terragrunt
 
 # install pip packages
-RUN pip3 install boto3 sh argparse awscli setuptools
+RUN pip3 install boto3 sh argparse awscli
 
 # install ansible-galaxy packages
 COPY requirements.yml /tmp/
