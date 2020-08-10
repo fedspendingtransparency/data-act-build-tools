@@ -96,16 +96,24 @@
 
     # ===================== Manage Secrets =====================#
 
-    - name: download secrets from aws ssm 
+    - name: download secrets from aws ssm -- nonprod
       set_fact:
-        temp_secrets: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
+        temp_secret: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
       vars: 
-        get_secret: "broker_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
+        get_secret: "/nonprod/broker/broker_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
+      when: vars['envs'][BRANCH]['env_long'] != 'prod'
 
-    - name: Create secrets file from ansible fact
+    - name: download secrets from aws ssm -- prod
+      set_fact:
+        temp_secret: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
+      vars: 
+        get_secret: "/prod/broker/broker_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
+      when: vars['envs'][BRANCH]['env_long'] == 'prod'
+
+    - name: Create secrets file from ansible fact 
       copy:
         dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml"
-        content: "{{ temp_secrets }}"
+        content: "{{ temp_secret }}"
 
     # ===================== SSL Certs (not used for Validator) =====================#
     
