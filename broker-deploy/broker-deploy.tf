@@ -18,7 +18,8 @@ resource "aws_autoscaling_group" "api-asg" {
   health_check_type         = "ELB"
   health_check_grace_period = 180
   launch_configuration      = aws_launch_configuration.api-lc.name
-  load_balancers            = [var.api_elb]
+  load_balancers            = var.api_elb_names
+  target_group_arns         = var.api_target_group_arns
   vpc_zone_identifier       = split(",", var.subnets)
 
   tags = [
@@ -58,7 +59,8 @@ resource "aws_autoscaling_group" "val-asg" {
   health_check_type         = "ELB"
   health_check_grace_period = 180
   launch_configuration      = aws_launch_configuration.val-lc.name
-  load_balancers            = [var.val_elb]
+  load_balancers            = var.val_elb_names
+  target_group_arns         = var.val_target_group_arns
   vpc_zone_identifier       = split(",", var.subnets)
 
   tags = [
