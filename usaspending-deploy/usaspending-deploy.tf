@@ -145,6 +145,9 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests_alb" {
   threshold           = "10000"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "RequestCountPerTarget"
+  period              = "300"
+  statistic           = "Sum"
+  unit                = "Count"
   dimensions          = {
     TargetGroup = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
   }
@@ -219,6 +222,9 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests_alb" {
   threshold           = "10000"
   namespace           = "AWS/ApplicationELB"
   metric_name         = "RequestCountPerTarget"
+  period              = "300"
+  statistic           = "Sum"
+  unit                = "Count"
   dimensions          = {
     TargetGroup = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
   }
