@@ -14,8 +14,9 @@
     CODE_HOME: /data-act/backend
     REQ_DIR: "{{ CODE_HOME }}/requirements"
     ansible_python_interpreter: /usr/bin/python3
-    DATADOG_YML_PATH: "/data-act/config/deploy/datadog.yaml"
-    GIT_TOKEN: github-data-act-service-account-token
+    DATADOG_YML_PATH: /data-act/config/deploy/datadog.yaml
+    DATADOG_KEY_PATH: /shared/datadog_key
+    GIT_TOKEN_PATH: /shared/github_data_act_service_account_token
 
     envs:
       master : {env_long: prod }
@@ -30,7 +31,7 @@
 
     - name: copy github credentials from SSM
       set_fact:
-        pat_token: "{{ lookup('aws_ssm', GIT_TOKEN, region='us-gov-west-1') }}"
+        pat_token: "{{ lookup('aws_ssm', GIT_TOKEN_PATH, region='us-gov-west-1') }}"
 
 #===============================  Git Checkout  ===============================#
     - name: Set usaspending url
@@ -94,7 +95,7 @@
 
     - name: get datadog_key from SSM
       set_fact: 
-        dd_key: "{{ lookup('aws_ssm', 'datadog_key', region='us-gov-west-1') }}"
+        dd_key: "{{ lookup('aws_ssm', DATADOG_KEY_PATH, region='us-gov-west-1') }}"
 
     - name: add Datadog license key to datadog.yaml
       lineinfile:

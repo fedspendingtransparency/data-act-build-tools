@@ -10,9 +10,10 @@
     CONFIG_BRANCH: "{{ CONFIG_BRANCH }}"
     TOOLS_BRANCH: "{{ TOOLS_BRANCH }}"
     CONFIG_HOME: /data-act/config
-    DATADOG_YML_PATH: "/data-act/config/datadog/datadog.yaml"
+    DATADOG_YML_PATH: /data-act/config/datadog/datadog.yaml
+    DATADOG_KEY_PATH: /shared/datadog_key
     ansible_python_interpreter: /usr/bin/python3.5
-    GIT_TOKEN: github-data-act-service-account-token
+    GIT_TOKEN_PATH: /shared/github_data_act_service_account_token
 
     envs:
       master:      {env_long: prod }
@@ -24,7 +25,7 @@
   tasks:
     - name: Copy github credentials from SSM
       set_fact:
-        pat_token: "{{ lookup('aws_ssm', GIT_TOKEN, region='us-gov-west-1') }}"
+        pat_token: "{{ lookup('aws_ssm', GIT_TOKEN_PATH, region='us-gov-west-1') }}"
 
     - name: Set broker url
       set_fact: 
@@ -70,7 +71,7 @@
 
     - name: get datadog_key from SSM
       set_fact: 
-        dd_key: "{{ lookup('aws_ssm', 'datadog_key', region='us-gov-west-1') }}"
+        dd_key: "{{ lookup('aws_ssm', DATADOG_KEY_PATH, region='us-gov-west-1') }}"
 
     - name: add Datadog license key to datadog.yaml
       lineinfile:
