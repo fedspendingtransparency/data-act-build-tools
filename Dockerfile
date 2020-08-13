@@ -58,3 +58,11 @@ RUN pip3 install boto3 sh argparse awscli
 # install ansible-galaxy packages
 COPY requirements.yml /tmp/
 RUN ansible-galaxy install --roles-path /etc/ansible/roles -r /tmp/requirements.yml 
+
+# add proxy vars
+RUN echo "http_proxy=http://Admin-LoadB-M8TFLH5T5E26-e3c480cf926d4157.elb.us-gov-west-1.amazonaws.com:3128" >> /etc/environment
+RUN echo "https_proxy=http://Admin-LoadB-M8TFLH5T5E26-e3c480cf926d4157.elb.us-gov-west-1.amazonaws.com:3128" >> /etc/environment
+RUN echo "HTTP_PROXY=http://Admin-LoadB-M8TFLH5T5E26-e3c480cf926d4157.elb.us-gov-west-1.amazonaws.com:3128" >> /etc/environment
+RUN echo "HTTPS_PROXY=http://Admin-LoadB-M8TFLH5T5E26-e3c480cf926d4157.elb.us-gov-west-1.amazonaws.com:3128" >> /etc/environment
+RUN echo "no_proxy=169.254.169.254,100.100.100.200,10.1.*,10.2.*,172.31.*,127.0.0.1,localhost,s3.us-gov-west-1.amazonaws.com" >> /etc/environment
+RUN echo "NO_PROXY=169.254.169.254,100.100.100.200,10.1.*,10.2.*,172.31.*,127.0.0.1,localhost,s3.us-gov-west-1.amazonaws.com" >> /etc/environment
