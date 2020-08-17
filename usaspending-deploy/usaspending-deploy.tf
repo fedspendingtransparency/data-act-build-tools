@@ -15,7 +15,8 @@ resource "aws_autoscaling_group" "api_asg" {
   health_check_type         = "ELB"
   health_check_grace_period = 30
   launch_configuration      = aws_launch_configuration.api_lc.name
-  load_balancers            = [var.api_elb]
+  load_balancers            = var.api_elb_names
+  target_group_arns         = var.api_target_group_arns
   vpc_zone_identifier       = split(",", var.subnets)
 
   tags = [
@@ -86,8 +87,9 @@ resource "aws_autoscaling_policy" "api_scale_up" {
   autoscaling_group_name = aws_autoscaling_group.api_asg.name
 }
 
-resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
-  alarm_name          = "${var.api_name_prefix}_requestshigh (${var.aws_amis[var.aws_region]})"
+resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests_elb" {
+  count               = var.api_scaling_metric == "ELB" ? length(var.api_elb_names) : 0
+  alarm_name          = "${var.api_name_prefix}_requestshigh_${count.index} (${var.aws_amis[var.aws_region]})"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "2"
   threshold           = "10000"
@@ -110,7 +112,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
       unit        = "Count"
 
       dimensions = {
-        LoadBalancerName = var.api_elb
+        LoadBalancerName = var.api_elb_names[count.index]
       }
     }
   }
@@ -126,11 +128,29 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests" {
       unit        = "Count"
 
       dimensions = {
-        LoadBalancerName = var.api_elb
+        LoadBalancerName = var.api_elb_names[count.index]
       }
     }
   }
 
+  alarm_description = "Request Count per Instance Greater Than 10000 on ${var.api_name_prefix}"
+  alarm_actions     = [aws_autoscaling_policy.api_scale_up.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests_alb" {
+  count               = var.api_scaling_metric == "ALB" ? length(var.api_target_group_arns) : 0
+  alarm_name          = "${var.api_name_prefix}_requestshigh_${count.index} (${var.aws_amis[var.aws_region]})"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  threshold           = "10000"
+  namespace           = "AWS/ApplicationELB"
+  metric_name         = "RequestCountPerTarget"
+  period              = "300"
+  statistic           = "Sum"
+  unit                = "Count"
+  dimensions          = {
+    TargetGroup = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
+  }
   alarm_description = "Request Count per Instance Greater Than 10000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_up.arn]
 }
@@ -144,8 +164,9 @@ resource "aws_autoscaling_policy" "api_scale_down" {
   autoscaling_group_name = aws_autoscaling_group.api_asg.name
 }
 
-resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests" {
-  alarm_name          = "${var.api_name_prefix}_requestslow (${var.aws_amis[var.aws_region]})"
+resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests_elb" {
+  count               = var.api_scaling_metric == "ELB" ? length(var.api_elb_names) : 0
+  alarm_name          = "${var.api_name_prefix}_requestslow_${count.index} (${var.aws_amis[var.aws_region]})"
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = "2"
   threshold           = "10000"
@@ -168,7 +189,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests" {
       unit        = "Count"
 
       dimensions = {
-        LoadBalancerName = var.api_elb
+        LoadBalancerName = var.api_elb_names[count.index]
       }
     }
   }
@@ -184,11 +205,29 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests" {
       unit        = "Count"
 
       dimensions = {
-        LoadBalancerName = var.api_elb
+        LoadBalancerName = var.api_elb_names[count.index]
       }
     }
   }
 
+  alarm_description = "Request Count per Instance Less Than 10000 on ${var.api_name_prefix}"
+  alarm_actions     = [aws_autoscaling_policy.api_scale_down.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests_alb" {
+  count               = var.api_scaling_metric == "ALB" ? length(var.api_target_group_arns) : 0
+  alarm_name          = "${var.api_name_prefix}_requestslow_${count.index} (${var.aws_amis[var.aws_region]})"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  threshold           = "10000"
+  namespace           = "AWS/ApplicationELB"
+  metric_name         = "RequestCountPerTarget"
+  period              = "300"
+  statistic           = "Sum"
+  unit                = "Count"
+  dimensions          = {
+    TargetGroup = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
+  }
   alarm_description = "Request Count per Instance Less Than 10000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_down.arn]
 }
