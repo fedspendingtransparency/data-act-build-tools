@@ -27,7 +27,7 @@ autoscaling_group="$(aws autoscaling describe-auto-scaling-instances \
 
 echo autoscaling group: $autoscaling_group
 
-if [$capacity -eq 0]
+if [ $capacity -eq 0 ]
 then
     echo capacity is 0 so making sure autoscaling group can support 0 instances
     aws autoscaling update-auto-scaling-group \
