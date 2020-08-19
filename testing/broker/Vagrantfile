@@ -43,12 +43,13 @@ Vagrant.configure("2") do |config|
         echo "export AWS_DEFAULT_PROFILE=$TEMP_PROF" >> /etc/profile.d/vagrant.sh
         echo "export AWS_REGION=$TEMP_REGION" >> /etc/profile.d/vagrant.sh
         chmod +x /etc/profile.d/vagrant.sh
+        pip install awscli boto boto3
     EOF
 
     config.vm.provision "ansible_local" do |ansible|
         ansible.provisioning_path = "/home/vagrant/repos/data-act-config/provisioning/base-ami"
         ansible.become = true
-        ansible.galaxy_role_file = "requirements.yml"
+        ansible.galaxy_role_file = "/home/vagrant/repos/data-act-build-tools/requirements.yml"
         ansible.galaxy_roles_path = "/etc/ansible/roles"
         ansible.galaxy_command = "sudo ansible-galaxy install --role-file=%{role_file} --roles-path=%{roles_path} --force"
         ansible.playbook = "provision-%s.yml" % local_vars['application']
@@ -75,10 +76,11 @@ Vagrant.configure("2") do |config|
             local_testing: true,
             BRANCH: "master",
             CONFIG_BRANCH: "master",
-            TOOLS_BRANCH: "master"
+            TOOLS_BRANCH: "config/update-ssm-secret-paths"
         } 
     end
 
+    # If this fails, remove the proxy blocks from app-instance-launch.yml for testing
     config.vm.provision "ansible_local" do |ansible|
         ansible.provisioning_path = "/home/vagrant/repos/data-act-build-tools/broker-deploy"
         ansible.become = true 
