@@ -20,12 +20,24 @@ sample_instance_id=$(aws ec2 describe-instances \
 
 echo sample instance_id: $sample_instance_id
 
+if [ -z $sample_instance_id ]
+then
+    echo no instances found
+    exit;
+fi
+
 autoscaling_group="$(aws autoscaling describe-auto-scaling-instances \
     --instance-ids $sample_instance_id \
     --query AutoScalingInstances[0].AutoScalingGroupName \
     --output text)"
 
 echo autoscaling group: $autoscaling_group
+
+if [ -z $autoscaling_group ]
+then
+    echo no autoscaling group found
+    exit;
+fi
 
 if [ $capacity -eq 0 ]
 then
