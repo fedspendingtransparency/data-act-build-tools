@@ -175,7 +175,7 @@
             dest: "/data-act/backend/dataactvalidator/app.py"
             regexp: "^tracer\\.enabled = False"
             replace: "tracer.enabled = True"
-      when: BRANCH != "dev"
+      when: BRANCH not in ["dev", "sandbox"]
 
     - name: Ensure dd-agent ownership for datadog directory
       become: true
