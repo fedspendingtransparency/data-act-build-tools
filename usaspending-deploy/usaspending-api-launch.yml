@@ -85,34 +85,20 @@
         dest: "{{ CODE_HOME }}/config/uwsgi_db.ini"
         remote_src: true
 
+    - name: Set environment to fact
+      set_fact: 
+        env_type: "{{ prod if vars['envs'][BRANCH]['env_long'] == 'prod' else 'nonprod' }}"
 
-    - name: download secrets from aws ssm -- nonprod
-      block:
-        - name: download secrets from aws ssm 
-          set_fact:
-            temp_secret: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
-          vars: 
-            get_secret: "/nonprod/usaspending/usaspending_api_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
+    - name: download secrets from aws ssm
+      set_fact:
+        temp_secret: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
+      vars: 
+        get_secret: "/{{ env_type }}/usaspending/usaspending_api_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
 
-        - name: Create secrets file from ansible fact
-          copy:
-            dest: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}_usaspending_api_secrets.yml"
-            content: "{{ temp_secret }}"
-      when: vars['envs'][BRANCH]['env_long'] != 'prod'
-
-    - name: download secrets from aws ssm -- prod
-      block:
-        - name: download secrets from aws ssm 
-          set_fact:
-            temp_secret: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
-          vars: 
-            get_secret: "/prod/usaspending/usaspending_api_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
-
-        - name: Create secrets file from ansible fact
-          copy:
-            dest: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}_usaspending_api_secrets.yml"
-            content: "{{ temp_secret }}"
-      when: vars['envs'][BRANCH]['env_long'] == 'prod'
+    - name: Create secrets file from ansible fact
+      copy:
+        dest: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}_usaspending_api_secrets.yml"
+        content: "{{ temp_secret }}"
             
     - name: load secrets
       include_vars: "/etc/{{ vars['envs'][BRANCH]['env_long'] }}_usaspending_api_secrets.yml"    

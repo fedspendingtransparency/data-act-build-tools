@@ -96,19 +96,15 @@
 
     # ===================== Manage Secrets =====================#
 
-    - name: download secrets from aws ssm -- nonprod
-      set_fact:
-        temp_secret: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
-      vars: 
-        get_secret: "/nonprod/broker/broker_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
-      when: vars['envs'][BRANCH]['env_long'] != 'prod'
+    - name: Set environment to fact
+      set_fact: 
+        env_type: "{{ 'prod' if vars['envs'][BRANCH]['env_long'] == 'prod' else 'nonprod' }}"
 
-    - name: download secrets from aws ssm -- prod
+    - name: download secrets from aws ssm
       set_fact:
         temp_secret: "{{ lookup('aws_ssm', get_secret, region='us-gov-west-1') }}"
       vars: 
-        get_secret: "/prod/broker/broker_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
-      when: vars['envs'][BRANCH]['env_long'] == 'prod'
+        get_secret: "/{{ env_type }}/broker/broker_{{ vars['envs'][BRANCH]['env_long'] }}_secrets"
 
     - name: Create secrets file from ansible fact 
       copy:
