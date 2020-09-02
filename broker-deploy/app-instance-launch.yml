@@ -152,16 +152,18 @@
     # NOTE: Carefully note the BRANCH variable passed to this playbook.While broker's branch for d
     # While Broker's Git branch for development work is called 'development',
     # the BRANCH variable tends to be used to represent an "environment" in this playbook, so often is 'dev'
-    - name: Disable datadog in Dev
-      block: 
-        - name: Disable datadog apm if env is sandbox or dev
-          become: true
-          lineinfile:
-            dest: "/etc/datadog-agent/datadog.yaml"
-            regexp: "^  enabled: true"
-            insertafter: "^apm_config:.*"
-            line: "  enabled: false"
+    - name: Disable datadog apm if env is sandbox or dev
+      become: true
+      lineinfile:
+        dest: "/etc/datadog-agent/datadog.yaml"
+        regexp: "^  enabled: true"
+        insertafter: "^apm_config:.*"
+        line: "  enabled: false"
+      when: BRANCH in ["dev", "sandbox"]
 
+    - name: Enable datadog
+      become: true
+      block: 
         - name: (API) instrument datadog with the application if env is anything but dev (qat, sandbox, staging, master/prod)
           replace:
             dest: "/data-act/backend/dataactbroker/app.py"
@@ -173,7 +175,7 @@
             dest: "/data-act/backend/dataactvalidator/app.py"
             regexp: "^tracer\\.enabled = False"
             replace: "tracer.enabled = True"
-      when: BRANCH == "dev"
+      when: BRANCH not in ["dev", "sandbox"]
 
     - name: Ensure dd-agent ownership for datadog directory
       become: true
