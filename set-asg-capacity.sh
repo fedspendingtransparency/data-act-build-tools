@@ -20,7 +20,7 @@ sample_instance_id=$(aws ec2 describe-instances \
 
 echo sample instance_id: $sample_instance_id
 
-if [ -z $sample_instance_id ]
+if [ -z "${sample_instance_id}" ]
 then
     echo no instances found
     exit;
@@ -33,7 +33,7 @@ autoscaling_group="$(aws autoscaling describe-auto-scaling-instances \
 
 echo autoscaling group: $autoscaling_group
 
-if [ -z $autoscaling_group ]
+if [ -z "${autoscaling_group}" ]
 then
     echo no autoscaling group found
     exit;
