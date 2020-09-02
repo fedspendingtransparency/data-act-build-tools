@@ -188,6 +188,9 @@
         - { regexp: '\s*STATIC_URL =.*',
             line: "STATIC_URL = '{{ STATIC_ASSETS_URL }}'" }
 
+        - { regexp: '\s*GRANTS_API_KEY =.*',
+            line: "GRANTS_API_KEY = '{{ GRANTS_API_KEY }}'" }
+
     - name: add settings.py env vars
       lineinfile:
         dest: "{{ CODE_HOME }}/usaspending_api/settings.py"
