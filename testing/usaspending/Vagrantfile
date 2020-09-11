@@ -78,6 +78,7 @@ Vagrant.configure("2") do |config|
         } 
     end
 
+    # If this fails, remove the proxy blocks from usaspending-api-launch.yml for testing
     config.vm.provision "ansible_local" do |ansible|
         ansible.provisioning_path = "/home/vagrant/repos/data-act-build-tools/usaspending-deploy"
         ansible.become = true 
