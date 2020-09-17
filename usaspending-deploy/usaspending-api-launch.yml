@@ -87,7 +87,7 @@
 
     - name: Set environment to fact
       set_fact: 
-        env_type: "{{ prod if vars['envs'][BRANCH]['env_long'] == 'prod' else 'nonprod' }}"
+        env_type: "{{ 'prod' if vars['envs'][BRANCH]['env_long'] == 'prod' else 'nonprod' }}"
 
     - name: download secrets from aws ssm
       set_fact:
