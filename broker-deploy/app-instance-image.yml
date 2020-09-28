@@ -12,7 +12,7 @@
     CONFIG_HOME: /data-act/config
     DATADOG_YML_PATH: /data-act/config/datadog/datadog.yaml
     DATADOG_KEY_PATH: /shared/datadog_key
-    ansible_python_interpreter: /usr/bin/python3.5
+    ansible_python_interpreter: /usr/bin/python3.6
     GIT_TOKEN_PATH: /shared/github_data_act_service_account_token
 
     envs:
@@ -62,7 +62,7 @@
       pip: 
         chdir: /data-act/backend
         requirements: "{{ item }}"
-        executable: pip3.5
+        executable: pip3
       with_items:
         - requirements.txt
         - server_requirements.txt
