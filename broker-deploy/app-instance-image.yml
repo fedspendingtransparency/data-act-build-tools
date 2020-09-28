@@ -56,14 +56,6 @@
         - /tmp
 
 # ======================== Install PIP Packages ========================#
-    
-    # I'll move this back over to the base-ami after testing. 
-    - name: upgrade pip3
-      pip:
-        name: pip3
-        executable: pip3
-        state: latest
-      # become: yes
 
     - name: Install all packages based on requirements.txt
       become: true
