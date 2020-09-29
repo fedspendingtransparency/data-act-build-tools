@@ -12,7 +12,7 @@
     CONFIG_HOME: /data-act/config
     DATADOG_YML_PATH: /data-act/config/datadog/datadog.yaml
     DATADOG_KEY_PATH: /shared/datadog_key
-    ansible_python_interpreter: /usr/bin/python3.6
+    ansible_python_interpreter: /usr/bin/python3
     GIT_TOKEN_PATH: /shared/github_data_act_service_account_token
 
     envs:
