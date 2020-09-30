@@ -192,6 +192,16 @@
 
     # ===================== Setup supervisord.service =====================#
 
+    - name: Create symlinks (Python 3.7)
+      file:
+        force: yes
+        src: "{{ item.src }}"
+        path: "{{ item.path }}"
+        state: link
+      with_items:
+        - { src: "/usr/local/bin/supervisord", path: "/bin/supervisord" }
+        - { src: "/usr/local/bin/echo_supervisord_conf", path: "/bin/echo_supervisord_conf" }
+        
     - name: Configure supervisord 
       become: true
       block: 
@@ -202,7 +212,7 @@
             state: directory
 
         - name: Supervisord.service conf
-          shell: /usr/local/bin/echo_supervisord_conf > /etc/supervisord/supervisord.conf
+          shell: echo_supervisord_conf > /etc/supervisord/supervisord.conf
 
         - name: Supervisord.service conf.d append
           shell: echo "files = conf.d/*.conf" >> /etc/supervisord/supervisord.conf
@@ -212,7 +222,7 @@
           replace:
             dest: /data-act/config/supervisord.service/supervisord.service
             regexp: 'ExecStart=/bin/supervisord.*'
-            replace: "ExecStart=/usr/local/bin/supervisord -c /data-act/backend/dataactvalidator/config/supervisord.conf"
+            replace: "ExecStart=/bin/supervisord -c /data-act/backend/dataactvalidator/config/supervisord.conf"
 
         - name: Supervisord.service copy
           copy:
