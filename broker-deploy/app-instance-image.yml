@@ -64,7 +64,7 @@
 
     - name: Set pip executable
       set_fact: 
-        python_pip_executable: "{{ 'pip3.5' if python_check.stat.exists == 'true' else 'pip3' }}"
+        python_pip_executable: "{{ '/bin/pip3.5' if python_check.stat.exists == 'True' else 'pip3' }}"
         
     - name: Upgrade PIP
       become: true
