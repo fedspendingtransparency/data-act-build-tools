@@ -11,7 +11,7 @@ args = parser.parse_args()
 url = args.url
 
 # Requires AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables available
-session = boto3.Session()
+session = boto3.Session(region_name='us-east-1')
 
 client = session.client('cloudfront')
 
