@@ -44,12 +44,18 @@
         src: "/data-act/config/backend/config.yml"
         dest: "/data-act/backend/dataactcore/config.yml"
         remote_src: true
+        owner: ec2-user
+        group: root
+        mode: '0644'
 
     - name: Copy environmental config
       copy:
         src: "/data-act/config/backend/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
         dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
         remote_src: true
+        owner: ec2-user
+        group: root
+        mode: '0644'
 
     # ===================== Filebeat Configuration =====================#
 
@@ -110,6 +116,9 @@
       copy:
         dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml"
         content: "{{ temp_secret }}"
+        owner: ec2-user
+        group: root
+        mode: '0644'
 
     # ===================== SSL Certs (not used for Validator) =====================#
     
