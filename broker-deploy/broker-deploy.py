@@ -31,8 +31,8 @@ def deploy():
     config_branch = args.config_branch
     tools_branch = args.tools_branch
 
-    if deploy_env == 'sandbox':
-        packer_file = 'broker-sandbox-packer.json'
+    if deploy_env != 'qat' and deploy_env != 'prod':
+        packer_file = 'broker-' + deploy_env + '-packer.json'
     else:
         packer_file = 'broker-packer.json'
 
