@@ -151,7 +151,6 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests_alb" {
   metric_name         = "RequestCountPerTarget"
   period              = "300"
   statistic           = "Sum"
-  unit                = "Count"
   dimensions          = {
     LoadBalancer = regex("app/.*$", data.aws_lb.alb.arn)
     TargetGroup  = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
@@ -229,7 +228,6 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests_alb" {
   metric_name         = "RequestCountPerTarget"
   period              = "300"
   statistic           = "Sum"
-  unit                = "Count"
   dimensions          = {
     LoadBalancer = regex("app/.*$", data.aws_lb.alb.arn)
     TargetGroup  = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
