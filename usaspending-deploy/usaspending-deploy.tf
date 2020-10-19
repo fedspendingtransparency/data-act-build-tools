@@ -6,6 +6,10 @@ terraform {
   backend "s3" {}
 }
 
+data "aws_lb" "alb" {
+  name = var.alb_name
+}
+
 resource "aws_autoscaling_group" "api_asg" {
   name                      = "${var.api_name_prefix} (${var.aws_amis[var.aws_region]})"
   max_size                  = var.api_asg_max
@@ -149,6 +153,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests_alb" {
   statistic           = "Sum"
   unit                = "Count"
   dimensions          = {
+    LoadBalancer = data.aws_lb.alb.name_prefix
     TargetGroup = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
   }
   alarm_description = "Request Count per Instance Greater Than 10000 on ${var.api_name_prefix}"
@@ -226,7 +231,8 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests_alb" {
   statistic           = "Sum"
   unit                = "Count"
   dimensions          = {
-    TargetGroup = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
+    LoadBalancer = data.aws_lb.alb.name_prefix
+    TargetGroup  = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
   }
   alarm_description = "Request Count per Instance Less Than 10000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_down.arn]
