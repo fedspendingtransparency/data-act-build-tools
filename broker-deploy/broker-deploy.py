@@ -29,7 +29,7 @@ def deploy():
     args = parser.parse_args()
     deploy_env = args.deploy_env
     config_branch = args.config_branch
-    tools_branch = args.tools_branch    
+    tools_branch = args.tools_branch
 
     tfvar_file = deploy_env + '-variables.tf.json'
     tfvar_json = open(tfvar_file, "r")
