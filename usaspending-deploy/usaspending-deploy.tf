@@ -154,7 +154,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests_alb" {
   unit                = "Count"
   dimensions          = {
     LoadBalancer = data.aws_lb.alb.name_prefix
-    TargetGroup = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
+    TargetGroup  = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
   }
   alarm_description = "Request Count per Instance Greater Than 10000 on ${var.api_name_prefix}"
   alarm_actions     = [aws_autoscaling_policy.api_scale_up.arn]
