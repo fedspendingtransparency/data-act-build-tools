@@ -57,14 +57,14 @@
 
 # ======================== Install PIP Packages ========================#
           
-    - name: Upgrade PIP
+    - name: upgrade pip
       become: true
       pip: 
         name: pip
         executable: pip3
         state: latest
 
-    - name: Install all packages based on requirements.txt
+    - name: install all packages based on requirements.txt
       become: true
       pip: 
         chdir: /data-act/backend
