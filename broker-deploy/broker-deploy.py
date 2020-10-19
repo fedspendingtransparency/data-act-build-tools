@@ -16,7 +16,7 @@ ec2_resource = boto3.resource('ec2', region_name='us-gov-west-1')
 def deploy():
 
     # set paths
-    # packer_file = 'broker-packer.json'
+    packer_file = 'broker-packer.json'
     tfvar_file = 'broker-vars.tf.json'
     tf_file = 'broker-deploy.tf'
     packer_exec_path = 'packer'
@@ -29,12 +29,7 @@ def deploy():
     args = parser.parse_args()
     deploy_env = args.deploy_env
     config_branch = args.config_branch
-    tools_branch = args.tools_branch
-
-    if deploy_env != 'prod':
-        packer_file = 'broker-nonprod-packer.json'
-    else:
-        packer_file = 'broker-packer.json'
+    tools_branch = args.tools_branch    
 
     tfvar_file = deploy_env + '-variables.tf.json'
     tfvar_json = open(tfvar_file, "r")

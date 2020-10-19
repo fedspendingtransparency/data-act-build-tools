@@ -201,7 +201,7 @@
 
     # ===================== Setup supervisord.service =====================#
 
-    - name: Create symlinks (Python 3.7)
+    - name: Create symlinks for supervisord
       file:
         force: yes
         src: "{{ item.src }}"

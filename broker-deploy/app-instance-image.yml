@@ -56,21 +56,12 @@
         - /tmp
 
 # ======================== Install PIP Packages ========================#
-  
-    - name: Check for Python 3.5
-      stat: 
-        path: /bin/pip3.5
-      register: python_check
-
-    - name: Set pip executable
-      set_fact: 
-        python_pip_executable: "{{ '/bin/pip3.5' if python_check.stat.exists == 'True' else 'pip3' }}"
-        
+          
     - name: Upgrade PIP
       become: true
       pip: 
         name: pip
-        executable: "{{ python_pip_executable }}"
+        executable: pip3
         state: latest
 
     - name: Install all packages based on requirements.txt
@@ -78,7 +69,7 @@
       pip: 
         chdir: /data-act/backend
         requirements: "{{ item }}"
-        executable: "{{ python_pip_executable }}"
+        executable: pip3
       with_items:
         - requirements.txt
         - server_requirements.txt
