@@ -153,7 +153,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_high_requests_alb" {
   statistic           = "Sum"
   unit                = "Count"
   dimensions          = {
-    LoadBalancer = data.aws_lb.alb.name_prefix
+    LoadBalancer = regex("app/.*$", data.aws_lb.alb.arn)
     TargetGroup  = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
   }
   alarm_description = "Request Count per Instance Greater Than 10000 on ${var.api_name_prefix}"
@@ -231,7 +231,7 @@ resource "aws_cloudwatch_metric_alarm" "api_alarm_low_requests_alb" {
   statistic           = "Sum"
   unit                = "Count"
   dimensions          = {
-    LoadBalancer = data.aws_lb.alb.name_prefix
+    LoadBalancer = regex("app/.*$", data.aws_lb.alb.arn)
     TargetGroup  = regex("targetgroup/.*$", var.api_target_group_arns[count.index])
   }
   alarm_description = "Request Count per Instance Less Than 10000 on ${var.api_name_prefix}"
