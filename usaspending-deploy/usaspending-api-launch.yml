@@ -107,11 +107,11 @@
       block: 
         - name: API | add DB_SOURCE to uswgi ini
           become: true
-          shell: "echo env=DB_SOURCE={{ if dmz then DMZ_DB_SOURCE else DB_SOURCE }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+          shell: "echo env=DB_SOURCE={{ DMZ_DB_SOURCE if dmz else DB_SOURCE }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
         - name: API | add DB_R1 to uswgi ini
           become: true
-          shell: "echo env=DB_R1={{ if dmz then DMZ_DB_SOURCE else DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
+          shell: "echo env=DB_R1={{ DMZ_DB_SOURCE if dmz else DB_R1 }} >> {{ CODE_HOME }}/config/uwsgi_db.ini"
 
         - name: API | add DB_TIMEOUT_IN_SECONDS to uswgi ini
           become: true
@@ -399,7 +399,7 @@
             replace: "{{ item.value }}"
           with_items:
             - { varname: "NUM_PROCS", value: "{{ NUM_PROCS }}" }
-            - { varname: "DATABASE_URL_VAR", value: "{{ if dmz then DMZ_DB_SOURCE else DB_SOURCE }}" }
+            - { varname: "DATABASE_URL_VAR", value: "{{ DMZ_DB_SOURCE if dmz else DB_SOURCE }}" }
             - { varname: "DOWNLOAD_DATABASE_URL", value: "{{ DOWNLOAD_DATABASE_URL }}" }
           register: item_result
           failed_when: not item_result.changed  # make sure all these are found and replaced (makes this not a repeatable task)
