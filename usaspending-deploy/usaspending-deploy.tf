@@ -60,7 +60,7 @@ resource "aws_autoscaling_group" "api_dmz_asg" {
   min_elb_capacity          = var.api_dmz_instance_count
   health_check_type         = "ELB"
   health_check_grace_period = 30
-  launch_configuration      = aws_launch_configuration.api_dmz_lc.name
+  launch_configuration      = aws_launch_configuration.api_dmz_lc[0].name
   target_group_arns         = [var.api_dmz_target_group_arn]
   vpc_zone_identifier       = split(",", var.subnets)
 
@@ -108,7 +108,7 @@ resource "aws_autoscaling_lifecycle_hook" "api_hook_termination" {
 resource "aws_autoscaling_lifecycle_hook" "api_dmz_hook_termination" {
   count                   = var.create_dmz ? 1 : 0
   name                    = "${var.api_name_prefix}-dmz-${var.aws_amis[var.aws_region]}"
-  autoscaling_group_name  = aws_autoscaling_group.api_asg.name
+  autoscaling_group_name  = aws_autoscaling_group.api_dmz_asg[0].name
   default_result          = "CONTINUE"
   heartbeat_timeout       = 30
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
