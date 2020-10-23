@@ -170,7 +170,7 @@ def update_terraform_user_data(
 
     if create_dmz:
         startup_shell_script = "usaspending-start-dmz-{}.sh".format(environment)
-        newdata = filedata.replace("usaspending-start-dmz-staging.sh", startup_shell_script)
+        newdata = newdata.replace("usaspending-start-dmz-staging.sh", startup_shell_script)
 
     f = open(tf_file,'w')
     f.write(newdata)
