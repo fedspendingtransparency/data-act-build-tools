@@ -110,7 +110,7 @@ resource "aws_autoscaling_lifecycle_hook" "api_dmz_hook_termination" {
   name                    = "${var.api_name_prefix}-dmz-${var.aws_amis[var.aws_region]}"
   autoscaling_group_name  = aws_autoscaling_group.api_asg.name
   default_result          = "CONTINUE"
-  heartbeat_timeout       = 600
+  heartbeat_timeout       = 30
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
 }
 
