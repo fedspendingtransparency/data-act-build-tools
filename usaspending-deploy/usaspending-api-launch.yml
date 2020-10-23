@@ -37,6 +37,8 @@
 
     ssl_bucket_name: usaspending-ssl
 
+    dmz: no
+
   tasks:
 
     - name: Load variables from config repo
