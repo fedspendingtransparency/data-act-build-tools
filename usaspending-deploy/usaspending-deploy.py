@@ -82,7 +82,10 @@ def deploy():
     update_tf_ami(new_instance_ami, tfvar_file)
 
     # Update Terraform User Data
-    update_terraform_user_data(deploy_env)
+    update_terraform_user_data(
+        environment=deploy_env,
+        tf_file=tf_file,
+        create_dmz=create_dmz)
 
     print('**************************************************************************')
     print(' Running terraform... ')
@@ -156,7 +159,7 @@ def update_tf_ami(new_ami='', tfvar_file='variables.tf.json'):
 def update_terraform_user_data(
     environment='staging',
     tf_file='usaspending-deploy.tf',
-    create_dmz=create_dmz):
+    create_dmz=False):
     f = open(tf_file,'r')
     filedata = f.read()
     f.close()
