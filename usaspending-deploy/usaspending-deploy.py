@@ -42,7 +42,7 @@ def deploy():
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
     create_dmz = tfvar_data['variable']['create_dmz']['default']
     startup_script = "usaspending-start-{}.sh".format(deploy_env)
-    dmz_startup_script = "usaspending-start-dmz-{}.sh".format(deploy_env)
+    dmz_startup_script = "usaspending-start-{}-dmz.sh".format(deploy_env)
 
     # Get Old AMIs, for setting current=False after new one is created
     old_instance_amis = ec2_client.describe_images(Filters=[
@@ -169,8 +169,8 @@ def update_terraform_user_data(
     newdata = filedata.replace("usaspending-start-staging.sh", startup_shell_script)
 
     if create_dmz:
-        startup_shell_script = "usaspending-start-dmz-{}.sh".format(environment)
-        newdata = newdata.replace("usaspending-start-dmz-staging.sh", startup_shell_script)
+        startup_shell_script = "usaspending-start-{}-dmz.sh".format(environment)
+        newdata = newdata.replace("usaspending-start-staging-dmz.sh", startup_shell_script)
 
     f = open(tf_file,'w')
     f.write(newdata)

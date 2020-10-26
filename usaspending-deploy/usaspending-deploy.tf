@@ -82,9 +82,14 @@ resource "aws_autoscaling_group" "api_dmz_asg" {
     },
     {
       key                   = "Environment"
-      value                 =  "${var.env_tag} dmz"
+      value                 =  "${var.env_tag}"
       propagate_at_launch   = "true"
     },
+    {
+      key                   = "Zone"
+      value                 = "dmz"
+      propagate_at_launch   = "true"
+    }
   ]
 
   lifecycle {
@@ -139,7 +144,7 @@ resource "aws_launch_configuration" "api_dmz_lc" {
   instance_type        = var.api_dmz_instance_type
   iam_instance_profile = var.iam_profile
   security_groups      = split(",", var.sec_groups)
-  user_data            = file("usaspending-start-dmz-staging.sh")
+  user_data            = file("usaspending-start-staging-dmz.sh")
   key_name             = var.key_name
   ebs_optimized        = true
   lifecycle {
