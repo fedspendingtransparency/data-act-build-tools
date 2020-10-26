@@ -40,7 +40,9 @@ def deploy():
     tf_state_s3_bucket = tfvar_data['variable']['tf_state_s3_bucket']['default']
     tf_state_s3_path = tfvar_data['variable']['tf_state_s3_path']['default']
     tf_aws_region = tfvar_data['variable']['aws_region']['default']
+    create_dmz = tfvar_data['variable']['create_dmz']['default']
     startup_script = "usaspending-start-{}.sh".format(deploy_env)
+    dmz_startup_script = "usaspending-start-{}-dmz.sh".format(deploy_env)
 
     # Get Old AMIs, for setting current=False after new one is created
     old_instance_amis = ec2_client.describe_images(Filters=[
@@ -80,7 +82,10 @@ def deploy():
     update_tf_ami(new_instance_ami, tfvar_file)
 
     # Update Terraform User Data
-    update_terraform_user_data(deploy_env)
+    update_terraform_user_data(
+        environment=deploy_env,
+        tf_file=tf_file,
+        create_dmz=create_dmz)
 
     print('**************************************************************************')
     print(' Running terraform... ')
@@ -91,6 +96,8 @@ def deploy():
     shutil.copy(tf_file,    deploy_env)
     shutil.copy(tfvar_file, deploy_env)
     shutil.copy(startup_script, deploy_env)
+    if create_dmz:
+        shutil.copy(dmz_startup_script, deploy_env)
     os.chdir(deploy_env)
 
     # Run Terraform plan and apply
@@ -149,7 +156,10 @@ def update_tf_ami(new_ami='', tfvar_file='variables.tf.json'):
     return
 
 
-def update_terraform_user_data(environment='staging', tf_file='usaspending-deploy.tf'):
+def update_terraform_user_data(
+    environment='staging',
+    tf_file='usaspending-deploy.tf',
+    create_dmz=False):
     f = open(tf_file,'r')
     filedata = f.read()
     f.close()
@@ -157,6 +167,10 @@ def update_terraform_user_data(environment='staging', tf_file='usaspending-deplo
     # environment = prod, staging, dev, or sandbox
     startup_shell_script = "usaspending-start-{}.sh".format(environment)
     newdata = filedata.replace("usaspending-start-staging.sh", startup_shell_script)
+
+    if create_dmz:
+        startup_shell_script = "usaspending-start-{}-dmz.sh".format(environment)
+        newdata = newdata.replace("usaspending-start-staging-dmz.sh", startup_shell_script)
 
     f = open(tf_file,'w')
     f.write(newdata)

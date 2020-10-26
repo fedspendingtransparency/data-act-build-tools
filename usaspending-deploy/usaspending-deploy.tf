@@ -51,6 +51,52 @@ resource "aws_autoscaling_group" "api_asg" {
   }
 }
 
+resource "aws_autoscaling_group" "api_dmz_asg" {
+  count                     = var.create_dmz ? 1 : 0
+  name                      = "${var.api_name_prefix} dmz (${var.aws_amis[var.aws_region]})"
+  max_size                  = var.api_dmz_instance_count
+  min_size                  = var.api_dmz_instance_count
+  desired_capacity          = var.api_dmz_instance_count
+  min_elb_capacity          = var.api_dmz_instance_count
+  health_check_type         = "ELB"
+  health_check_grace_period = 30
+  launch_configuration      = aws_launch_configuration.api_dmz_lc[0].name
+  target_group_arns         = [var.api_dmz_target_group_arn]
+  vpc_zone_identifier       = split(",", var.subnets)
+
+  tags = [
+    {
+      key                   = "Name"
+      value                 = "${var.api_name_prefix} dmz (${var.aws_amis[var.aws_region]})"
+      propagate_at_launch   = "true"
+    },
+    {
+      key                   = "Application"
+      value                 = "USAspending"
+      propagate_at_launch   = "true"
+    },
+    {
+      key                   = "Component"
+      value                 = "API"
+      propagate_at_launch   = "true"
+    },
+    {
+      key                   = "Environment"
+      value                 =  "${var.env_tag}"
+      propagate_at_launch   = "true"
+    },
+    {
+      key                   = "Zone"
+      value                 = "dmz"
+      propagate_at_launch   = "true"
+    }
+  ]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 # When autoscaling decides to terminate an instance, instead of terminating it immediately, it will defer to the termination hook
 # and place the instance into a Termination:Wait state for the specified heartbeat_timeout of 600 seconds (10 minutes).
 # By that time, if the hook has not received a continue request, it will proceed with the default_result,
@@ -64,6 +110,15 @@ resource "aws_autoscaling_lifecycle_hook" "api_hook_termination" {
   lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
 }
 
+resource "aws_autoscaling_lifecycle_hook" "api_dmz_hook_termination" {
+  count                   = var.create_dmz ? 1 : 0
+  name                    = "${var.api_name_prefix}-dmz-${var.aws_amis[var.aws_region]}"
+  autoscaling_group_name  = aws_autoscaling_group.api_dmz_asg[0].name
+  default_result          = "CONTINUE"
+  heartbeat_timeout       = 30
+  lifecycle_transition    = "autoscaling:EC2_INSTANCE_TERMINATING"
+}
+
 resource "aws_launch_configuration" "api_lc" {
   name                 = "${var.api_name_prefix} (${var.aws_amis[var.aws_region]})"
   image_id             = var.aws_amis[var.aws_region]
@@ -71,6 +126,25 @@ resource "aws_launch_configuration" "api_lc" {
   iam_instance_profile = var.iam_profile
   security_groups      = split(",", var.sec_groups)
   user_data            = file("usaspending-start-staging.sh")
+  key_name             = var.key_name
+  ebs_optimized        = true
+  lifecycle {
+    create_before_destroy = true
+  }
+  root_block_device {
+    volume_size = var.api_ebs_size
+    volume_type = var.api_ebs_type
+  }
+}
+
+resource "aws_launch_configuration" "api_dmz_lc" {
+  count                = var.create_dmz ? 1 : 0
+  name                 = "${var.api_name_prefix} dmz (${var.aws_amis[var.aws_region]})"
+  image_id             = var.aws_amis[var.aws_region]
+  instance_type        = var.api_dmz_instance_type
+  iam_instance_profile = var.iam_profile
+  security_groups      = split(",", var.sec_groups)
+  user_data            = file("usaspending-start-staging-dmz.sh")
   key_name             = var.key_name
   ebs_optimized        = true
   lifecycle {
