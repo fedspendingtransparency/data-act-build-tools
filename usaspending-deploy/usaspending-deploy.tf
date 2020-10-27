@@ -144,7 +144,7 @@ resource "aws_launch_configuration" "api_dmz_lc" {
   instance_type        = var.api_dmz_instance_type
   iam_instance_profile = var.iam_profile
   security_groups      = split(",", var.sec_groups)
-  user_data            = file(create_dmz ? "usaspending-start-staging-dmz.sh" : "usaspending-start-staging.sh")
+  user_data            = file(var.create_dmz ? "usaspending-start-staging-dmz.sh" : "usaspending-start-staging.sh")
   key_name             = var.key_name
   ebs_optimized        = true
   lifecycle {
