@@ -5,7 +5,7 @@ FROM centos:7
 ARG packer_version_arg=1.5.6
 ARG ansible_version_arg=2.8.3
 ARG terraform_version_arg=0.12.24
-ARG terragrunt_version_arg=0.23.18
+ARG terragrunt_version_arg=0.25.4
 ARG ami_manager_arg=0.8.0
 
 ENV PACKER_VERSION=${packer_version_arg}
