@@ -20,7 +20,8 @@ RUN yum update -y && \
     yum install -y https://repo.ius.io/ius-release-el7.rpm && \
     yum install -y python36u && \
     yum install -y python36u-pip && \
-    yum install -y openssh-clients
+    yum install -y openssh-clients && \
+    yum install -y jq
 
 WORKDIR /root/workspace
 # this variable is used to run packer
