@@ -10,11 +10,9 @@ Pulls and renames both the most recent CARS file and the most recent GTAS aka SF
 By default, does nothing if there was no S3 files found in the past 24 hours, 
 can be forced to pull the most recent.
 
-File naming convention is s3://dti-gtas-sf133-frb-nonprod/PE.[CARS or GTAS]_DA-YYYYMM-PP 
+File naming convention is s3://dti-gtas-sf133-frb-{account}/PE.[CARS or GTAS]_DA-YYYYMM-PP 
 where PP = period and MM = fiscal month
 '''
-
-BUCKET_SOURCE = 'dti-gtas-sf133-frb-nonprod'
 
 
 # Helper function...if the contents of the row aren't empty and "null" is in it, delete the contents of the row
@@ -31,7 +29,7 @@ def main():
     parser.add_argument('--bucket', nargs='?', const='default', default='default', type=str)
     args = parser.parse_args()
 
-    print('\nPulling latest from bucket "{}".'.format(BUCKET_SOURCE))
+    print('\nPulling latest from bucket "{}".'.format(args.bucket))
 
     if not args.force_pull_latest:
         print('Ignoring files modified before {}'.format(
@@ -39,7 +37,7 @@ def main():
         )
 
     s3 = boto3.resource(service_name='s3', region_name='us-gov-west-1')
-    bucket_source = s3.Bucket(BUCKET_SOURCE)
+    bucket_source = s3.Bucket(args.bucket)
 
     all_files = bucket_source.objects.all()
 
@@ -103,7 +101,7 @@ def main():
 
     if not cars_exists and not gtas_exists:
         print('No files in "{}" modified since {}, or no files found.'.format(
-            BUCKET_SOURCE,
+            args.bucket,
             (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%m:%S"))
         )
 
