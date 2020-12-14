@@ -44,12 +44,18 @@
         src: "/data-act/config/backend/config.yml"
         dest: "/data-act/backend/dataactcore/config.yml"
         remote_src: true
+        owner: ec2-user
+        group: root
+        mode: '0644'
 
     - name: Copy environmental config
       copy:
         src: "/data-act/config/backend/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
         dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_config.yml"
         remote_src: true
+        owner: ec2-user
+        group: root
+        mode: '0644'
 
     # ===================== Filebeat Configuration =====================#
 
@@ -110,16 +116,19 @@
       copy:
         dest: "/data-act/backend/dataactcore/{{ vars['envs'][BRANCH]['env_long'] }}_secrets.yml"
         content: "{{ temp_secret }}"
+        owner: ec2-user
+        group: root
+        mode: '0644'
 
     # ===================== SSL Certs (not used for Validator) =====================#
     
     - name: Config SSL for broker
       block: 
         - name: Copy public.pem from S3 Bucket
-          shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
+          shell: "/usr/local/bin/aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/public.pem /etc/cert.pem --region us-gov-west-1"
 
         - name: Copy private.pem from S3 Bucket
-          shell: "aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/private.pem /etc/cert.key --region us-gov-west-1"
+          shell: "/usr/local/bin/aws s3 cp s3://{{ ssl_bucket_name }}/broker-api-{{ vars['envs'][BRANCH]['env_long'] }}/private.pem /etc/cert.key --region us-gov-west-1"
 
         - name: Assign ownership of cert.pem to ec2-user
           file:
@@ -192,6 +201,16 @@
 
     # ===================== Setup supervisord.service =====================#
 
+    - name: Create symlinks for supervisord
+      file:
+        force: yes
+        src: "{{ item.src }}"
+        path: "{{ item.path }}"
+        state: link
+      with_items:
+        - { src: "/usr/local/bin/supervisord", path: "/bin/supervisord" }
+        - { src: "/usr/local/bin/echo_supervisord_conf", path: "/bin/echo_supervisord_conf" }
+        
     - name: Configure supervisord 
       become: true
       block: 
