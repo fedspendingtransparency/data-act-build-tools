@@ -10,10 +10,10 @@ Pulls and renames both the most recent CARS file and the most recent GTAS aka SF
 By default, does nothing if there was no S3 files found in the past 24 hours, 
 can be forced to pull the most recent.
 
-File naming convention is s3://gtas-sf133-frb/PE.[CARS or GTAS]_DA-YYYYMM-PP where PP = period and MM = fiscal month
+File naming convention is s3://dti-gtas-sf133-frb-prod/PE.[CARS or GTAS]_DA-YYYYMM-PP where PP = period and MM = fiscal month
 '''
 
-BUCKET_SOURCE = 'gtas-sf133-frb'
+BUCKET_SOURCE = 'dti-gtas-sf133-frb-prod'
 
 
 # Helper function...if the contents of the row aren't empty and "null" is in it, delete the contents of the row
