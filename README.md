@@ -1,4 +1,4 @@
 # data-act-build-tools
 
-Ansible code for Broker and USASpending applications.
+build tools used to deploy Broker and USASpending applications and automate operations tasks.
 
