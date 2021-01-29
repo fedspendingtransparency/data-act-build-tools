@@ -26,7 +26,7 @@ RUN yum update -y && \
     yum install -y python36u-pip && \
     yum install -y openssh-clients && \
     yum install -y jq && \
-    yum install -y git
+    yum install -y git && \
     yum install -y nodejs
 
 WORKDIR /root/workspace
