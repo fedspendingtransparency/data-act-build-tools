@@ -17,7 +17,7 @@ ENV AMI_MANAGER_VERSION=${ami_manager_arg}
 ENV NODE_VERSION=${node_version_arg}
 
 # set up nodejs repo
-RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | sudo bash -
+RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 
 RUN yum update -y && \
     yum install -y wget zip unzip && \
