@@ -7,12 +7,17 @@ ARG ansible_version_arg=2.9.15
 ARG terraform_version_arg=0.12.24
 ARG terragrunt_version_arg=0.25.4
 ARG ami_manager_arg=0.8.0
+ARG node_version_arg=12.x
 
 ENV PACKER_VERSION=${packer_version_arg}
 ENV ANSIBLE_VERSION=${ansible_version_arg}
 ENV TERRAFORM_VERSION=${terraform_version_arg}
 ENV TERRAGRUNT_VERSION=${terragrunt_version_arg}
 ENV AMI_MANAGER_VERSION=${ami_manager_arg}
+ENV NODE_VERSION=${node_version_arg}
+
+# set up nodejs repo
+RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 
 RUN yum update -y && \
     yum install -y wget zip unzip && \
@@ -21,7 +26,8 @@ RUN yum update -y && \
     yum install -y python36u-pip && \
     yum install -y openssh-clients && \
     yum install -y jq && \
-    yum install -y git
+    yum install -y git && \
+    yum install -y nodejs
 
 WORKDIR /root/workspace
 # this variable is used to run packer
