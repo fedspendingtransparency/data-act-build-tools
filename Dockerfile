@@ -1,6 +1,7 @@
 # Contains packer/terraform/ansible dependencies in order to run the various *-deploy.py scripts in a container
 
 FROM centos:7
+COPY --from=node:12.18.4 / /
 
 ARG packer_version_arg=1.6.1
 ARG ansible_version_arg=2.9.15
@@ -16,9 +17,6 @@ ENV TERRAGRUNT_VERSION=${terragrunt_version_arg}
 ENV AMI_MANAGER_VERSION=${ami_manager_arg}
 ENV NODE_VERSION=${node_version_arg}
 
-# set up nodejs repo
-RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
-
 RUN yum update -y && \
     yum install -y wget zip unzip && \
     yum install -y https://repo.ius.io/ius-release-el7.rpm && \
@@ -26,8 +24,7 @@ RUN yum update -y && \
     yum install -y python36u-pip && \
     yum install -y openssh-clients && \
     yum install -y jq && \
-    yum install -y git && \
-    yum install -y nodejs
+    yum install -y git
 
 WORKDIR /root/workspace
 # this variable is used to run packer
@@ -65,6 +62,3 @@ RUN pip3 install boto3 sh argparse awscli
 # install ansible-galaxy packages
 COPY requirements.yml /tmp/
 RUN ansible-galaxy install --roles-path /etc/ansible/roles -r /tmp/requirements.yml 
-
-# install sudo
-RUN yum install -y sudo
