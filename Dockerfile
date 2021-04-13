@@ -60,7 +60,7 @@ RUN chmod +x /opt/terragrunt/terragrunt
 RUN ln -s /opt/terragrunt/terragrunt /usr/local/bin/terragrunt
 
 # install pip packages
-RUN pip3 install boto3 sh argparse awscli
+RUN pip3 install boto3 sh argparse awscli pytz
 
 # install ansible-galaxy packages
 COPY requirements.yml /tmp/
