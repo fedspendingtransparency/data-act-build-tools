@@ -84,6 +84,8 @@ def main():
 
     try:
         recent_gtas = [x for x in recent_files if re.search('PE\.GTAS', x.key)][0]
+        print('Should only be one gtas file...')
+        print(recent_gtas)
         gtas_exists = True
     except:
         print('No GTAS file posted in the last 24 hours, or no files found.')
