@@ -22,15 +22,12 @@ RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 RUN yum update -y && \
     yum install -y wget zip unzip && \
     yum install -y https://repo.ius.io/ius-release-el7.rpm && \
-    yum install -y python36 && \
-    yum install -y python36-pip && \
-    yum install -y openssh-clients && \
+    yum install -y python36u --enablerepo=ius-archive && \
+    yum install -y python36u-pip --enablerepo=ius-archive && \
+    yum install -y openssh-clients --enablerepo=ius-archive && \
     yum install -y jq && \
     yum install -y git && \
     yum install -y nodejs
-
-# symlink for backwards compatibility in existing jenkins jobs
-RUN ln -s python3.6 /usr/bin/python3.5
 
 WORKDIR /root/workspace
 # this variable is used to run packer
