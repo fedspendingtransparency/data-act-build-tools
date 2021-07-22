@@ -22,8 +22,8 @@ RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 RUN yum update -y && \
     yum install -y wget zip unzip && \
     yum install -y https://repo.ius.io/ius-release-el7.rpm && \
-    yum install -y python36u --enablerepo=ius-archive && \
-    yum install -y python36u-pip --enablerepo=ius-archive && \
+    yum install -y python36u --setopt=obsoletes=0 --enablerepo=ius-archive && \
+    yum install -y python36u-pip --setopt=obsoletes=0 --enablerepo=ius-archive && \
     yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \
