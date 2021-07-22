@@ -24,7 +24,7 @@ RUN yum update -y && \
     yum install -y https://repo.ius.io/ius-release-el7.rpm && \
     yum install -y python36u --enablerepo=ius-archive && \
     yum install -y python36u-pip --enablerepo=ius-archive && \
-    yum install -y openssh-clients --enablerepo=ius-archive && \
+    yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \
     yum install -y nodejs
@@ -65,3 +65,6 @@ RUN pip3 install boto3 sh argparse awscli pytz
 # install ansible-galaxy packages
 COPY requirements.yml /tmp/
 RUN ansible-galaxy install --roles-path /etc/ansible/roles -r /tmp/requirements.yml 
+
+# install terragrunt drift job dependencies
+RUN pip3 install json2html jinja2 pynliner
