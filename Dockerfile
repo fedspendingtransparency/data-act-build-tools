@@ -8,7 +8,7 @@ ARG terraform_version_arg=0.12.31
 ARG terragrunt_version_arg=0.25.4
 ARG ami_manager_arg=0.8.0
 ARG node_version_arg=12.x
-ARG pip_version=21.0.1
+ARG pip_version=21.1.3
 
 ENV PACKER_VERSION=${packer_version_arg}
 ENV ANSIBLE_VERSION=${ansible_version_arg}
