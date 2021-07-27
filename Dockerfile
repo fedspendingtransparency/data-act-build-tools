@@ -47,7 +47,7 @@ RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
 # install ansible
-RUN pip3.6 install pip=${PIP_VERSION}
+RUN pip3.6 install pip==${PIP_VERSION}
 RUN pip3 install ansible==${ANSIBLE_VERSION}
 
 # install terraform and create an symlink on /usr/local
