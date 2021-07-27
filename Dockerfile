@@ -8,7 +8,6 @@ ARG terraform_version_arg=0.12.31
 ARG terragrunt_version_arg=0.25.4
 ARG ami_manager_arg=0.8.0
 ARG node_version_arg=12.x
-ARG pip_version=21.1.3
 
 ENV PACKER_VERSION=${packer_version_arg}
 ENV ANSIBLE_VERSION=${ansible_version_arg}
@@ -16,7 +15,6 @@ ENV TERRAFORM_VERSION=${terraform_version_arg}
 ENV TERRAGRUNT_VERSION=${terragrunt_version_arg}
 ENV AMI_MANAGER_VERSION=${ami_manager_arg}
 ENV NODE_VERSION=${node_version_arg}
-ENV PIP_INSTALL_VERSION=${pip_version}
 
 # set up nodejs repo
 RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
@@ -48,7 +46,7 @@ RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERS
 
 # install ansible
 # RUN pip3.6 install --upgrade pip==21.1.3
-RUN python3 -m pip install --upgrade pip==${PIP_INSTALL_VERSION}
+RUN python3 -m pip install --upgrade pip==21.1.3
 RUN pip3 install ansible==${ANSIBLE_VERSION}
 
 # install terraform and create an symlink on /usr/local
