@@ -46,9 +46,10 @@ RUN wget https://github.com/wata727/packer-post-processor-amazon-ami-management/
 RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
+# Install pinned pip w/ pip3 symlink
+RUN pip3.6 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
+
 # install ansible
-# RUN pip3.6 install --upgrade pip==21.1.3
-RUN pip3 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
 RUN pip3 install ansible==${ANSIBLE_VERSION}
 
 # install terraform and create an symlink on /usr/local
