@@ -24,8 +24,8 @@ RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 RUN yum update -y && \
     yum install -y wget zip unzip && \
     yum install -y https://repo.ius.io/ius-release-el7.rpm && \
-    yum install -y python36u && \
-    yum install -y python36u-pip && \
+    yum install -y python36u --setopt=obsoletes=0 --enablerepo=ius-archive && \
+    yum install -y python36u-pip --setopt=obsoletes=0 --enablerepo=ius-archive && \
     yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \
@@ -46,9 +46,10 @@ RUN wget https://github.com/wata727/packer-post-processor-amazon-ami-management/
 RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
+# Install pinned pip w/ pip3 symlink
+RUN pip3.6 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
+
 # install ansible
-# RUN pip3.6 install --upgrade pip==21.1.3
-RUN pip3 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
 RUN pip3 install ansible==${ANSIBLE_VERSION}
 
 # install terraform and create an symlink on /usr/local
@@ -68,3 +69,9 @@ RUN pip3 install boto3 sh argparse awscli pytz
 # install ansible-galaxy packages
 COPY requirements.yml /tmp/
 RUN ansible-galaxy install --roles-path /etc/ansible/roles -r /tmp/requirements.yml 
+
+# install terragrunt drift job dependencies
+RUN pip3 install json2html jinja2 pynliner
+
+# install static code analysis dependencies
+RUN pip3 install flake8
