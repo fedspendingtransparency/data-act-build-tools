@@ -5,7 +5,7 @@ FROM centos:7
 ARG packer_version_arg=1.6.1
 ARG ansible_version_arg=2.9.15
 ARG terraform_version_arg=0.13.7
-ARG terragrunt_version_arg=0.25.4
+ARG terragrunt_version_arg=0.29.4
 ARG ami_manager_arg=0.8.0
 ARG node_version_arg=12.x
 ARG pip_install_version=21.1.3
