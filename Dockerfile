@@ -75,7 +75,7 @@ COPY requirements.yml /tmp/
 RUN ansible-galaxy install --roles-path /etc/ansible/roles -r /tmp/requirements.yml 
 
 # install terragrunt drift job dependencies
-RUN pip3 install json2html jinja2 pynliner
+RUN pip3 install json2html jinja2 pynliner PyGreSQL
 
 # install static code analysis dependencies
 RUN pip3 install flake8
