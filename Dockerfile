@@ -33,7 +33,8 @@ RUN yum update -y && \
     yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \
-    yum install -y nodejs
+    yum install -y nodejs \
+    yum install -y python3-devel
 
 WORKDIR /root/workspace
 # this variable is used to run packer
