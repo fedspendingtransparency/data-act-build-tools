@@ -6,10 +6,10 @@ INSTANCE_ID = sys.argv[1]
 JOB_NAME = sys.argv[2]
 API_VERSION = '/api/2.1'
 
-print(JOB_NAME)
+print("----------RUNNING JOB " + JOB_NAME )
 
 # Run Get request with api_command param
-def getRequest(api_command, params = None):
+def getRequest(api_command, params = {}):
     url = "https://{}{}{}".format(INSTANCE_ID, API_VERSION, api_command)
     response = requests.get(
       url = url,
@@ -48,7 +48,7 @@ if( JOB_NAME in jobs ):
     run_params = { 'run_id' : run_id }
     job_status = getRequest('/jobs/runs/get-output', run_params).json()["metadata"]["state"]["life_cycle_state"]
     print(job_status)
-    
+
     #Wait for job to finish running
     while(job_status == "RUNNING"):
         job_status = getRequest('/jobs/runs/get-output', run_params).json()["metadata"]["state"]["life_cycle_state"]
@@ -57,6 +57,6 @@ if( JOB_NAME in jobs ):
     print(json.dumps(json.loads(finishedJob.text), indent = 2))
 
     run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
-    print("SEE JOB RUN HERE: " + run_url)
+    print("---------------SEE JOB RUN HERE: " + run_url)
 else:
     raise ValueError(sys.argv[2] + " is not a job in databricks")
