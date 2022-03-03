@@ -55,7 +55,7 @@ def link(uri, label=None):
 jobs = getJobIds(getRequest('/jobs/list'))
 
 if( JOB_NAME in jobs ):
-    print("JOB ID: " + jobs[JOB_NAME])
+    print("JOB ID: " + str(jobs[JOB_NAME]))
 
     job_params = {'job_id': jobs[JOB_NAME]}
     startJob = postRequest('/jobs/run-now', job_params)
