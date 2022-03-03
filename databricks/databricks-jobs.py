@@ -1,6 +1,9 @@
 import sys
 import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import json
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 INSTANCE_ID = sys.argv[1]
 JOB_NAME = sys.argv[2]
@@ -38,7 +41,6 @@ def getJobIds(res):
       tempDict[job['settings']['name']] = job['job_id']
     return tempDict
 
-print(getRequest('/jobs/list'))
 jobs = getJobIds(getRequest('/jobs/list'))
 
 if( JOB_NAME in jobs ):
