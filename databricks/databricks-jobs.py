@@ -50,7 +50,7 @@ if( JOB_NAME in jobs ):
     print(job_status)
 
     #Wait for job to finish running
-    while(job_status == "RUNNING"):
+    while(job_status == "RUNNING" || job_status == "PENDING"):
         job_status = getRequest('/jobs/runs/get-output', run_params).json()["metadata"]["state"]["life_cycle_state"]
 
     finishedJob = getRequest('/jobs/runs/get-output', run_params)
