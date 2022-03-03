@@ -42,16 +42,6 @@ def getJobIds(res):
       tempDict[job['settings']['name']] = job['job_id']
     return tempDict
 
-def link(uri, label=None):
-    if label is None: 
-        label = uri
-    parameters = ''
-
-    # OSC 8 ; params ; URI ST <name> OSC 8 ;; ST 
-    escape_mask = '\033]8;{};{}\033\\{}\033]8;;\033\\'
-
-    return escape_mask.format(parameters, uri, label)
-
 jobs = getJobIds(getRequest('/jobs/list'))
 
 if( JOB_NAME in jobs ):
@@ -67,12 +57,11 @@ if( JOB_NAME in jobs ):
     #Wait for job to finish running
     while(job_status == "RUNNING" or job_status == "PENDING"):
         job_status = getRequest('/jobs/runs/get-output', run_params).json()["metadata"]["state"]["life_cycle_state"]
-        print("JOB IS RUNNING")
 
     finishedJob = getRequest('/jobs/runs/get-output', run_params)
     print(json.dumps(json.loads(finishedJob.text), indent = 2))
 
     run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
-    print("---------------SEE JOB RUN HERE: " + link(run_url))
+    print("---------------SEE JOB RUN HERE: " + run_url)
 else:
     raise ValueError(sys.argv[2] + " is not a job in databricks")
