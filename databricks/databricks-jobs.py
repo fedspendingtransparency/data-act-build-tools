@@ -9,7 +9,7 @@ API_VERSION = '/api/2.1'
 print("----------RUNNING JOB " + JOB_NAME )
 
 # Run Get request with api_command param
-def getRequest(api_command, params = {}):
+def getRequest(api_command, params={}):
     url = "https://{}{}{}".format(INSTANCE_ID, API_VERSION, api_command)
     response = requests.get(
       url = url,
@@ -35,7 +35,7 @@ def getJobIds(res):
       tempDict[job['settings']['name']] = job['job_id']
     return tempDict
 
-
+print(getRequest('/jobs/list'))
 jobs = getJobIds(getRequest('/jobs/list'))
 
 if( JOB_NAME in jobs ):
