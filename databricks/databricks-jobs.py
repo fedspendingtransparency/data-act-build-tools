@@ -10,7 +10,10 @@ print("----------RUNNING JOB " + JOB_NAME )
 
 # Run Get request with api_command param
 def getRequest(api_command, params={}):
-    url = "https://{}{}{}".format(INSTANCE_ID, API_VERSION, api_command)
+    if api_command == '/jobs/list':
+        url = "https://{}{}{}".format(INSTANCE_ID, '/api/2.0', api_command)
+    else:
+        url = "https://{}{}{}".format(INSTANCE_ID, API_VERSION, api_command)
     response = requests.get(
       url = url,
       json = params,
