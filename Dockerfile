@@ -79,3 +79,5 @@ RUN pip3 install json2html jinja2 pynliner
 
 # install static code analysis dependencies
 RUN pip3 install flake8
+
+RUN pip3 install databricks-cli
