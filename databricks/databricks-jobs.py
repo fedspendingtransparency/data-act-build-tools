@@ -3,9 +3,6 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import json
 
-# REMOVE WHEN SSL IS ENABLED
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
 INSTANCE_ID = sys.argv[1]
 JOB_NAME = sys.argv[2]
 API_VERSION = '/api/2.1'
@@ -13,6 +10,7 @@ API_VERSION = '/api/2.1'
 print("----------RUNNING JOB " + JOB_NAME )
 
 # Run Get request with api_command param
+# /jobs/list/ with api 2.0 returns all jobs, 2.1 does not
 def getRequest(api_command, params={}):
     if api_command == '/jobs/list':
         url = "https://{}{}{}".format(INSTANCE_ID, '/api/2.0', api_command)
@@ -21,7 +19,6 @@ def getRequest(api_command, params={}):
     response = requests.get(
       url = url,
       json = params,
-      verify = False #Needed because we dont have ssl
     )
     return response
 
@@ -31,7 +28,6 @@ def postRequest(api_command, params):
     response = requests.post(
       url = url,
       json = params,
-      verify = False #Needed because we dont have ssl
     )
     return response
 
