@@ -3,6 +3,9 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import json
 
+# REMOVE WHEN SSL IS ENABLED
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 INSTANCE_ID = sys.argv[1]
 JOB_NAME = sys.argv[2]
 API_VERSION = '/api/2.1'
@@ -19,6 +22,7 @@ def getRequest(api_command, params={}):
     response = requests.get(
       url = url,
       json = params,
+      verify = False #Needed because we dont have ssl
     )
     return response
 
@@ -28,6 +32,7 @@ def postRequest(api_command, params):
     response = requests.post(
       url = url,
       json = params,
+      verify = False #Needed because we dont have ssl
     )
     return response
 
