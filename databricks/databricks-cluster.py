@@ -12,6 +12,7 @@ SPARK_VERSION = sys.argv[3]
 NODE_TYPE = sys.argv[4]
 AUTOTERMINATION_MINUTES = sys.argv[5]
 NUM_WORKERS = sys.argv[6]
+INSTANCE_PROFILE = sys.argv[7]
 
 
 API_VERSION = '/api/2.0'
