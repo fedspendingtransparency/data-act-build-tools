@@ -1,6 +1,6 @@
 FROM python:3.7-slim
 
-# Install relevant packages for USAspending and Broker functionality
+# Image mostly copied from monthly-pruner
 RUN apt-get update -y && apt-get install -y \
     git \
     postgresql-client-13 \
@@ -15,5 +15,4 @@ RUN apt-get update -y && apt-get install -y \
     python3-memcache \
     libmemcached-dev
 
-# Pip install packages needed for USAspending and Broker
-RUN pip install awscli
+RUN pip install boto3 sh argparse psycopg2-binary==2.7.5 setuptools awscli
