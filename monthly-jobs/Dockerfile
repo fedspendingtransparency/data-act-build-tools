@@ -1,7 +1,6 @@
 FROM alpine:3.15.0
 
-RUN apk add --no-cache \
-        ca-certificates
+RUN apk update
 
 RUN apk add --no-cache \
         postgresql13 \
