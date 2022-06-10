@@ -48,7 +48,7 @@ if( JOB_NAME in jobs ):
 
     run_id = startJob.json()['run_id']
     run_params = { 'run_id' : run_id }
-    job_status = getRequest('/jobs/runs/get', job_params).json()
+    job_status = getRequest('/jobs/runs/get', run_params).json()
 
     print (job_status)
 
