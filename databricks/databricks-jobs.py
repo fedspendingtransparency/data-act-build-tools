@@ -56,11 +56,14 @@ if( JOB_NAME in jobs ):
 
     tasks = getRequest('/jobs/runs/get', run_params).json()["tasks"]
 
+    # Get all run ids for each task in the job
+    all_run_ids = []
     for x in tasks:
-        print(x["run_id"])
+        all_run_ids.append(x["run_id"])
 
-    finishedJob = getRequest('/jobs/runs/get-output', run_params)
-    print(json.dumps(json.loads(finishedJob.text), indent = 2))
+    for run in all_run_ids:
+        finishedJob = getRequest('/jobs/runs/get-output', run)
+        print(json.dumps(json.loads(finishedJob.text), indent = 2))
 
     run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
     print("---------------SEE JOB RUN HERE: " + run_url)
