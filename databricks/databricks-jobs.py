@@ -62,7 +62,8 @@ if( JOB_NAME in jobs ):
         all_run_ids.append(x["run_id"])
 
     for run in all_run_ids:
-        finishedJob = getRequest('/jobs/runs/get-output', run)
+        run_params = {'run_id' : run}
+        finishedJob = getRequest('/jobs/runs/get-output', run_params)
         print(json.dumps(json.loads(finishedJob.text), indent = 2))
 
     run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
