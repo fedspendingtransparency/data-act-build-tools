@@ -57,7 +57,7 @@ if( JOB_NAME in jobs ):
     tasks = getRequest('/jobs/runs/get', run_params).json()["tasks"]
 
     for x in tasks:
-        print(x.json()["run_id"])
+        print(x["run_id"])
 
     finishedJob = getRequest('/jobs/runs/get-output', run_params)
     print(json.dumps(json.loads(finishedJob.text), indent = 2))
