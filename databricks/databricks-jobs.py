@@ -12,7 +12,10 @@ print("----------RUNNING JOB " + JOB_NAME )
 # Run Get request with api_command param
 # /jobs/list/ with api 2.0 returns all jobs, 2.1 does not
 def getRequest(api_command, params={}):
-    url = "https://{}{}{}".format(INSTANCE_ID, API_VERSION, api_command)
+    if api_command == '/jobs/list':
+        url = "https://{}{}{}".format(INSTANCE_ID, '/api/2.0', api_command)
+    else:
+        url = "https://{}{}{}".format(INSTANCE_ID, API_VERSION, api_command)
     response = requests.get(
       url = url,
       json = params,
@@ -47,7 +50,7 @@ if( JOB_NAME in jobs ):
     run_params = { 'run_id' : run_id }
     job_status = getRequest('/jobs/runs/get-output', run_params).json()
 
-    print(job_status)
+    print (job_status)
 
     #Wait for job to finish running
     while(job_status == "RUNNING" or job_status == "PENDING"):
