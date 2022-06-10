@@ -54,7 +54,10 @@ if( JOB_NAME in jobs ):
     while(job_status == "RUNNING" or job_status == "PENDING"):
         job_status = getRequest('/jobs/runs/get', run_params).json()["state"]["life_cycle_state"]
 
-    print(getRequest('/jobs/runs/get', run_params).json())
+    tasks = getRequest('/jobs/runs/get', run_params).json()["tasks"]
+
+    for x in tasks:
+        print(x.json()["run_id"])
 
     finishedJob = getRequest('/jobs/runs/get-output', run_params)
     print(json.dumps(json.loads(finishedJob.text), indent = 2))
