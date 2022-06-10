@@ -52,7 +52,7 @@ if( JOB_NAME in jobs ):
     print(tasks)
     job_status = ""
     for x in tasks:
-        if x.json()["run_id"] == run_id:
+        if x["run_id"] == run_id:
             job_status = x.json()["state"]["life_cycle_state"]
 
     #Wait for job to finish running
