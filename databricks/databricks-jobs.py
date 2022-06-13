@@ -48,7 +48,8 @@ if( JOB_NAME in jobs ):
 
     notebook_object = {}
     for p in notebook_params:
-        notebook_object[p.split[":"][0]] = p.split[":"][1]
+        print(p)
+        #notebook_object[] = p.split[":"][1]
 
     print (JOB_PARAMETERS)
 
