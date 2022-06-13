@@ -44,9 +44,15 @@ jobs = getJobIds(getRequest("/jobs/list"))
 if( JOB_NAME in jobs ):
     print("JOB ID: " + str(jobs[JOB_NAME]))
 
+    notebook_params = JOB_PARAMETERS.split("\n")
+
+    notebook_object = {}
+    for p in notebook_params:
+        notebook_object[p.spilt[":"][0]] = p.spilt[":"][1]
+
     print (JOB_PARAMETERS)
 
-    job_params = { "job_id": jobs[JOB_NAME], "notebook_params": JOB_PARAMETERS }
+    job_params = { "job_id": jobs[JOB_NAME], "notebook_params": notebook_object }
     startJob = postRequest("/jobs/run-now", job_params)
 
     print(startJob.json())
