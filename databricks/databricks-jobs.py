@@ -52,18 +52,23 @@ if( JOB_NAME in jobs ):
         paramValue = p.split(":")[1]
         notebook_object[key] = paramValue
 
+    # Run Job
     job_params = { "job_id": jobs[JOB_NAME], "notebook_params": notebook_object }
     startJob = postRequest("/jobs/run-now", job_params)
 
+    # Get run details
     run_id = startJob.json()["run_id"]
     run_params = { "run_id" : run_id }
     job_status = getRequest("/jobs/runs/get", run_params).json()["state"]["life_cycle_state"]
 
-    #Wait for job to finish running
+    # Wait for job to finish running
     while(job_status == "RUNNING" or job_status == "PENDING"):
         job_status = getRequest("/jobs/runs/get", run_params).json()["state"]["life_cycle_state"]
 
-    if(job_status == "FAILED")
+    # Error out if the job has not succeeded
+    job_status_done = getRequest("/jobs/runs/get", run_params).json()
+    if(job_status_done["state"]["result_state"] != "SUCCESS"):
+        raise Exception("Job did not succeed - url: https://" + job_status_done["run_page_url"]) 
 
     tasks = getRequest("/jobs/runs/get", run_params).json()["tasks"]
 
