@@ -44,20 +44,16 @@ jobs = getJobIds(getRequest("/jobs/list"))
 if( JOB_NAME in jobs ):
     print("JOB ID: " + str(jobs[JOB_NAME]))
 
+    # Set notebook params for job
     notebook_params = JOB_PARAMETERS.split("\n")
-
     notebook_object = {}
-
     for p in notebook_params:
-        print(p)
         key = p.split(":")[0]
         paramValue = p.split(":")[1]
         notebook_object[key] = paramValue
 
     job_params = { "job_id": jobs[JOB_NAME], "notebook_params": notebook_object }
     startJob = postRequest("/jobs/run-now", job_params)
-
-    print(startJob.json())
 
     run_id = startJob.json()["run_id"]
     run_params = { "run_id" : run_id }
@@ -78,8 +74,8 @@ if( JOB_NAME in jobs ):
         run_params = {"run_id" : run}
         finishedJob = getRequest("/jobs/runs/get-output", run_params)
         print(json.dumps(json.loads(finishedJob.text), indent = 2))
-
-    run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
-    print("---------------SEE JOB RUN HERE: " + run_url)
+        run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
+        print("---------------SEE JOB RUN HERE: " + run_url)
+    
 else:
     raise ValueError(sys.argv[2] + " is not a job in databricks")
