@@ -46,13 +46,13 @@ if( JOB_NAME in jobs ):
 
     notebook_params = JOB_PARAMETERS.split("\n")
 
-    print(notebook_params)
-
-
     notebook_object = {}
+
     for p in notebook_params:
         print(p)
-        #notebook_object[] = p.split[":"][1]
+        key = p.split(":")[0]
+        paramValue = p.split(":")[1]
+        notebook_object[key] = paramValue
 
     job_params = { "job_id": jobs[JOB_NAME], "notebook_params": notebook_object }
     startJob = postRequest("/jobs/run-now", job_params)
