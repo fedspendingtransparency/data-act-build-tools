@@ -63,6 +63,8 @@ if( JOB_NAME in jobs ):
     while(job_status == "RUNNING" or job_status == "PENDING"):
         job_status = getRequest("/jobs/runs/get", run_params).json()["state"]["life_cycle_state"]
 
+    if(job_status == "FAILED")
+
     tasks = getRequest("/jobs/runs/get", run_params).json()["tasks"]
 
     # Get all run ids for each task in the job
