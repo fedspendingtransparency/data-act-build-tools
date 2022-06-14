@@ -77,7 +77,7 @@ if( JOB_NAME in jobs ):
         finishedJob = getRequest("/jobs/runs/get-output", run_params)
         print(json.dumps(json.loads(finishedJob.text), indent = 2))
         run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
-        print("---------------SEE JOB RUN HERE: " + run_url)
+        print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
     
 else:
     raise ValueError(sys.argv[2] + " is not a job in databricks")
