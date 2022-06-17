@@ -24,6 +24,13 @@ def getRequest(api_command, params={}):
     )
     return response
 
+# Get all job names and jobID"s and map to dict
+def getJobIds(res):
+    tempDict = {}
+    for job in res.json()["jobs"]:
+      tempDict[job["settings"]["name"]] = job["job_id"]
+    return tempDict
+
 
 def updateJsonFile(fileName):
     # Open the JSON file for reading
