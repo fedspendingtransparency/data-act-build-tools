@@ -55,7 +55,7 @@ def updateJsonFile(fileName):
 jobs = getJobIds(getRequest("/jobs/list"))
 
 if( JOB_NAME in jobs ):
-    print("JOB ID: " + str(jobs[JOB_NAME]))
+    sys.stdout.write( (str(jobs[JOB_NAME])) )
 
 
     updateJsonFile(FILE_LOCATION)
