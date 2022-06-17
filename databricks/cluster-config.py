@@ -49,14 +49,11 @@ def updateJsonFile(fileName):
     jsonFile.close()
 
 
-
-
 # Start script
 jobs = getJobIds(getRequest("/jobs/list"))
 
 if( JOB_NAME in jobs ):
     sys.stdout.write( (str(jobs[JOB_NAME])) )
-
 
     updateJsonFile(FILE_LOCATION)
 
