@@ -44,16 +44,18 @@ jobs = getJobIds(getRequest("/jobs/list"))
 if( JOB_NAME in jobs ):
     print("JOB ID: " + str(jobs[JOB_NAME]))
 
-    # Set notebook params for job
-    notebook_params = JOB_PARAMETERS.split("\n")
-    notebook_object = {}
-    for p in notebook_params:
-        key = p.split(":")[0]
-        paramValue = p.split(":")[1]
-        notebook_object[key] = paramValue
+    # Set python params for job
+    python_params = JOB_PARAMETERS.split("\n")
+
+    # Used for notebook params
+    # notebook_object = {}
+    # for p in notebook_params:
+    #     key = p.split(":")[0]
+    #     paramValue = p.split(":")[1]
+    #     notebook_object[key] = paramValue
 
     # Run Job
-    job_params = { "job_id": jobs[JOB_NAME], "notebook_params": notebook_object }
+    job_params = { "job_id": jobs[JOB_NAME], "python_params": python_params }
     startJob = postRequest("/jobs/run-now", job_params)
 
     # Get run details
