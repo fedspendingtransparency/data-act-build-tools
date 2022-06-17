@@ -9,6 +9,7 @@ JOB_NAME = sys.argv[2]
 BRANCH = sys.argv[3]
 JOB_PARAMETERS = sys.argv[4]
 ENV = sys.argv[5]
+FILE_LOCATION = sys.argv[6]
 
 # Run Get request with api_command param
 # /jobs/list/ with api 2.0 returns all jobs, 2.1 does not
@@ -56,8 +57,9 @@ jobs = getJobIds(getRequest("/jobs/list"))
 if( JOB_NAME in jobs ):
     print("JOB ID: " + str(jobs[JOB_NAME]))
 
-    updateJsonFile("cluster_config.json")
 
-    
+    updateJsonFile(FILE_LOCATION)
+
+
 
 
