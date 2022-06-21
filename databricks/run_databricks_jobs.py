@@ -8,8 +8,6 @@ JOB_NAME = sys.argv[2]
 JOB_PARAMETERS = sys.argv[3]
 API_VERSION = "/api/2.1"
 
-print("----------RUNNING JOB " + JOB_NAME )
-
 # Run Get request with api_command param
 # /jobs/list/ with api 2.0 returns all jobs, 2.1 does not
 def getRequest(api_command, params={}):
@@ -41,6 +39,8 @@ def getJobIds(res):
 
 
 if __name__ == '__main__':
+    print("----------RUNNING JOB " + JOB_NAME )
+
     jobs = getJobIds(getRequest("/jobs/list"))
 
     if( JOB_NAME in jobs ):
