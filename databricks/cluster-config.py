@@ -49,6 +49,7 @@ def updateJsonFile(fileName):
     data["tasks"][0]["spark_python_task"]["python_file"] = "dbfs:/FileStore/" + BRANCH + "/manage.py"
     data["tasks"][0]["spark_python_task"]["parameters"] = python_params
     data["tasks"][0]["new_cluster"]["spark_env_vars"] = env_vars
+    data["name"] = JOB_NAME
 
     ## Save our changes to JSON file
     jsonFile = open(fileName, "w+")
