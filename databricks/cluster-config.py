@@ -2,6 +2,7 @@ import sys
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import json
+from run-databricks-jobs import getJobIds, getRequest
 
 
 INSTANCE_ID = sys.argv[1]
@@ -10,26 +11,6 @@ BRANCH = sys.argv[3]
 JOB_PARAMETERS = sys.argv[4]
 ENV = sys.argv[5]
 FILE_LOCATION = sys.argv[6]
-
-# Run Get request with api_command param
-# /jobs/list/ with api 2.0 returns all jobs, 2.1 does not
-def getRequest(api_command, params={}):
-    if api_command == "/jobs/list":
-        url = "https://{}{}{}".format(INSTANCE_ID, "/api/2.0", api_command)
-    else:
-        url = "https://{}{}{}".format(INSTANCE_ID, API_VERSION, api_command)
-    response = requests.get(
-      url = url,
-      json = params,
-    )
-    return response
-
-# Get all job names and jobID"s and map to dict
-def getJobIds(res):
-    tempDict = {}
-    for job in res.json()["jobs"]:
-      tempDict[job["settings"]["name"]] = job["job_id"]
-    return tempDict
 
 
 def updateJsonFile(fileName):
