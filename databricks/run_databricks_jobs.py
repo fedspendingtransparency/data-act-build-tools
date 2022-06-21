@@ -39,52 +39,54 @@ def getJobIds(res):
       tempDict[job["settings"]["name"]] = job["job_id"]
     return tempDict
 
-jobs = getJobIds(getRequest("/jobs/list"))
 
-if( JOB_NAME in jobs ):
-    print("JOB ID: " + str(jobs[JOB_NAME]))
+if __name__ == '__main__':
+    jobs = getJobIds(getRequest("/jobs/list"))
 
-    # Set python params for job
-    python_params = JOB_PARAMETERS.split("\n")
+    if( JOB_NAME in jobs ):
+        print("JOB ID: " + str(jobs[JOB_NAME]))
 
-    # Used for notebook params
-    # notebook_object = {}
-    # for p in notebook_params:
-    #     key = p.split(":")[0]
-    #     paramValue = p.split(":")[1]
-    #     notebook_object[key] = paramValue
+        # Set python params for job
+        python_params = JOB_PARAMETERS.split("\n")
 
-    # Run Job
-    job_params = { "job_id": jobs[JOB_NAME], "python_params": python_params }
-    startJob = postRequest("/jobs/run-now", job_params)
+        # Used for notebook params
+        # notebook_object = {}
+        # for p in notebook_params:
+        #     key = p.split(":")[0]
+        #     paramValue = p.split(":")[1]
+        #     notebook_object[key] = paramValue
 
-    # Get run details
-    run_id = startJob.json()["run_id"]
-    run_params = { "run_id" : run_id }
-    job_status = getRequest("/jobs/runs/get", run_params).json()["state"]["life_cycle_state"]
+        # Run Job
+        job_params = { "job_id": jobs[JOB_NAME], "python_params": python_params }
+        startJob = postRequest("/jobs/run-now", job_params)
 
-    # Wait for job to finish running
-    while(job_status == "RUNNING" or job_status == "PENDING"):
+        # Get run details
+        run_id = startJob.json()["run_id"]
+        run_params = { "run_id" : run_id }
         job_status = getRequest("/jobs/runs/get", run_params).json()["state"]["life_cycle_state"]
 
-    # Error out if the job has not succeeded
-    job_status_done = getRequest("/jobs/runs/get", run_params).json()
-    if(job_status_done["state"]["result_state"] != "SUCCESS"):
-        raise Exception("Job did not succeed - url: https://" + INSTANCE_ID + job_status_done["run_page_url"]) 
+        # Wait for job to finish running
+        while(job_status == "RUNNING" or job_status == "PENDING"):
+            job_status = getRequest("/jobs/runs/get", run_params).json()["state"]["life_cycle_state"]
 
-    tasks = getRequest("/jobs/runs/get", run_params).json()["tasks"]
+        # Error out if the job has not succeeded
+        job_status_done = getRequest("/jobs/runs/get", run_params).json()
+        if(job_status_done["state"]["result_state"] != "SUCCESS"):
+            raise Exception("Job did not succeed - url: https://" + INSTANCE_ID + job_status_done["run_page_url"]) 
 
-    # Get all run ids for each task in the job
-    all_run_ids = []
-    for x in tasks:
-        all_run_ids.append(x["run_id"])
+        tasks = getRequest("/jobs/runs/get", run_params).json()["tasks"]
 
-    for run in all_run_ids:
-        run_params = {"run_id" : run}
-        finishedJob = getRequest("/jobs/runs/get-output", run_params)
-        print(json.dumps(json.loads(finishedJob.text), indent = 2))
-        run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
-        print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
-    
-else:
-    raise ValueError(sys.argv[2] + " is not a job in databricks")
+        # Get all run ids for each task in the job
+        all_run_ids = []
+        for x in tasks:
+            all_run_ids.append(x["run_id"])
+
+        for run in all_run_ids:
+            run_params = {"run_id" : run}
+            finishedJob = getRequest("/jobs/runs/get-output", run_params)
+            print(json.dumps(json.loads(finishedJob.text), indent = 2))
+            run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
+            print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
+        
+    else:
+        raise ValueError(sys.argv[2] + " is not a job in databricks")
