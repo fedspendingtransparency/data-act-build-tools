@@ -2,7 +2,7 @@ import sys
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import json
-from run-databricks-jobs import getJobIds, getRequest
+from run_databricks_jobs import getJobIds, getRequest
 
 
 INSTANCE_ID = sys.argv[1]
