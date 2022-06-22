@@ -47,7 +47,6 @@ if __name__ == '__main__':
         updateJsonFile(FILE_LOCATION)
 
     else:
-        print("Creating new job: " + JOB_NAME)
         updateJsonFile(FILE_LOCATION)
 
 
