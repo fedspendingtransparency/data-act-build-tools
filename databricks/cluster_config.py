@@ -44,10 +44,11 @@ if __name__ == '__main__':
 
     if( JOB_NAME in jobs ):
         sys.stdout.write( (str(jobs[JOB_NAME])) )
-
         updateJsonFile(FILE_LOCATION)
+
     else:
-        raise ValueError(sys.argv[2] + " is not a job in databricks")
+        print("Creating new job: " + JOB_NAME)
+        updateJsonFile(FILE_LOCATION)
 
 
 
