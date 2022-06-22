@@ -38,7 +38,7 @@ def updateJsonFile(fileName):
     data["tasks"][0]["new_cluster"]["spark_env_vars"] = env_vars
     data["tasks"][0]["new_cluster"]["node_type_id"] = "m5a.large" if data["tasks"][0]["new_cluster"]["node_type_id"] == "" else NODE_TYPE
     data["tasks"][0]["new_cluster"]["driver_node_type_id"] = "m5a.large" if data["tasks"][0]["new_cluster"]["driver_node_type_id"] == "" else NODE_TYPE
-    data["tasks"][0]["new_cluster"]["num_workers"] = 0 if data["tasks"][0]["new_cluster"]["num_workers"] == "" else int(WORKERS)
+    data["tasks"][0]["new_cluster"]["num_workers"] = 0 if data["tasks"][0]["new_cluster"]["num_workers"] == "" else WORKERS
     data["name"] = JOB_NAME
 
     ## Save our changes to JSON file
