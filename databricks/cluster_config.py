@@ -9,8 +9,10 @@ INSTANCE_ID = sys.argv[1]
 JOB_NAME = sys.argv[2]
 BRANCH = sys.argv[3]
 JOB_PARAMETERS = sys.argv[4]
-ENV = sys.argv[5]
-FILE_LOCATION = sys.argv[6]
+NODE_TYPE = sys.argv[5]
+WORKERS = sys.argv[6]
+ENV = sys.argv[7]
+FILE_LOCATION = sys.argv[8]
 
 
 def updateJsonFile(fileName):
@@ -27,9 +29,16 @@ def updateJsonFile(fileName):
         "BRANCH": BRANCH,
         "ENV_CODE": ENV 
     }
+
+    # If we wanted to add the ability to add more tasks, we would just require a
+    # loop right below here adding to data["tasks"][x]
+
     data["tasks"][0]["spark_python_task"]["python_file"] = "dbfs:/FileStore/" + BRANCH + "/manage.py"
     data["tasks"][0]["spark_python_task"]["parameters"] = python_params
     data["tasks"][0]["new_cluster"]["spark_env_vars"] = env_vars
+    data["tasks"][0]["node_type_id"] = data["tasks"][0]["node_type_id"] == "" ? "m5a.large" : NODE_TYPE
+    data["tasks"][0]["driver_node_type_id"] = data["tasks"][0]["driver_node_type_id"] == "" ? "m5a.large" : NODE_TYPE
+    data["tasks"][0]["num_workers"] = data["tasks"][0]["num_workers"] == "" ? 0 : int(WORKERS)
     data["name"] = JOB_NAME
 
     ## Save our changes to JSON file
