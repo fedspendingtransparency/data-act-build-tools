@@ -47,7 +47,7 @@ if __name__ == '__main__':
         print("JOB ID: " + str(jobs[JOB_NAME]))
 
         # Set python params for job
-        python_params = JOB_PARAMETERS.split("\n")
+        python_params = JOB_PARAMETERS.split(" ")
 
         # Used for notebook params
         # notebook_object = {}
