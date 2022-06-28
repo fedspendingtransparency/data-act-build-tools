@@ -105,9 +105,10 @@ if __name__ == '__main__':
                     run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
                     print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
         else:
+            job_status_done = getRequest("/jobs/runs/get", run_params).json()
             if not DEBUG:
                 jobJson = json.loads(startJob.text)
-                jobJson["url"] = job_status.json()["run_page_url"].replace("webapp", INSTANCE_ID+"/")
+                jobJson["url"] = job_status_done["run_page_url"].replace("webapp", INSTANCE_ID+"/")
                 print(json.dumps(jobJson, indent = 2))
         
     else:
