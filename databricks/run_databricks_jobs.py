@@ -10,7 +10,7 @@ JOB_NAME = sys.argv[2]
 JOB_PARAMETERS = sys.argv[3]
 API_VERSION = "/api/2.1"
 try:
-    WAIT_BOOLEAN = sys.argv[4]
+    WAIT_BOOLEAN = bool(sys.argv[4])
 except:
     WAIT_BOOLEAN = True
 
