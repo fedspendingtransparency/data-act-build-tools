@@ -106,7 +106,7 @@ if __name__ == '__main__':
                     print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
         else:
             if not DEBUG:
-                jobJson = json.loads(startJob)
+                jobJson = json.loads(startJob.text)
                 jobJson["url"] = job_status.json()["run_page_url"].replace("webapp", INSTANCE_ID+"/")
                 print(json.dumps(jobJson, indent = 2))
         
