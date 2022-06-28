@@ -17,7 +17,7 @@ except:
 try:
     DEBUG = sys.argv[5]
 except:
-    DEBUG = False
+    DEBUG = "False"
 
 DEBUG = DEBUG.lower() == "true"
 WAIT_BOOLEAN = WAIT_BOOLEAN.lower() == "true" 
@@ -105,7 +105,7 @@ if __name__ == '__main__':
                     run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
                     print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
         else:
-            if(DEBUG):
+            if(!DEBUG):
                 jobJson = json.loads(startJob)
                 jobJson["url"] = job_status.json()["run_page_url"].replace("webapp", INSTANCE_ID+"/")
                 print(json.dumps(jobJson, indent = 2))
