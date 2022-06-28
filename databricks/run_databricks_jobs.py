@@ -11,11 +11,16 @@ JOB_PARAMETERS = sys.argv[3]
 API_VERSION = "/api/2.1"
 try:
     WAIT_BOOLEAN = sys.argv[4]
-    print("successful cast")
 except:
-    print("Exception caught")
+    print("Exception caught, boolean not set")
 
-WAIT_BOOLEAN = WAIT_BOOLEAN.lower() == 'true' 
+try:
+    DEBUG = sys.argv[5]
+except:
+    DEBUG = False
+
+DEBUG = DEBUG.lower() == "true"
+WAIT_BOOLEAN = WAIT_BOOLEAN.lower() == "true" 
 
 # Run Get request with api_command param
 # /jobs/list/ with api 2.0 returns all jobs, 2.1 does not
@@ -48,12 +53,14 @@ def getJobIds(res):
 
 
 if __name__ == '__main__':
-    print("----------RUNNING JOB " + JOB_NAME )
+    if (DEBUG):
+        print("----------RUNNING JOB " + JOB_NAME )
 
     jobs = getJobIds(getRequest("/jobs/list"))
 
     if( JOB_NAME in jobs ):
-        print("JOB ID: " + str(jobs[JOB_NAME]))
+        if(DEBUG):
+            print("JOB ID: " + str(jobs[JOB_NAME]))
 
         # Set python params for job
         python_params = JOB_PARAMETERS.split(" ")
@@ -93,11 +100,15 @@ if __name__ == '__main__':
             for run in all_run_ids:
                 run_params = {"run_id" : run}
                 finishedJob = getRequest("/jobs/runs/get-output", run_params)
-                print(json.dumps(json.loads(finishedJob.text), indent = 2))
-                run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
-                print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
+                if(DEBUG):
+                    print(json.dumps(json.loads(finishedJob.text), indent = 2))
+                    run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
+                    print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
         else:
-            print(json.dumps(json.loads(startJob.text), indent = 2))
+            if(DEBUG):
+                jobJson = json.loads(startJob)
+                jobJson["url"] = job_status.json()["run_page_url"].replace("webapp", INSTANCE_ID+"/")
+                print(json.dumps(jobJson, indent = 2))
         
     else:
         raise ValueError(sys.argv[2] + " is not a job in databricks")
