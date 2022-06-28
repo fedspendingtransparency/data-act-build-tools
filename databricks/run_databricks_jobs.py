@@ -11,8 +11,12 @@ JOB_PARAMETERS = sys.argv[3]
 API_VERSION = "/api/2.1"
 try:
     WAIT_BOOLEAN = bool(sys.argv[4])
+    print("successful cast")
 except:
+    print("Exception caught")
     WAIT_BOOLEAN = True
+
+print(str(WAIT_BOOLEAN))
 
 # Run Get request with api_command param
 # /jobs/list/ with api 2.0 returns all jobs, 2.1 does not
