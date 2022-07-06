@@ -50,6 +50,7 @@ def main():
 
     recent_files.sort(key=lambda tup: tup.last_modified, reverse=True)
 
+    # CARS files
     try:
         recent_cars = [x for x in recent_files if re.search('PE\.CARS', x.key)][0]
         cars_exists = True
@@ -82,6 +83,25 @@ def main():
                              inplace=True)
         data.to_csv(cars_file_name)
 
+    # GTAS Failed Edit files
+    try:
+        recent_gtas_fe = [x for x in recent_files if re.search('GTAS_FE_DA_', x.key)][0]
+        gtas_fe_exists = True
+    except:
+        print('No GTAS Failed Edits file posted in the last 24 hours, or no files found.')
+        gtas_fe_exists = False
+        pass
+
+    if gtas_fe_exists:
+        gtas_fe_year = recent_gtas_fe.key.split('GTAS_FE')[1][4:8]
+        gtas_fe_period = recent_gtas_fe.key.split('GTAS_FE')[1][8:10]
+        gtas_fe_filename = '_'.join(('GTAS', 'FE', 'DA', gtas_fe_year + gtas_fe_period)) + '.csv'
+        os.makedirs('files', exist_ok=True)
+        print('Downloading ' + recent_gtas_fe.key + ' as ' + gtas_fe_filename)
+        bucket_source.download_file(recent_gtas_fe.key, os.path.join(os.getcwd(), 'files', gtas_fe_filename))
+        print('GTAS Failed Edits Download successful')
+
+    # GTAS files
     try:
         recent_gtas = [x for x in recent_files if re.search('PE\.GTAS', x.key)][0]
         gtas_exists = True
@@ -99,7 +119,7 @@ def main():
         bucket_source.download_file(recent_gtas.key, os.path.join(os.getcwd(), 'files', gtas_filename))
         print('Download successful')
 
-    if not cars_exists and not gtas_exists:
+    if not cars_exists and not gtas_exists and not gtas_fe_exists:
         print('No files in "{}" modified since {}, or no files found.'.format(
             args.bucket,
             (datetime.datetime.now() - datetime.timedelta(hours=24)).strftime("%Y-%m-%d %H:%m:%S"))
