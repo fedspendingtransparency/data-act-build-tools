@@ -8,4 +8,4 @@ RUN rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG;
 RUN yum install -y python3-devel zlib-devel libpqxx postgresql13-devel gcc; \
     yum clean all
     
-RUN pip3 install PyGreSQL PyYAML requests boto3 ruamel.yaml
+RUN python3 -m pip install PyGreSQL PyYAML requests boto3 ruamel.yaml
