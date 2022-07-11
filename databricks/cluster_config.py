@@ -20,7 +20,7 @@ def updateJsonFile(fileName):
     jsonFile.close()
 
     if ENV == "staging":
-        envCode = "stg   
+        envCode = "stg"  
     else:
         envCode = ENV     
 
