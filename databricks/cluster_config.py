@@ -19,13 +19,18 @@ def updateJsonFile(fileName):
     data = json.load(jsonFile) 
     jsonFile.close()
 
+    if ENV == "staging":
+        envCode = "stg"  
+    else:
+        envCode = ENV     
+
     # Edit content
     # Set notebook params for job
     python_params = JOB_PARAMETERS.split("\n")
     env_vars = {
         "DATABASE_URL": "{{secrets/" + ENV + "/DATABASE_URL}}",
         "BRANCH": BRANCH,
-        "ENV_CODE": ENV 
+        "ENV_CODE": envCode 
     }
 
     # If we wanted to add the ability to add more tasks, we would just require a
