@@ -9,10 +9,8 @@ INSTANCE_ID = sys.argv[1]
 JOB_NAME = sys.argv[2]
 BRANCH = sys.argv[3]
 JOB_PARAMETERS = sys.argv[4]
-NODE_TYPE = sys.argv[5]
-WORKERS = sys.argv[6]
-ENV = sys.argv[7]
-FILE_LOCATION = sys.argv[8]
+ENV = sys.argv[5]
+FILE_LOCATION = sys.argv[6]
 
 
 def updateJsonFile(fileName):
