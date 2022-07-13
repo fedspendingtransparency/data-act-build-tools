@@ -32,6 +32,11 @@ def updateJsonFile(fileName):
         "BRANCH": BRANCH,
         "ENV_CODE": envCode 
     }
+    if JOB_NAME.contains("manage"):
+        subnet = JOB_NAME.split("-")
+        subnet_param = subnet[1]
+    else:
+        subnet_param = "us-gov-west-1a"
 
     # If we wanted to add the ability to add more tasks, we would just require a
     # loop right below here adding to data["tasks"][x]
@@ -39,6 +44,7 @@ def updateJsonFile(fileName):
     data["tasks"][0]["spark_python_task"]["python_file"] = "dbfs:/FileStore/" + BRANCH + "/manage.py"
     data["tasks"][0]["spark_python_task"]["parameters"] = python_params
     data["tasks"][0]["new_cluster"]["spark_env_vars"] = env_vars
+    data["tasks"][0]["new_cluster"]["aws_attributes"]["zone_id"] = subnet_param
     # data["tasks"][0]["new_cluster"]["node_type_id"] = "m5a.large" if data["tasks"][0]["new_cluster"]["node_type_id"] == "" else NODE_TYPE
     # data["tasks"][0]["new_cluster"]["driver_node_type_id"] = "m5a.large" if data["tasks"][0]["new_cluster"]["driver_node_type_id"] == "" else NODE_TYPE
     # data["tasks"][0]["new_cluster"]["num_workers"] = 0 if data["tasks"][0]["new_cluster"]["num_workers"] == "" else WORKERS
