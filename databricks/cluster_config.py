@@ -34,7 +34,7 @@ def updateJsonFile(fileName):
     }
     if JOB_NAME.contains("manage"):
         subnet = JOB_NAME.split("-")
-        subnet_param = subnet[1]
+        subnet_param = "us-gov-west-" + subnet[1]
     else:
         subnet_param = "us-gov-west-1a"
 
