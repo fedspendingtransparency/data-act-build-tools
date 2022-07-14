@@ -27,10 +27,14 @@ def updateJsonFile(fileName):
     # Edit content
     # Set notebook params for job
     python_params = JOB_PARAMETERS.split("\n")
+    secretKey = "DATABASE_URL"
+    if ENV == "qat":
+        secretKey = "PERF_DATABASE_URL"
+        
     env_vars = {
-        "DATABASE_URL": "{{secrets/" + ENV + "/DATABASE_URL}}",
+        "DATABASE_URL": "{{secrets/" + ENV + "/" + secretKey + "}}",
         "BRANCH": BRANCH,
-        "ENV_CODE": envCode 
+        "ENV_CODE": envCode
     }
     if "manage" in JOB_NAME:
         subnet = JOB_NAME.split("-")
