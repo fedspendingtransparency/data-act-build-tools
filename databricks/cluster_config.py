@@ -6,6 +6,7 @@ from run_databricks_jobs import getJobIds, getRequest
 
 # Setup args for cluster config
 parser = argparse.ArgumentParser()
+parser.add_argument('-i', '--instance-id', required=True)
 parser.add_argument('-j', '--job-name', default='manage', required=True)
 parser.add_argument('-b', '--branch', default='qat', required=True)
 parser.add_argument('-p', '--job-parameters', required=True)
@@ -13,6 +14,7 @@ parser.add_argument('-e', '--env', required=True)
 parser.add_argument('-w', '--workers', default=16)
 parser.add_argument('-f', '--file-location', required=True)
 args = parser.parse_args()
+INSTANCE_ID = args.instance_id
 
 def updateJsonFile(fileName):
     # Open the JSON file for reading
