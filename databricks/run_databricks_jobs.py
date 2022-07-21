@@ -1,26 +1,23 @@
 import sys
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import json
+import argparse
 
-# TODO implement argparse
+# Setup args for cluster config
+parser = argparse.ArgumentParser()
+parser.add_argument('-i', '--instance-id', required=True)
+parser.add_argument('-j', '--job-name', required=True)
+parser.add_argument('-p', '--job-parameters', required=True)
+parser.add_argument('-w', '--wait', default=True)
+parser.add_argument('-d', '--debug', default=False)
+args = parser.parse_args()
 
-INSTANCE_ID = sys.argv[1]
-JOB_NAME = sys.argv[2]
-JOB_PARAMETERS = sys.argv[3]
+INSTANCE_ID = args.instance_id
+JOB_NAME = args.job_name
+JOB_PARAMETERS = args.job_parameters
 API_VERSION = "/api/2.1"
-try:
-    WAIT_BOOLEAN = sys.argv[4]
-except:
-    print("Exception caught, boolean not set")
-
-try:
-    DEBUG = sys.argv[5]
-except:
-    DEBUG = "False"
-
-DEBUG = DEBUG.lower() == "true"
-WAIT_BOOLEAN = WAIT_BOOLEAN.lower() == "true" 
+DEBUG = args.debug
+WAIT_BOOLEAN = args.wait
 
 # Run Get request with api_command param
 # /jobs/list/ with api 2.0 returns all jobs, 2.1 does not
