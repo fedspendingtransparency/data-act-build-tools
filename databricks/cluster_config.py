@@ -41,8 +41,8 @@ def updateJsonFile(fileName):
     data["tasks"][0]["spark_python_task"]["parameters"] = python_params
     data["tasks"][0]["new_cluster"]["spark_env_vars"] = env_vars
     data["tasks"][0]["new_cluster"]["aws_attributes"]["zone_id"] = subnet_param
-    # data["tasks"][0]["new_cluster"]["node_type_id"] = "m5a.large" if data["tasks"][0]["new_cluster"]["node_type_id"] == "" else NODE_TYPE
-    # data["tasks"][0]["new_cluster"]["driver_node_type_id"] = "m5a.large" if data["tasks"][0]["new_cluster"]["driver_node_type_id"] == "" else NODE_TYPE
+    data["tasks"][0]["new_cluster"]["node_type_id"] = args.node_type_id
+    data["tasks"][0]["new_cluster"]["driver_node_type_id"] = args.driver_node_type_id
     data["tasks"][0]["new_cluster"]["num_workers"] = args.workers
     data["name"] = args.job_name
 
@@ -62,6 +62,8 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--env', required=True)
     parser.add_argument('-w', '--workers', default=16)
     parser.add_argument('-f', '--file-location', required=True)
+    parser.add_argument('--driver-node-type-id', default='i3en.2xlarge')
+    parser.add_argument('--node-type-id', default='i3en.2xlarge')
     args = parser.parse_args()
     INSTANCE_ID = args.instance_id
 
