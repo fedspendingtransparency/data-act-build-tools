@@ -32,7 +32,7 @@ def updateJsonFile(fileName):
         subnet = args.job_name.split("-")
         subnet_param = "us-gov-west-" + subnet[1]
     else:
-        subnet_param = "us-gov-west-1a"
+        subnet_param = args.availability_zone
 
     # If we wanted to add the ability to add more tasks, we would just require a
     # loop right below here adding to data["tasks"][x]
@@ -62,6 +62,7 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--env', required=True)
     parser.add_argument('-w', '--workers', default=16)
     parser.add_argument('-f', '--file-location', required=True)
+    parser.add_argument('--availability-zone', default='us-gov-west-1a')
     parser.add_argument('--driver-node-type-id', default='i3en.2xlarge')
     parser.add_argument('--node-type-id', default='i3en.2xlarge')
     args = parser.parse_args()
