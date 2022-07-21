@@ -42,7 +42,7 @@ def updateJsonFile(fileName):
     data["tasks"][0]["new_cluster"]["spark_env_vars"] = env_vars
     data["tasks"][0]["new_cluster"]["aws_attributes"]["zone_id"] = subnet_param
     data["tasks"][0]["new_cluster"]["node_type_id"] = args.node_type_id
-    data["tasks"][0]["new_cluster"]["driver_node_type_id"] = args.driver_node_type_id
+    # data["tasks"][0]["new_cluster"]["driver_node_type_id"] = args.driver_node_type_id
     data["tasks"][0]["new_cluster"]["num_workers"] = args.workers
     data["name"] = args.job_name
 
