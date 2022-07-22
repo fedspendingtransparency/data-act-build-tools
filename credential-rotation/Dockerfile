@@ -1,5 +1,8 @@
 FROM centos:7
 
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
 RUN yum install -y epel-release \
     yum makecache fast \
     yum install -y python3-devel zlib-devel libpqxx postgresql-devel gcc \
