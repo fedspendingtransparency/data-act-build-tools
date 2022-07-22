@@ -1,34 +1,17 @@
 import sys
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import json
+import argparse
 
-# TODO implement argparse
-
-INSTANCE_ID = sys.argv[1]
-JOB_NAME = sys.argv[2]
-JOB_PARAMETERS = sys.argv[3]
 API_VERSION = "/api/2.1"
-try:
-    WAIT_BOOLEAN = sys.argv[4]
-except:
-    print("Exception caught, boolean not set")
-
-try:
-    DEBUG = sys.argv[5]
-except:
-    DEBUG = "False"
-
-DEBUG = DEBUG.lower() == "true"
-WAIT_BOOLEAN = WAIT_BOOLEAN.lower() == "true" 
 
 # Run Get request with api_command param
 # /jobs/list/ with api 2.0 returns all jobs, 2.1 does not
-def getRequest(api_command, params={}):
+def getRequest(api_command, instance_id, params={}):
     if api_command == "/jobs/list":
-        url = "https://{}{}{}".format(INSTANCE_ID, "/api/2.0", api_command)
+        url = "https://{}{}{}".format(instance_id, "/api/2.0", api_command)
     else:
-        url = "https://{}{}{}".format(INSTANCE_ID, API_VERSION, api_command)
+        url = "https://{}{}{}".format(instance_id, API_VERSION, api_command)
     response = requests.get(
       url = url,
       json = params,
@@ -36,8 +19,8 @@ def getRequest(api_command, params={}):
     return response
 
 # Start a job run
-def postRequest(api_command, params):
-    url = "https://{}{}{}".format(INSTANCE_ID, API_VERSION, api_command)
+def postRequest(api_command, params, instance_id):
+    url = "https://{}{}{}".format(instance_id, API_VERSION, api_command)
     response = requests.post(
       url = url,
       json = params,
@@ -53,10 +36,26 @@ def getJobIds(res):
 
 
 if __name__ == '__main__':
+    # Setup args for cluster config
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--instance-id', required=True)
+    parser.add_argument('-j', '--job-name', required=True)
+    parser.add_argument('-p', '--job-parameters', required=True)
+    parser.add_argument('-w', '--wait', default=True)
+    parser.add_argument('-d', '--debug', default=False)
+    args = parser.parse_args()
+
+    INSTANCE_ID = args.instance_id
+    JOB_NAME = args.job_name
+    JOB_PARAMETERS = args.job_parameters
+
+    DEBUG = args.debug
+    WAIT_BOOLEAN = args.wait
+
     if (DEBUG):
         print("----------RUNNING JOB " + JOB_NAME )
 
-    jobs = getJobIds(getRequest("/jobs/list"))
+    jobs = getJobIds(getRequest("/jobs/list", INSTANCE_ID))
 
     if( JOB_NAME in jobs ):
         if(DEBUG):
@@ -74,23 +73,23 @@ if __name__ == '__main__':
 
         # Run Job
         job_params = { "job_id": jobs[JOB_NAME], "python_params": python_params }
-        startJob = postRequest("/jobs/run-now", job_params)
+        startJob = postRequest("/jobs/run-now", job_params, INSTANCE_ID)
 
         # Get run details
         run_id = startJob.json()["run_id"]
         run_params = { "run_id" : run_id }
-        job_status = getRequest("/jobs/runs/get", run_params).json()["state"]["life_cycle_state"]
+        job_status = getRequest("/jobs/runs/get", INSTANCE_ID, run_params).json()["state"]["life_cycle_state"]
         if WAIT_BOOLEAN:
             # Wait for job to finish running
             while(job_status == "RUNNING" or job_status == "PENDING"):
-                job_status = getRequest("/jobs/runs/get", run_params).json()["state"]["life_cycle_state"]
+                job_status = getRequest("/jobs/runs/get", INSTANCE_ID, run_params).json()["state"]["life_cycle_state"]
 
             # Error out if the job has not succeeded
-            job_status_done = getRequest("/jobs/runs/get", run_params).json()
+            job_status_done = getRequest("/jobs/runs/get", INSTANCE_ID, run_params).json()
             if(job_status_done["state"]["result_state"] != "SUCCESS"):
                 raise Exception("Job did not succeed - url: https://" + INSTANCE_ID + job_status_done["run_page_url"]) 
 
-            tasks = getRequest("/jobs/runs/get", run_params).json()["tasks"]
+            tasks = getRequest("/jobs/runs/get", INSTANCE_ID, run_params).json()["tasks"]
 
             # Get all run ids for each task in the job
             all_run_ids = []
@@ -99,13 +98,13 @@ if __name__ == '__main__':
 
             for run in all_run_ids:
                 run_params = {"run_id" : run}
-                finishedJob = getRequest("/jobs/runs/get-output", run_params)
+                finishedJob = getRequest("/jobs/runs/get-output", INSTANCE_ID, run_params)
                 if(DEBUG):
                     print(json.dumps(json.loads(finishedJob.text), indent = 2))
                     run_url = finishedJob.json()["metadata"]["run_page_url"].replace("webapp", INSTANCE_ID+"/")
                     print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
         else:
-            job_status_done = getRequest("/jobs/runs/get", run_params).json()
+            job_status_done = getRequest("/jobs/runs/get", INSTANCE_ID, run_params).json()
             if not DEBUG:
                 jobJson = json.loads(startJob.text)
                 jobJson["url"] = job_status_done["run_page_url"].replace("webapp", "https://" + INSTANCE_ID + "/")

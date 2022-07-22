@@ -1,16 +1,8 @@
 import sys
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import argparse
 import json
 from run_databricks_jobs import getJobIds, getRequest
-
-
-INSTANCE_ID = sys.argv[1]
-JOB_NAME = sys.argv[2]
-BRANCH = sys.argv[3]
-JOB_PARAMETERS = sys.argv[4]
-ENV = sys.argv[5]
-FILE_LOCATION = sys.argv[6]
 
 
 def updateJsonFile(fileName):
@@ -19,40 +11,40 @@ def updateJsonFile(fileName):
     data = json.load(jsonFile) 
     jsonFile.close()
 
-    if ENV == "staging":
+    if args.env == "staging":
         envCode = "stg"  
     else:
-        envCode = ENV     
+        envCode = args.env     
 
     # Edit content
-    # Set notebook params for job
-    python_params = JOB_PARAMETERS.split("\n")
+    # Set python params for job
+    python_params = args.job_parameters.split(" ")
     secretKey = "DATABASE_URL"
-    if ENV == "qat":
+    if args.env == "qat":
         secretKey = "PERF_DATABASE_URL"
         
     env_vars = {
-        "DATABASE_URL": "{{secrets/" + ENV + "/" + secretKey + "}}",
-        "BRANCH": BRANCH,
+        "DATABASE_URL": "{{secrets/" + args.env + "/" + secretKey + "}}",
+        "BRANCH": args.branch,
         "ENV_CODE": envCode
     }
-    if "manage" in JOB_NAME:
-        subnet = JOB_NAME.split("-")
+    if "manage" in args.job_name:
+        subnet = args.job_name.split("-")
         subnet_param = "us-gov-west-" + subnet[1]
     else:
-        subnet_param = "us-gov-west-1a"
+        subnet_param = args.availability_zone
 
     # If we wanted to add the ability to add more tasks, we would just require a
     # loop right below here adding to data["tasks"][x]
 
-    data["tasks"][0]["spark_python_task"]["python_file"] = "dbfs:/FileStore/" + BRANCH + "/manage.py"
+    data["tasks"][0]["spark_python_task"]["python_file"] = "dbfs:/FileStore/" + args.branch + "/manage.py"
     data["tasks"][0]["spark_python_task"]["parameters"] = python_params
     data["tasks"][0]["new_cluster"]["spark_env_vars"] = env_vars
     data["tasks"][0]["new_cluster"]["aws_attributes"]["zone_id"] = subnet_param
-    # data["tasks"][0]["new_cluster"]["node_type_id"] = "m5a.large" if data["tasks"][0]["new_cluster"]["node_type_id"] == "" else NODE_TYPE
-    # data["tasks"][0]["new_cluster"]["driver_node_type_id"] = "m5a.large" if data["tasks"][0]["new_cluster"]["driver_node_type_id"] == "" else NODE_TYPE
-    # data["tasks"][0]["new_cluster"]["num_workers"] = 0 if data["tasks"][0]["new_cluster"]["num_workers"] == "" else WORKERS
-    data["name"] = JOB_NAME
+    data["tasks"][0]["new_cluster"]["node_type_id"] = args.node_type_id
+    # data["tasks"][0]["new_cluster"]["driver_node_type_id"] = args.driver_node_type_id
+    data["tasks"][0]["new_cluster"]["num_workers"] = args.workers
+    data["name"] = args.job_name
 
     ## Save our changes to JSON file
     jsonFile = open(fileName, "w+")
@@ -61,15 +53,30 @@ def updateJsonFile(fileName):
 
 
 if __name__ == '__main__':
-    # Start script
-    jobs = getJobIds(getRequest("/jobs/list"))
+    # Setup args for cluster config
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--instance-id', required=True)
+    parser.add_argument('-j', '--job-name', default='manage', required=True)
+    parser.add_argument('-b', '--branch', default='qat', required=True)
+    parser.add_argument('-p', '--job-parameters', required=True)
+    parser.add_argument('-e', '--env', required=True)
+    parser.add_argument('-w', '--workers', default=16)
+    parser.add_argument('-f', '--file-location', required=True)
+    parser.add_argument('--availability-zone', default='us-gov-west-1a')
+    parser.add_argument('--driver-node-type-id', default='i3en.2xlarge')
+    parser.add_argument('--node-type-id', default='i3en.2xlarge')
+    args = parser.parse_args()
+    INSTANCE_ID = args.instance_id
 
-    if( JOB_NAME in jobs ):
-        sys.stdout.write( (str(jobs[JOB_NAME])) )
-        updateJsonFile(FILE_LOCATION)
+    # Start script
+    jobs = getJobIds(getRequest("/jobs/list", INSTANCE_ID))
+
+    if( args.job_name in jobs ):
+        sys.stdout.write( (str(jobs[args.job_name])) )
+        updateJsonFile(args.file_location)
 
     else:
-        updateJsonFile(FILE_LOCATION)
+        updateJsonFile(args.file_location)
 
 
 
