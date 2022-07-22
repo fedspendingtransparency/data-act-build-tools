@@ -28,6 +28,12 @@ def updateJsonFile(fileName):
         "BRANCH": args.branch,
         "ENV_CODE": envCode
     }
+
+    # Populate spark_conf
+    spark_conf = {}
+    for i in args.spark_config_var:
+        spark_conf[i[0]] = i[1]
+
     if "manage" in args.job_name:
         subnet = args.job_name.split("-")
         subnet_param = "us-gov-west-" + subnet[1]
@@ -40,6 +46,7 @@ def updateJsonFile(fileName):
     data["tasks"][0]["spark_python_task"]["python_file"] = "dbfs:/FileStore/" + args.branch + "/manage.py"
     data["tasks"][0]["spark_python_task"]["parameters"] = python_params
     data["tasks"][0]["new_cluster"]["spark_env_vars"] = env_vars
+    data["tasks"][0]["new_cluster"]["spark_conf"] = spark_conf
     data["tasks"][0]["new_cluster"]["aws_attributes"]["zone_id"] = subnet_param
     data["tasks"][0]["new_cluster"]["node_type_id"] = args.node_type_id
     # data["tasks"][0]["new_cluster"]["driver_node_type_id"] = args.driver_node_type_id
@@ -65,6 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--availability-zone', default='us-gov-west-1a')
     parser.add_argument('--driver-node-type-id', default='i3en.2xlarge')
     parser.add_argument('--node-type-id', default='i3en.2xlarge')
+    parser.add_argument('-s', '--spark-config-var', action='append', nargs='+')
     args = parser.parse_args()
     INSTANCE_ID = args.instance_id
 
@@ -77,7 +85,3 @@ if __name__ == '__main__':
 
     else:
         updateJsonFile(args.file_location)
-
-
-
-
