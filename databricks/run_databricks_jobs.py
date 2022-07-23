@@ -41,8 +41,8 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--instance-id', required=True)
     parser.add_argument('-j', '--job-name', required=True)
     parser.add_argument('-p', '--job-parameters', required=True)
-    parser.add_argument('-w', '--wait', default=True)
-    parser.add_argument('-d', '--debug', default=False)
+    parser.add_argument('-w', '--wait', action='store_true')
+    parser.add_argument('-d', '--debug', action='store_true')
     args = parser.parse_args()
 
     INSTANCE_ID = args.instance_id
@@ -105,7 +105,6 @@ if __name__ == '__main__':
                     print("---------------SEE JOB RUN HERE: " + "https://" + run_url)
         else:
             job_status_done = getRequest("/jobs/runs/get", INSTANCE_ID, run_params).json()
-            print(job_status_done.json())
             if not DEBUG:
                 jobJson = json.loads(startJob.text)
                 jobJson["url"] = job_status_done["run_page_url"].replace("webapp", "https://" + INSTANCE_ID + "/")
