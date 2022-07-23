@@ -73,7 +73,9 @@ if __name__ == '__main__':
 
         # Run Job
         job_params = { "job_id": jobs[JOB_NAME], "python_params": python_params }
+        print(job_params)
         startJob = postRequest("/jobs/run-now", job_params, INSTANCE_ID)
+        print(startJob)
 
         # Get run details
         run_id = startJob.json()["run_id"]
