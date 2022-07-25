@@ -79,7 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('--availability-zone', default='us-gov-west-1a')
     parser.add_argument('--driver-node-type-id', default='i3en.2xlarge')
     parser.add_argument('--node-type-id', default='i3en.2xlarge')
-    parser.add_argument('-s', '--spark-config-var', action='append', nargs='+', default=['spark.sql.jsonGenerator.ignoreNullFields', 'false'])
+    parser.add_argument('-s', '--spark-config-var', action='append', nargs='+')
     parser.add_argument('--jenkins-job-id', default='not-set')
     args = parser.parse_args()
     INSTANCE_ID = args.instance_id
