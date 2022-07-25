@@ -12,7 +12,9 @@ def updateJsonFile(fileName):
     jsonFile.close()
 
     if args.env == "staging":
-        envCode = "stg"  
+        envCode = "stg"
+    elif args.env == "prod":
+        envCode = "prd"  
     else:
         envCode = args.env     
 
