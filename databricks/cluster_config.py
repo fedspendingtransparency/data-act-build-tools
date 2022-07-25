@@ -45,6 +45,7 @@ def updateJsonFile(fileName):
     # If we wanted to add the ability to add more tasks, we would just require a
     # loop right below here adding to data["tasks"][x]
 
+    data["settings"]["tags"]["jenkins_job_id"] = args.jenkins_job_id
     data["tasks"][0]["spark_python_task"]["python_file"] = "dbfs:/FileStore/" + args.branch + "/manage.py"
     data["tasks"][0]["spark_python_task"]["parameters"] = python_params
     data["tasks"][0]["new_cluster"]["spark_env_vars"] = env_vars
@@ -75,6 +76,7 @@ if __name__ == '__main__':
     parser.add_argument('--driver-node-type-id', default='i3en.2xlarge')
     parser.add_argument('--node-type-id', default='i3en.2xlarge')
     parser.add_argument('-s', '--spark-config-var', action='append', nargs='+')
+    parser.add_argument('--jenkins-job-id', required=True)
     args = parser.parse_args()
     INSTANCE_ID = args.instance_id
 
