@@ -80,7 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('--driver-node-type-id', default='i3en.2xlarge')
     parser.add_argument('--node-type-id', default='i3en.2xlarge')
     parser.add_argument('-s', '--spark-config-var', action='append', nargs='+')
-    parser.add_argument('--jenkins-job-id')
+    parser.add_argument('--jenkins-job-id', default='not-set')
     args = parser.parse_args()
     INSTANCE_ID = args.instance_id
 
