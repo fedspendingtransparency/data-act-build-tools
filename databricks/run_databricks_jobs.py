@@ -87,7 +87,8 @@ if __name__ == '__main__':
             # Error out if the job has not succeeded
             job_status_done = getRequest("/jobs/runs/get", INSTANCE_ID, run_params).json()
             if(job_status_done["state"]["result_state"] != "SUCCESS"):
-                raise Exception("Job did not succeed - url: https://" + INSTANCE_ID + job_status_done["run_page_url"]) 
+                url = job_status_done["run_page_url"].replace("webapp", "https://" + INSTANCE_ID + "/")
+                raise Exception("Job did not succeed - url: " + url) 
 
             tasks = getRequest("/jobs/runs/get", INSTANCE_ID, run_params).json()["tasks"]
 
