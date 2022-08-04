@@ -58,6 +58,7 @@ def updateJsonFile(fileName):
     data["tasks"][0]["new_cluster"]["node_type_id"] = args.node_type_id
     # data["tasks"][0]["new_cluster"]["driver_node_type_id"] = args.driver_node_type_id
     data["tasks"][0]["new_cluster"]["num_workers"] = args.workers
+    data["tasks"][0]["new_cluster"]["spark_version"] = args.spark_version
     data["name"] = args.job_name
 
     ## Save our changes to JSON file
@@ -80,6 +81,7 @@ if __name__ == '__main__':
     parser.add_argument('--driver-node-type-id', default='i3en.2xlarge')
     parser.add_argument('--node-type-id', default='i3en.2xlarge')
     parser.add_argument('-s', '--spark-config-var', action='append', nargs='+')
+    parser.add_argument('--spark-version', default='10.4.x-photon-scala2.12')
     parser.add_argument('--jenkins-job-id', default='not-set')
     args = parser.parse_args()
     INSTANCE_ID = args.instance_id
