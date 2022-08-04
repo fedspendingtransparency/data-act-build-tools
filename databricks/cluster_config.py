@@ -31,6 +31,12 @@ def updateJsonFile(fileName):
         "ENV_CODE": envCode
     }
 
+    # Use photon
+    if args.photon:
+        spark_version = "10.4.x-photon-scala2.12"
+    else:
+        spark_version = "10.4.x-scala2.12"
+
     # Populate spark_conf
     spark_conf = {}
     for i in args.spark_config_var:
@@ -58,6 +64,7 @@ def updateJsonFile(fileName):
     data["tasks"][0]["new_cluster"]["node_type_id"] = args.node_type_id
     # data["tasks"][0]["new_cluster"]["driver_node_type_id"] = args.driver_node_type_id
     data["tasks"][0]["new_cluster"]["num_workers"] = args.workers
+    data["tasks"][0]["new_cluster"]["spark_version"] = spark_version
     data["name"] = args.job_name
 
     ## Save our changes to JSON file
@@ -80,6 +87,7 @@ if __name__ == '__main__':
     parser.add_argument('--driver-node-type-id', default='i3en.2xlarge')
     parser.add_argument('--node-type-id', default='i3en.2xlarge')
     parser.add_argument('-s', '--spark-config-var', action='append', nargs='+')
+    parser.add_argument('--photon', default=True, action=argparse.BooleanOptionalAction)
     parser.add_argument('--jenkins-job-id', default='not-set')
     args = parser.parse_args()
     INSTANCE_ID = args.instance_id
