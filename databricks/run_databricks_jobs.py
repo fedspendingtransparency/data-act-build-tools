@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('-j', '--job-name', required=True)
     parser.add_argument('-p', '--job-parameters', required=True)
     parser.add_argument('--wait', default=True, action=argparse.BooleanOptionalAction)
-    parser.add_argument('--debug', action=argparse.BooleanOptionalAction))
+    parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     INSTANCE_ID = args.instance_id
