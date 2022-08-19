@@ -39,6 +39,12 @@ WORKDIR /root/workspace
 # this variable is used to run packer
 ENV USER ec2-user
 
+# Install pinned pip w/ pip3 symlink
+RUN pip3.6 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
+
+# install ansible
+RUN pip3 install ansible==${ANSIBLE_VERSION}
+
 # install packer and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip
 RUN unzip /root/workspace/packer_${PACKER_VERSION}_linux_amd64.zip -d /opt/packer/
@@ -50,11 +56,7 @@ RUN wget https://github.com/wata727/packer-post-processor-amazon-ami-management/
 RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
-# Install pinned pip w/ pip3 symlink
-RUN pip3.6 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
-
-# install ansible
-RUN pip3 install ansible==${ANSIBLE_VERSION}
+#ansible
 
 # install terraform and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
