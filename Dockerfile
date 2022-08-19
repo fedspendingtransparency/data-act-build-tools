@@ -43,7 +43,7 @@ ENV USER ec2-user
 RUN pip3.6 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
 
 # install ansible
-RUN pip3 install ansible==${ANSIBLE_VERSION}
+RUN pip install --user ansible==${ANSIBLE_VERSION}
 
 # install packer and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip
