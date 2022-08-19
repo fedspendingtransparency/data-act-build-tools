@@ -43,7 +43,14 @@ ENV USER ec2-user
 RUN pip3.6 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
 
 # install ansible
-RUN pip3 install ansible-core==${ANSIBLE_VERSION}
+RUN wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tgz && \
+    yum -y install openssl-devel bzip2-devel libffi-devel xz-devel && \
+    yum -y groupinstall "Development Tools" && \
+    tar xvf Python-3.8.12.tgz && \
+    cd Python-3.8*/ && \
+    ./configure --enable-optimizations && \
+    make altinstall
+RUN pip3.8 install ansible==${ANSIBLE_VERSION}
 
 # install packer and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip
@@ -82,4 +89,4 @@ RUN pip3 install json2html jinja2 pynliner
 # install static code analysis dependencies
 RUN pip3 install flake8
 
-RUN pip3 install databricks-cli
+# RUN pip3 install databricks-cli
