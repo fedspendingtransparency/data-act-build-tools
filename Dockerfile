@@ -78,6 +78,8 @@ RUN ln -s /opt/terragrunt/terragrunt /usr/local/bin/terragrunt
 
 # install pip packages
 RUN pip3.8 install boto3 sh argparse awscli pytz botocore
+RUN pip3 install boto3 sh argparse awscli pytz botocore
+
 
 # install ansible-galaxy packages
 COPY requirements.yml /tmp/
