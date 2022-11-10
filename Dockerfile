@@ -23,13 +23,13 @@ RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 
 # update to use Rocky8 official mirrors only
 RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/rocky.repo
-RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/rocky.repo
+RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/Rocky-BaseOS.repo
 
 
 RUN yum update -y && \
     yum install -y wget zip unzip && \
     yum install -y python39 \
-    yum install -y https://mirrors.upr.edu/rocky/8.6/AppStream/x86_64/os/Packages/r/rocky-backgrounds-86.2-1.el8.noarch.rpm \
+    yum install -y https://download.rockylinux.org/pub/rocky/8/BaseOS/x86_64/os/Packages/r/rocky-release-8.6-3.el8.noarch.rpm \
     yum install -y rpm dfn-plugins-core \
     yum install -y epel-release \
     yum install -y config-manager --enable epel \
