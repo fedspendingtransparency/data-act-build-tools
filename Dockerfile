@@ -24,6 +24,7 @@ RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 RUN yum update -y && \
     yum install -y wget zip unzip && \
     yum install -y python39 \
+    yum install -y https://mirrors.upr.edu/rocky/8.6/AppStream/x86_64/os/Packages/r/rocky-backgrounds-86.2-1.el8.noarch.rpm \
     yum install -y rpm dfn-plugins-core \
     yum install -y config-manager --set-enable-powertools \
     yum install -y epel-release \
