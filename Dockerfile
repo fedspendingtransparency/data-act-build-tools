@@ -21,13 +21,19 @@ ENV PYTHON_PIP_VERSION=${pip_install_version}
 # set up nodejs repo
 RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 
+# update to use Rocky8 official mirrors only
+RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/Rocky-Powertools.repo
+RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/Rocky-Powertools.repo
+
+
 RUN yum update -y && \
     yum install -y wget zip unzip && \
     yum install -y python39 \
     yum install -y https://mirrors.upr.edu/rocky/8.6/AppStream/x86_64/os/Packages/r/rocky-backgrounds-86.2-1.el8.noarch.rpm \
     yum install -y rpm dfn-plugins-core \
-    yum install -y config-manager --set-enable-powertools \
     yum install -y epel-release \
+    yum install -y config-manager --enable epel \
+    yum install -y config-manager --set-enable-powertools \
     yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \
