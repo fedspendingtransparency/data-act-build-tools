@@ -28,12 +28,12 @@ RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/Rocky-BaseOS.repo
 
 RUN yum update -y && \
     yum install -y wget zip unzip && \
-    yum install -y python39 \
-    yum install -y https://download.rockylinux.org/pub/rocky/8/BaseOS/x86_64/os/Packages/r/rocky-release-8.6-3.el8.noarch.rpm \
-    yum install -y rpm dfn-plugins-core \
-    yum install -y epel-release \
-    yum install -y config-manager --enable epel \
-    yum install -y config-manager --set-enable-powertools \
+    yum install -y python39 && \
+    yum install -y https://download.rockylinux.org/pub/rocky/8/BaseOS/x86_64/os/Packages/r/rocky-release-8.6-3.el8.noarch.rpm && \
+    yum install -y rpm dfn-plugins-core && \
+    yum install -y epel-release && \
+    yum install -y config-manager --enable epel && \
+    yum install -y config-manager --set-enable-powertools && \
     yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \

@@ -1,4 +1,4 @@
-FROM centos:7
+FROM rockylinux:8
 
 RUN yum install -y epel-release \
     yum makecache fast \
