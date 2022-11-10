@@ -22,8 +22,8 @@ ENV PYTHON_PIP_VERSION=${pip_install_version}
 RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 
 # update to use Rocky8 official mirrors only
-RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/Rocky-Powertools.repo
-RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/Rocky-Powertools.repo
+RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/rocky.repo
+RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/rocky.repo
 
 
 RUN yum update -y && \
