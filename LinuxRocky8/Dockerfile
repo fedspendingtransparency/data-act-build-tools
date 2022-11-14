@@ -21,16 +21,13 @@ ENV PYTHON_PIP_VERSION=${pip_install_version}
 # set up nodejs repo
 RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 
-# update to use centos official mirrors only
-RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/CentOS-Base.repo
-RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/CentOS-Base.repo
-
 RUN yum update -y && \
-    RUN yum update -y && \
     yum install -y wget zip unzip && \
-    yum install -y https://repo.ius.io/ius-release-el7.rpm && \
-    yum install -y python36u --setopt=obsoletes=0 --enablerepo=ius-archive && \
-    yum install -y python36u-pip --setopt=obsoletes=0 --enablerepo=ius-archive && \
+    yum install -y python39 && \
+    yum install -y https://download.rockylinux.org/pub/rocky/8/BaseOS/x86_64/os/Packages/r/rocky-release-8.6-3.el8.noarch.rpm && \
+    yum install -y epel-release && \
+    yum install -y config-manager --enable epel && \
+    yum install -y config-manager --set-enable-powertools && \
     yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \
