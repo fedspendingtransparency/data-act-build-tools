@@ -1,6 +1,6 @@
 # Contains packer/terraform/ansible dependencies in order to run the various *-deploy.py scripts in a container
 
-FROM rockylinux:8
+FROM centOS:7
 
 ARG packer_version_arg=1.6.1
 ARG ansible_version_arg=2.9.15
