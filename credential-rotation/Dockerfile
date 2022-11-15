@@ -1,4 +1,4 @@
-FROM centOS:7
+FROM centos:7
 
 RUN yum install -y epel-release \
     yum makecache fast \
