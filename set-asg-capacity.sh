@@ -15,6 +15,7 @@ sample_instance_id=$(aws ec2 describe-instances \
     "Name=tag:Application, Values=$application" \
     "Name=tag:Component, Values=$component" \
     "Name=tag:Environment,Values=$environment" \
+--region us-gov-west-1 \
 --query Reservations[*].Instances[*].[InstanceId] \
 --output text | head -n 1)
 
@@ -29,6 +30,7 @@ fi
 autoscaling_group="$(aws autoscaling describe-auto-scaling-instances \
     --instance-ids $sample_instance_id \
     --query AutoScalingInstances[0].AutoScalingGroupName \
+    --region us-gov-west-1 \
     --output text)"
 
 echo autoscaling group: $autoscaling_group
@@ -44,15 +46,16 @@ then
     echo capacity is 0 so making sure autoscaling group can support 0 instances
     aws autoscaling update-auto-scaling-group \
         --auto-scaling-group-name "${autoscaling_group}" \
-        --min-size 0
+        --min-size 0 --region us-gov-west-1
 fi
 
 aws autoscaling set-desired-capacity \
     --auto-scaling-group-name "${autoscaling_group}" \
-    --desired-capacity $capacity
+    --desired-capacity $capacity --region us-gov-west-1
 
 num_instances=$(aws autoscaling describe-auto-scaling-groups \
     --auto-scaling-group-names "${autoscaling_group}" \
+    --region us-gov-west-1 \
     --query AutoScalingGroups[0].Instances \
     --output text | wc -l)
 
@@ -63,6 +66,7 @@ do
     sleep $interval
     num_instances=$(aws autoscaling describe-auto-scaling-groups \
         --auto-scaling-group-names "${autoscaling_group}" \
+        --region us-gov-west-1 \
         --query AutoScalingGroups[0].Instances \
         --output text | wc -l)
 done
