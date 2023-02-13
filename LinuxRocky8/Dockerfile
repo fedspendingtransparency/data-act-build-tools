@@ -1,6 +1,6 @@
 # Contains packer/terraform/ansible dependencies in order to run the various *-deploy.py scripts in a container
 
-FROM centos:7
+FROM rockylinux:8
 
 ARG packer_version_arg=1.6.1
 ARG ansible_version_arg=2.9.15
@@ -21,16 +21,11 @@ ENV PYTHON_PIP_VERSION=${pip_install_version}
 # set up nodejs repo
 RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 
-# update to use centos official mirrors only
-RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/CentOS-Base.repo
-RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/CentOS-Base.repo
-
 RUN yum update -y && \
-    RUN yum update -y && \
     yum install -y wget zip unzip && \
-    yum install -y https://repo.ius.io/ius-release-el7.rpm && \
-    yum install -y python36u --setopt=obsoletes=0 --enablerepo=ius-archive && \
-    yum install -y python36u-pip --setopt=obsoletes=0 --enablerepo=ius-archive && \
+    yum install -y python3-pip && \
+    yum install -y https://download.rockylinux.org/pub/rocky/8/BaseOS/x86_64/kickstart/Packages/r/rocky-release-8.7-1.2.el8.noarch.rpm && \
+    yum install -y epel-release && \
     yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \
