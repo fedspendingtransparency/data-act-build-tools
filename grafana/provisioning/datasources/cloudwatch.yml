@@ -1,0 +1,17 @@
+# config file version
+apiVersion: 1
+
+datasources:
+  - name: cloudwatch-nonprod
+    type: cloudwatch
+    jsonData:
+      authType: arn
+      defaultRegion: us-gov-west-1
+      assumeRoleArn: ${CLOUDWATCH_ROLE_NONPROD}
+
+  - name: cloudwatch-prod
+    type: cloudwatch
+    jsonData:
+      authType: arn
+      defaultRegion: us-gov-west-1
+      assumeRoleArn: ${CLOUDWATCH_ROLE_PROD}

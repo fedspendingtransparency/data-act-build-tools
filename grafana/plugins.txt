@@ -1,0 +1,4 @@
+grafana-piechart-panel
+grafana-worldmap-panel
+marcusolsson-json-datasource
+grafana-simple-json-datasource

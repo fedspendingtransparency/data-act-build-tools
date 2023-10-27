@@ -1,0 +1,81 @@
+# # config file version
+# apiVersion: 1
+
+# datasources:
+#   - name: elasticsearch-app
+#     type: elasticsearch
+#     url: "http://localhost:9200"
+#     database: "[app-]YYYY.MM"
+#     jsonData:
+#       interval: Monthly
+#       esVersion: 70
+#       timeField: "@timestamp"
+#       logMessageField: message
+#       logLevelField: fields.level
+
+#   - name: elasticsearch-web
+#     type: elasticsearch
+#     url: "http://localhost:9200"
+#     database: "[web-]YYYY.MM"
+#     jsonData:
+#       interval: Monthly
+#       esVersion: 70
+#       timeField: "@timestamp"
+#       logMessageField: message
+
+#   - name: elasticsearch-data
+#     type: elasticsearch
+#     url: "http://localhost:9200"
+#     database: "[data-]YYYY.MM"
+#     jsonData:
+#       interval: Monthly
+#       esVersion: 70
+#       timeField: "@timestamp"
+#       logMessageField: message
+#       logLevelField: fields.level
+
+#   - name: elasticsearch-telegraf-fir
+#     type: elasticsearch
+#     url: "http://localhost:9200"
+#     database: "[telegraf-fir-]YYYY.MM.DD"
+#     jsonData:
+#       interval: Daily
+#       esVersion: 70
+#       timeField: "@timestamp"
+
+#   - name: elasticsearch-telegraf-dti
+#     type: elasticsearch
+#     url: "http://localhost:9200"
+#     database: "[telegraf-dti-]YYYY.MM.DD"
+#     jsonData:
+#       interval: Daily
+#       esVersion: 70
+#       timeField: "@timestamp"
+
+#   - name: elasticsearch-dti-adhoc-dd
+#     type: elasticsearch
+#     url: "http://localhost:9200"
+#     database: "[dti-adhoc-dd-]YYYY.MM"
+#     jsonData:
+#       interval: Monthly
+#       esVersion: 70
+#       timeField: "@timestamp"
+
+#   - name: elasticsearch-dti-public-api
+#     type: elasticsearch
+#     url: "http://localhost:9200"
+#     database: "[dti-public-api-]YYYY.MM"
+#     jsonData:
+#       interval: Monthly
+#       esVersion: 70
+#       timeField: "@timestamp"
+      
+#   - name: elasticsearch-dti-public-web
+#     type: elasticsearch
+#     url: "http://localhost:9200"
+#     database: "[dti-public-web-]YYYY.MM"
+#     jsonData:
+#       interval: Monthly
+#       esVersion: 70
+#       timeField: "@timestamp"
+
