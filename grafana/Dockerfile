@@ -1,8 +1,8 @@
 FROM grafana/grafana:10.0.0-ubuntu
 
-ARG HTTP_PROXY=http://p1proxy.frb.org:8080 
+ARG HTTP_PROXY
 
-ARG HTTPS_PROXY=http://p1proxy.frb.org:8080 
+ARG HTTPS_PROXY
 
 COPY --chown=472:472 provisioning /etc/grafana/provisioning
 COPY plugins.txt /etc/grafana/
