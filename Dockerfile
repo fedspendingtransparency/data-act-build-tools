@@ -4,6 +4,7 @@ FROM rockylinux:8
 
 ARG packer_version_arg=1.6.1
 ARG ansible_version_arg=9.0.0
+ARG ansible_core_version_arg=2.16.0
 ARG terraform_version_arg=0.13.7
 ARG terragrunt_version_arg=0.25.4
 ARG ami_manager_arg=0.8.0
@@ -12,6 +13,7 @@ ARG pip_install_version=21.1.3
 
 ENV PACKER_VERSION=${packer_version_arg}
 ENV ANSIBLE_VERSION=${ansible_version_arg}
+ENV ANSIBLE_CORE_VERSION=${ansible_core_version_arg}
 ENV TERRAFORM_VERSION=${terraform_version_arg}
 ENV TERRAGRUNT_VERSION=${terragrunt_version_arg}
 ENV AMI_MANAGER_VERSION=${ami_manager_arg}
@@ -54,7 +56,8 @@ RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERS
 RUN pip3.8 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
 
 # install ansible
-RUN pip3 install ansible==${ANSIBLE_VERSION}
+RUN pip3 install ansible-core==${ANSIBLE_CORE_VERSION} \
+    pip3 install ansible==${ANSIBLE_VERSION}
 
 # install terraform and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
