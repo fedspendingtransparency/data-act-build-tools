@@ -3,7 +3,7 @@
 FROM centos:7
 
 ARG packer_version_arg=1.6.1
-ARG ansible_version_arg=2.9.15
+ARG ansible_version_arg=9.1.0
 ARG terraform_version_arg=0.13.7
 ARG terragrunt_version_arg=0.25.4
 ARG ami_manager_arg=0.8.0
@@ -28,8 +28,8 @@ RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/CentOS-Base.repo
 RUN yum update -y && \
     yum install -y wget zip unzip && \
     yum install -y https://repo.ius.io/ius-release-el7.rpm && \
-    yum install -y python36u --setopt=obsoletes=0 --enablerepo=ius-archive && \
-    yum install -y python36u-pip --setopt=obsoletes=0 --enablerepo=ius-archive && \
+    yum install -y python38u --setopt=obsoletes=0 --enablerepo=ius-archive && \
+    yum install -y python38u-pip --setopt=obsoletes=0 --enablerepo=ius-archive && \
     yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \
@@ -51,7 +51,7 @@ RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
 # Install pinned pip w/ pip3 symlink
-RUN pip3.6 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
+RUN pip3.8 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
 
 # install ansible
 RUN pip3 install ansible==${ANSIBLE_VERSION}
