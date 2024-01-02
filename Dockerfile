@@ -28,8 +28,8 @@ RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/CentOS-Base.repo
 RUN yum update -y && \
     yum install -y wget zip unzip && \
     yum install -y https://repo.ius.io/ius-release-el7.rpm && \
-    yum install -y python38u --setopt=obsoletes=0 --enablerepo=ius-archive && \
-    yum install -y python38u-pip --setopt=obsoletes=0 --enablerepo=ius-archive && \
+    yum install -y python38 && \
+    yum install -y python38-pip && \
     yum install -y openssh-clients && \
     yum install -y jq && \
     yum install -y git && \
