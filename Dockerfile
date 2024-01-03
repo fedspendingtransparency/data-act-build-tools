@@ -56,9 +56,9 @@ RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERS
 RUN pip3.8 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
 
 # install ansible
-RUN pip install --upgrade setuptools \
-    pip3.8 install ansible-core==${ANSIBLE_CORE_VERSION} \
-    pip3.8 install ansible==${ANSIBLE_VERSION}
+RUN pip3 install --upgrade setuptools \
+    pip3 install ansible-core==${ANSIBLE_CORE_VERSION} \
+    pip3 install ansible==${ANSIBLE_VERSION}
 
 # install terraform and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
