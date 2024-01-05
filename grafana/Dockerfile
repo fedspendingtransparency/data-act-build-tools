@@ -1,7 +1,6 @@
-FROM grafana/grafana:10.0.0-ubuntu
+FROM grafana/grafana:10.2.0-ubuntu
 
 ARG HTTP_PROXY
-
 ARG HTTPS_PROXY
 
 COPY --chown=472:472 provisioning /etc/grafana/provisioning
