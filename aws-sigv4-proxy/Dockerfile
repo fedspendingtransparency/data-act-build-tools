@@ -17,7 +17,7 @@ FROM alpine:3
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /aws-sigv4-proxy/aws-sigv4-proxy ./
 
-ENV PORT_NUM 8080
+ENV PORT_NUM 7070
 EXPOSE ${PORT_NUM}
 
 ENTRYPOINT ./aws-sigv4-proxy --port 9200 --host $ENDPOINT --name es --region us-gov-west-1 --role-arn $ASSUME_ROLE
