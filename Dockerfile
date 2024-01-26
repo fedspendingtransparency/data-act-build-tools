@@ -1,6 +1,6 @@
 # Contains packer/terraform/ansible dependencies in order to run the various *-deploy.py scripts in a container
 
-FROM rockylinux:8.9
+FROM rockylinux:8
 
 ARG packer_version_arg=1.6.1
 ARG ansible_version_arg=6.0.0
@@ -27,15 +27,15 @@ RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 ##RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/CentOS-*
 #RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/CentOS-*
 
-RUN yum update -y && \
-    yum install -y wget zip unzip && \
-    #yum install -y https://repo.ius.io/ius-release-el7.rpm && \
-    yum install -y python38 && \
-    yum install -y python38-pip && \
-    yum install -y openssh-clients && \
-    yum install -y jq && \
-    yum install -y git && \
-    yum install -y nodejs
+RUN dnf update -y && \
+    dnf -y install epel-release \
+    dnf install -y wget zip unzip && \
+    dnf install -y python38 && \
+    dnf install -y python38-pip && \
+    dnf install -y openssh-clients && \
+    dnf install -y jq && \
+    dnf install -y git && \
+    dnf install -y nodejs
 
 WORKDIR /root/workspace
 # this variable is used to run packer
@@ -53,12 +53,10 @@ RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
 # Install pinned pip w/ pip3 symlink
-RUN pip3.8 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
 
 # install ansible
-RUN alternatives --set python /usr/bin/python3.8 \
-    pip install --upgrade setuptools \
-    pip install ansible-core==${ANSIBLE_CORE_VERSION} \
+RUN pip install --upgrade setuptools \
+    #pip install ansible-core==${ANSIBLE_CORE_VERSION} \
     pip install ansible==${ANSIBLE_VERSION}
 
 # install terraform and create an symlink on /usr/local
