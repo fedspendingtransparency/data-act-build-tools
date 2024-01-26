@@ -29,13 +29,13 @@ RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 
 RUN dnf update -y && \
     dnf -y install epel-release \
-    dnf install -y wget zip unzip && \
-    dnf install -y python38 && \
-    dnf install -y python38-pip && \
-    dnf install -y openssh-clients && \
-    dnf install -y jq && \
-    dnf install -y git && \
-    dnf install -y nodejs
+    dnf -y install wget zip unzip && \
+    dnf -y install python38 && \
+    dnf -y install python38-pip && \
+    dnf -y install openssh-clients && \
+    dnf -y install jq && \
+    dnf -y install git && \
+    dnf -y install nodejs
 
 WORKDIR /root/workspace
 # this variable is used to run packer
@@ -55,9 +55,9 @@ RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERS
 # Install pinned pip w/ pip3 symlink
 
 # install ansible
-RUN pip install --upgrade setuptools \
+RUN pip3 install --upgrade setuptools \
     #pip install ansible-core==${ANSIBLE_CORE_VERSION} \
-    pip install ansible==${ANSIBLE_VERSION}
+    pip3 install ansible==${ANSIBLE_VERSION}
 
 # install terraform and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
