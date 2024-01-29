@@ -27,8 +27,8 @@ RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/Rocky-*
 RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/Rocky-*
 
-RUN dnf update -y && \
-    dnf -y install epel-release \
+RUN dnf -y update && \
+    dnf -y install epel-release && \
     dnf -y install wget zip unzip && \
     dnf -y install python38 && \
     dnf -y install python38-pip && \
