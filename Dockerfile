@@ -55,7 +55,7 @@ RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERS
 # Install pinned pip w/ pip3 symlink
 
 # install ansible
-RUN pip3 install --upgrade setuptools \
+RUN pip3 install --upgrade setuptools && \
     #pip install ansible-core==${ANSIBLE_CORE_VERSION} \
     pip3 install ansible==${ANSIBLE_VERSION}
 
