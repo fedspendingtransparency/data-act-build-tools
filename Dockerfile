@@ -9,7 +9,7 @@ ARG terraform_version_arg=0.13.7
 ARG terragrunt_version_arg=0.25.4
 ARG ami_manager_arg=0.8.0
 ARG node_version_arg=12.x
-ARG pip_install_version=21.1.3
+ARG pip_install_version=23.3.2
 
 ENV PACKER_VERSION=${packer_version_arg}
 ENV ANSIBLE_VERSION=${ansible_version_arg}
@@ -53,6 +53,7 @@ RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
 # Install pinned pip w/ pip3 symlink
+RUN pip3.8 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
 
 # install ansible
 RUN pip3 install --upgrade setuptools && \
