@@ -24,8 +24,8 @@ ENV PYTHON_PIP_VERSION=${pip_install_version}
 RUN curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash -
 
 # update to use centos official mirrors only
-##RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/CentOS-*
-#RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/CentOS-*
+RUN sed -i '/#baseurl/s/^#//g' /etc/yum.repos.d/Rocky-*
+RUN sed -i '/mirrorlist/s/^/#/g' /etc/yum.repos.d/Rocky-*
 
 RUN dnf update -y && \
     dnf -y install epel-release \
