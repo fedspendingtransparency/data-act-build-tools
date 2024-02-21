@@ -37,6 +37,10 @@ RUN dnf -y update && \
     dnf -y install git && \
     dnf -y install nodejs
 
+# Set python3.8 as default python
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 2 && \
+    update-alternatives --set python3 /usr/bin/python3.8
+
 WORKDIR /root/workspace
 # this variable is used to run packer
 ENV USER ec2-user
