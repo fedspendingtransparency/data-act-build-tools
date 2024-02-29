@@ -45,6 +45,10 @@ WORKDIR /root/workspace
 # this variable is used to run packer
 ENV USER ec2-user
 
+# Set python3.6 as default python
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 2 && \
+    update-alternatives --set python3 /usr/bin/python3.6
+
 # install packer and create an symlink on /usr/local
 RUN wget https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip
 RUN unzip /root/workspace/packer_${PACKER_VERSION}_linux_amd64.zip -d /opt/packer/
