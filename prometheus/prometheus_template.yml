@@ -18,7 +18,7 @@ scrape_configs:
     metrics_path: '/prometheus'
     scheme: https
     basic_auth:
-      username: 'job_builder'
+      username: 'serviceuser'
       password_file: '/etc/prometheus/auth/jenkins.txt'
     tls_config:
       insecure_skip_verify: true
@@ -30,7 +30,7 @@ scrape_configs:
           tier: tooling
           metric: application_metrics
       - targets:
-          - https://jenkins-master-8ca0e1e199b2c8fc.elb.us-gov-west-1.amazonaws.com
+          - https://jenkins-master-8ca0e1e199b2c8fc.elb.us-gov-west-1.amazonaws.com/
   
   # - job_name: 'production_tooling_probe'
   #   metrics_path: /probe
