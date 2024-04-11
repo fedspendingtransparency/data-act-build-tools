@@ -36,25 +36,25 @@ inhibit_rules:
 receivers:
   - name: 'ops-critical-incident'
     sns_configs:
-      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+      - topic_arn: 'arn:aws-us-gov:sns:us-gov-west-1:747973895148:devops-team-nonprod'
         subject: '{{ template "sns.default.subject" . }}'
         message: '{{ template "sns.default.message" . }}'
         send_resolved: true
   - name: 'ops-high-priority'
     sns_configs:
-      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+      - topic_arn: 'arn:aws-us-gov:sns:us-gov-west-1:747973895148:devops-team-nonprod'
         subject: '{{ template "sns.default.subject" . }}'
         message: '{{ template "sns.default.message" . }}'
         send_resolved: true
   - name: 'ops-low-priority'
     sns_configs:
-      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+      - topic_arn: 'arn:aws-us-gov:sns:us-gov-west-1:747973895148:devops-team-nonprod'
         subject: '{{ template "sns.default.subject" . }}'
         message: '{{ template "sns.default.message" . }}'
         send_resolved: true
   - name: 'fallback'
     email_configs:
-      - to: 'KC.ADS.AppOps.FIR1@kc.frb.org'
+      - to: 'rylie.nichol@kc.frb.org'
         headers:
           subject: '{{ template "email.default.subject" . }}'
         html: '{{ template "email.default.html" . }}'
@@ -62,13 +62,13 @@ receivers:
         tls_config:
           insecure_skip_verify: true
     sns_configs:
-      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+      - topic_arn: 'arn:aws-us-gov:sns:us-gov-west-1:747973895148:devops-team-nonprod'
         subject: '{{ template "sns.default.subject" . }}'
         message: '{{ template "sns.default.message" . }}'
         send_resolved: true
   - name: 'test'
     sns_configs:
-      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+      - topic_arn: 'arn:aws-us-gov:sns:us-gov-west-1:747973895148:devops-team-nonprod'
         subject: '{{ template "sns.default.subject" . }}'
         message: '{{ template "sns.default.message" . }}'
         send_resolved: true

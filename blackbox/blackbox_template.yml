@@ -83,3 +83,4 @@ modules:
         password: brokerTest
     prober: http
     timeout: 15s
+    
