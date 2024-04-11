@@ -1,25 +1,24 @@
 global:
-  scrape_interval:     15s
+  scrape_interval: 15s
   evaluation_interval: 1m
-  
+
 #remote_write:
-  #- url: '${WRITE_URL}'
+#- url: '${WRITE_URL}'
 #  - url: https://mimir.monitoring.${ENV_DISPLAYNAME}/api/v1/push
 #    tls_config:
-    # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config
+# https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config
 #      insecure_skip_verify: true
-  
 
 # rule_files:
 #   - "/etc/prometheus/alerts/*.yml"
 
 scrape_configs:
-  - job_name: 'jenkins_probe'
-    metrics_path: '/prometheus'
+  - job_name: "jenkins_probe"
+    metrics_path: "/prometheus"
     scheme: https
     basic_auth:
-      username: 'serviceuser'
-      password_file: '/etc/prometheus/auth/jenkins.txt'
+      username: "serviceuser"
+      password_file: "/etc/prometheus/auth/jenkins.txt"
     tls_config:
       insecure_skip_verify: true
     static_configs:
@@ -31,7 +30,7 @@ scrape_configs:
           metric: application_metrics
       - targets:
           - https://jenkins-master-8ca0e1e199b2c8fc.elb.us-gov-west-1.amazonaws.com/
-  
+
   # - job_name: 'production_tooling_probe'
   #   metrics_path: /probe
   #   scheme: https
@@ -57,7 +56,7 @@ scrape_configs:
   #       target_label: uri
   #     - target_label: __address__
   #       replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
-  
+
   # - job_name: 'nonproduction_tooling_probe'
   #   metrics_path: /probe
   #   scheme: https
@@ -81,8 +80,8 @@ scrape_configs:
   #       target_label: uri
   #     - target_label: __address__
   #       replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
-  
-  - job_name: 'usas_production_ui_probe'
+
+  - job_name: "usas_production_ui_probe"
     metrics_path: /probe
     scheme: https
     tls_config:
@@ -109,13 +108,13 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
 
-  - job_name: 'usas_staging_ui_probe'
+  - job_name: "usas_staging_ui_probe"
     metrics_path: /probe
     scheme: https
     params:
       module: [usas_nonprod_ui_2xx]
     tls_config:
-        insecure_skip_verify: true
+      insecure_skip_verify: true
     static_configs:
       - labels:
           severity: high
@@ -132,14 +131,14 @@ scrape_configs:
         target_label: uri
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
-  
-  - job_name: 'usas_staging_api_probe'
+
+  - job_name: "usas_staging_api_probe"
     metrics_path: /probe
     scheme: https
     params:
       module: [http_2xx]
     tls_config:
-        insecure_skip_verify: true
+      insecure_skip_verify: true
     static_configs:
       - labels:
           severity: high
@@ -157,7 +156,7 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
 
-  - job_name: 'usas_qat_ui_probe'
+  - job_name: "usas_qat_ui_probe"
     metrics_path: /probe
     scheme: https
     tls_config:
@@ -180,8 +179,8 @@ scrape_configs:
         target_label: uri
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
-  
-  - job_name: 'usas_qat_api_probe'
+
+  - job_name: "usas_qat_api_probe"
     metrics_path: /probe
     scheme: https
     params:
@@ -204,9 +203,8 @@ scrape_configs:
         target_label: uri
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
-    
 
-  - job_name: 'caia_probe_prod'
+  - job_name: "caia_probe_prod"
     metrics_path: /probe
     scheme: https
     tls_config:
@@ -230,7 +228,7 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
 
-  - job_name: 'caia_probe_nonprod'
+  - job_name: "caia_probe_nonprod"
     metrics_path: /probe
     scheme: https
     tls_config:
@@ -255,7 +253,7 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
 
-  - job_name: 'usas_sandbox_ui_probe'
+  - job_name: "usas_sandbox_ui_probe"
     metrics_path: /probe
     scheme: https
     tls_config:
@@ -279,7 +277,7 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
 
-  - job_name: 'usas_sandbox_api_probe'
+  - job_name: "usas_sandbox_api_probe"
     metrics_path: /probe
     scheme: https
     tls_config:
@@ -303,7 +301,7 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
 
-  - job_name: 'broker_sandbox_probe'
+  - job_name: "broker_sandbox_probe"
     metrics_path: /probe
     scheme: https
     tls_config:
@@ -327,7 +325,7 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
 
-  - job_name: 'broker_qat_probe'
+  - job_name: "broker_qat_probe"
     metrics_path: /probe
     scheme: https
     tls_config:
@@ -351,7 +349,7 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
 
-  - job_name: 'broker_staging_probe'
+  - job_name: "broker_staging_probe"
     metrics_path: /probe
     scheme: https
     tls_config:

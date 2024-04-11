@@ -1,22 +1,5 @@
 modules:
-  http_2xx: 
-    http: 
-      fail_if_not_ssl: false
-      ip_protocol_fallback: false
-      method: GET
-      follow_redirects: true
-      proxy_url: "${HTTP_PROXY}"
-      skip_resolve_phase_with_proxy: true
-      preferred_ip_protocol: ip4
-      valid_http_versions: 
-        - HTTP/1.1
-        - HTTP/2.0
-      tls_config:
-        insecure_skip_verify: true
-    prober: http
-    timeout: 15s
-
-  http_caia_secured: 
+  http_2xx:
     http:
       fail_if_not_ssl: false
       ip_protocol_fallback: false
@@ -25,7 +8,24 @@ modules:
       proxy_url: "${HTTP_PROXY}"
       skip_resolve_phase_with_proxy: true
       preferred_ip_protocol: ip4
-      valid_http_versions: 
+      valid_http_versions:
+        - HTTP/1.1
+        - HTTP/2.0
+      tls_config:
+        insecure_skip_verify: true
+    prober: http
+    timeout: 15s
+
+  http_caia_secured:
+    http:
+      fail_if_not_ssl: false
+      ip_protocol_fallback: false
+      method: GET
+      follow_redirects: true
+      proxy_url: "${HTTP_PROXY}"
+      skip_resolve_phase_with_proxy: true
+      preferred_ip_protocol: ip4
+      valid_http_versions:
         - HTTP/1.1
         - HTTP/2.0
       tls_config:
@@ -42,7 +42,7 @@ modules:
       proxy_url: "${HTTP_PROXY}"
       skip_resolve_phase_with_proxy: true
       preferred_ip_protocol: ip4
-      valid_http_versions: 
+      valid_http_versions:
         - HTTP/1.1
         - HTTP/2.0
       basic_auth:
@@ -51,7 +51,7 @@ modules:
     prober: http
     timeout: 15s
 
-  cdz: 
+  cdz:
     http:
       fail_if_not_ssl: false
       ip_protocol_fallback: false
@@ -60,7 +60,7 @@ modules:
       proxy_url: "${HTTP_PROXY}"
       skip_resolve_phase_with_proxy: true
       preferred_ip_protocol: ip4
-      valid_http_versions: 
+      valid_http_versions:
         - HTTP/1.1
         - HTTP/2.0
     prober: http
@@ -75,7 +75,7 @@ modules:
       proxy_url: "${HTTP_PROXY}"
       skip_resolve_phase_with_proxy: true
       preferred_ip_protocol: ip4
-      valid_http_versions: 
+      valid_http_versions:
         - HTTP/1.1
         - HTTP/2.0
       basic_auth:
@@ -83,4 +83,3 @@ modules:
         password: brokerTest
     prober: http
     timeout: 15s
-    
