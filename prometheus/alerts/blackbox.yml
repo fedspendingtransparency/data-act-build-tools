@@ -1,0 +1,9 @@
+groups:
+- name: ProbeFailedGroup
+  rules:
+  - alert: Blackbox Probe Failure
+    expr: probe_success{} == 0
+    for: 5m
+    annotations:
+      summary: "A Prometheus Blackbox probe has failed"
+      description: "The reported application or service is unavailable."

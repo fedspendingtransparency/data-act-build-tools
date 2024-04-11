@@ -1,0 +1,43 @@
+{{ define "email.default.subject" }}{{ if eq .Receiver "ops-critical-incident" }}Critical Alert {{ .Status | title }}{{ if eq .Status "firing" }}: {{ .Alerts.Firing | len }}{{ end }}
+  {{ else if eq .Receiver "ops-high-priority" }}High Priority Alert {{ .Status | title }}{{ if eq .Status "firing" }}: {{ .Alerts.Firing | len }}{{ end }}
+  {{ else if eq .Receiver "ops-low-priority" }}Low Priority Alert {{ .Status | title }}{{ if eq .Status "firing" }}: {{ .Alerts.Firing | len }}{{ end }}
+  {{ else }}{{ .Receiver | toUpper }} Alert {{ .Status | title }}{{ if eq .Status "firing" }}: {{ .Alerts.Firing | len }}{{ end }}{{ end }}
+{{ end }}
+
+{{ define "email.default.html" }}
+<html>
+<head>
+<title>Alert!</title>
+</head>
+<body>
+{{ range .Alerts }}
+
+  {{ if eq .Annotations.grafana_state_reason "NoData" }}
+    <i>Alert {{ .Labels.alertname }} is returning <b>NoData</b>. Please investigate data loss for this metric.</i>
+  {{ end }}
+  
+  <h2>Alert {{ .Status | title }}: {{ .Labels.alertname }}</h2>
+  <h3>Grafana Dashboard: <a href="https://grafana.nonprod.dti.fiscal.treasury.gov/d/{{ .Annotations.__dashboardUid__ }}?orgId={{ .Annotations.__orgId__ }}&viewPanel={{ .Annotations.__panelId__ }}">{{ .Labels.alertname }}</a></h3>
+
+  <h3>Alert Summary:</h3>
+  <p>
+  {{ if ne .Annotations.summary "" }}<b>Description:</b> {{ .Annotations.summary }}<br/>{{ end }}
+  {{ if ne .Labels.application "" }}<b>Application:</b> {{ .Labels.application }}<br/>{{ end }}
+  {{ if ne .Labels.severity "" }}<b>Severity:</b> {{ .Labels.severity }}<br/>{{ end }}
+  {{ if ne .Labels.account "" }}<b>Account:</b> {{ .Labels.account }}<br/>{{ end }}
+  {{ if ne .Labels.environment "" }}<b>Environment:</b> {{ .Labels.environment }}<br/>{{ end }}
+  {{ if ne .Labels.instance "" }}<b>Instance:</b> {{ .Labels.instance }}<br/>{{ end }}
+  {{ if ne .Labels.service "" }}<b>Service:</b> {{ .Labels.service }}<br/>{{ end }}
+  {{ if ne .Labels.metric "" }}<b>Metric:</b> {{ .Labels.metric }}<br/>{{ end }}
+  </p>
+
+  <p><i>Grafana Labels:<br/>
+  {{ range .Labels.SortedPairs }}
+    {{ .Name }} = {{ .Value }}<br/>
+  {{ end }}
+  </i></p>
+
+  {{ end }}
+
+</body></html>
+{{ end }}

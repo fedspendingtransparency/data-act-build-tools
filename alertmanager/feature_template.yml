@@ -1,0 +1,41 @@
+global:
+ # smtp_smarthost: '166.123.212.214:2125'
+ # smtp_from: 'Grafana <noreply@fiscaldata.treasury.gov>'
+ # smtp_auth_username: '${SMTP_USERNAME}'
+ # smtp_auth_password: '${SMTP_PASSWORD}'
+
+templates:
+  - '/etc/alertmanager/template/*.tmpl'
+
+route:
+  group_by: ['alertname', 'application', 'service']
+  group_wait: 30s
+  group_interval: 2m
+  repeat_interval: 3h
+
+  receiver: 'test'
+  routes:
+    - matchers:
+        - service =~ "test"
+      receiver: 'test'
+
+inhibit_rules:
+  - source_matchers: [severity="critical"]
+    target_matchers: [severity="high"]
+    equal: [alertname, application, service]
+
+receivers:
+  - name: 'test'
+    email_configs:
+      - to: 'rylie.nichol@kc.frb.org'
+        headers:
+          subject: '{{ template "email.default.subject" . }}'
+        html: '{{ template "email.default.html" . }}'
+        send_resolved: true
+        tls_config:
+          insecure_skip_verify: true
+    sns_configs:
+      - topic_arn: "arn:aws-us-gov:sns:us-gov-west-1:747973895148:da-logging-alert-manager"
+        subject: '{{ template "sns.default.subject" . }}'
+        message: '{{ template "sns.default.message" . }}'
+        send_resolved: true

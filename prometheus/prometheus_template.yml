@@ -1,0 +1,389 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 1m
+  
+#remote_write:
+  #- url: '${WRITE_URL}'
+#  - url: https://mimir.monitoring.${ENV_DISPLAYNAME}/api/v1/push
+#    tls_config:
+    # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config
+#      insecure_skip_verify: true
+  
+
+# rule_files:
+#   - "/etc/prometheus/alerts/*.yml"
+
+scrape_configs:
+  - job_name: 'jenkins_probe'
+    metrics_path: '/prometheus'
+    scheme: https
+    basic_auth:
+      username: 'job_builder'
+      password_file: '/etc/prometheus/auth/jenkins.txt'
+    tls_config:
+      insecure_skip_verify: true
+    static_configs:
+      - labels:
+          severity: high
+          environment: prod
+          application: usas
+          tier: tooling
+          metric: application_metrics
+      - targets:
+          - 'https://jenkins-master-8ca0e1e199b2c8fc.elb.us-gov-west-1.amazonaws.com'
+  
+  # - job_name: 'production_tooling_probe'
+  #   metrics_path: /probe
+  #   scheme: https
+  #   tls_config:
+  #     insecure_skip_verify: true
+  #   params:
+  #     module: [http_2xx]
+  #   static_configs:
+  #     - labels:
+  #         severity: high
+  #         environment: prod
+  #         application: usas
+  #         tier: tooling
+  #         metric: status_code
+  #       targets:
+  #         - https://jenkins-controller-admin-fc35abbc6c1234a5.elb.us-gov-west-1.amazonaws.com
+  #         - https://internal-ecs-tooling-prod-alb-1320631059.us-gov-west-1.elb.amazonaws.com/api/health
+  #         - https://vpc-dti-logging-ess-prod-t3zyy7vzam7b57zu6ytph2wirq.us-gov-west-1.es.amazonaws.com/_plugin/kibana/
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: uri
+  #     - target_label: __address__
+  #       replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+  
+  # - job_name: 'nonproduction_tooling_probe'
+  #   metrics_path: /probe
+  #   scheme: https
+  #   tls_config:
+  #     insecure_skip_verify: true
+  #   params:
+  #     module: [http_2xx]
+  #   static_configs:
+  #     - labels:
+  #         severity: low
+  #         environment: nonprod
+  #         application: usas
+  #         tier: tooling
+  #         metric: status_code
+  #       targets:
+  #         - https://internal-ecs-tooling-nonprod-alb-902323545.us-gov-west-1.elb.amazonaws.com/api/health
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: uri
+  #     - target_label: __address__
+  #       replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+  
+  - job_name: 'usas_production_ui_probe'
+    metrics_path: /probe
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    params:
+      module: [http_2xx]
+    static_configs:
+      - labels:
+          severity: critical
+          environment: prod
+          application: usas
+          tier: application
+          metric: status_code
+        targets:
+          - http://https://www.usaspending.gov/
+          - https://https://www.usaspending.gov/
+          - https://api.usaspending.gov/
+          - https://broker-api.usaspending.gov/
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+
+  - job_name: 'usas_staging_ui_probe'
+    metrics_path: /probe
+    scheme: https
+    params:
+      module: [usas_nonprod_ui_2xx]
+    tls_config:
+        insecure_skip_verify: true
+    static_configs:
+      - labels:
+          severity: high
+          environment: stg
+          application: usas
+          tier: application
+          metric: status_code
+        targets:
+          - https://staging.usaspending.gov
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+  
+  - job_name: 'usas_staging_api_probe'
+    metrics_path: /probe
+    scheme: https
+    params:
+      module: [http_2xx]
+    tls_config:
+        insecure_skip_verify: true
+    static_configs:
+      - labels:
+          severity: high
+          environment: stg
+          application: usas
+          tier: application
+          metric: status_code
+        targets:
+          - https://staging-api.usaspending.gov/
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+
+  - job_name: 'usas_qat_ui_probe'
+    metrics_path: /probe
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    params:
+      module: [usas_nonprod_ui_2xx]
+    static_configs:
+      - labels:
+          severity: high
+          environment: uat
+          application: usas
+          tier: application
+          metric: status_code
+        targets:
+          - https://qat.usaspending.gov
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+  
+  - job_name: 'usas_qat_api_probe'
+    metrics_path: /probe
+    scheme: https
+    params:
+      module: [http_2xx]
+    tls_config:
+      insecure_skip_verify: true
+    static_configs:
+      - labels:
+          severity: high
+          environment: uat
+          application: usas
+          tier: application
+          metric: status_code
+        targets:
+          - https://qat-api.usaspending.gov/
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+    
+
+  - job_name: 'caia_probe_prod'
+    metrics_path: /probe
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    params:
+      module: [http_2xx]
+    static_configs:
+      - labels:
+          severity: critical
+          environment: prod
+          application: cdz
+          tier: application
+          metric: status_code
+        targets:
+          - https://caia.treasury.gov/.well-known/openid-configuration
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+
+  - job_name: 'caia_probe_nonprod'
+    metrics_path: /probe
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    params:
+      module: [http_2xx]
+    static_configs:
+      - labels:
+          severity: low
+          environment: nonprod
+          application: cdz
+          tier: application
+          metric: status_code
+        targets:
+          - https://caia-sandbox.treasury.gov/.well-known/openid-configuration
+          - https://caia-acc.treasury.gov/.well-known/openid-configuration
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+
+  - job_name: 'usas_sandbox_ui_probe'
+    metrics_path: /probe
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    params:
+      module: [usas_nonprod_ui_2xx]
+    static_configs:
+      - labels:
+          severity: high
+          environment: sandbox
+          application: usas
+          tier: application
+          metric: status_code
+        targets:
+          - https://sandbox.usaspending.gov
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+
+  - job_name: 'usas_sandbox_api_probe'
+    metrics_path: /probe
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    params:
+      module: [usas_sandbox_api_2xx]
+    static_configs:
+      - labels:
+          severity: high
+          environment: sandbox
+          tier: application
+          application: usas
+          metric: status_code
+        targets:
+          - https://sandbox-api.usaspending.gov
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+
+  - job_name: 'broker_sandbox_probe'
+    metrics_path: /probe
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    params:
+      module: [broker_nonprod_2xx]
+    static_configs:
+      - labels:
+          severity: high
+          environment: sandbox
+          tier: application
+          application: usas
+          metric: status_code
+        targets:
+          - https://broker-staging.usaspending.gov
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+
+  - job_name: 'broker_qat_probe'
+    metrics_path: /probe
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    params:
+      module: [broker_nonprod_2xx]
+    static_configs:
+      - labels:
+          severity: high
+          environment: sandbox
+          tier: application
+          application: usas
+          metric: status_code
+        targets:
+          - https://broker-qat.usaspending.gov
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+
+  - job_name: 'broker_staging_probe'
+    metrics_path: /probe
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    params:
+      module: [broker_nonprod_2xx]
+    static_configs:
+      - labels:
+          severity: high
+          environment: sandbox
+          tier: application
+          application: usas
+          metric: status_code
+        targets:
+          - https://broker-staging.usaspending.gov
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: uri
+      - target_label: __address__
+        replacement: blackbox.monitoring.${ENV_DISPLAYNAME}
+
+alerting:
+  alertmanagers:
+    - timeout: "10s"
+      api_version: v2
+      path_prefix: /
+      scheme: https
+      follow_redirects: true
+      tls_config:
+        insecure_skip_verify: true
+      static_configs:
+        - targets:
+            - alertmanager.monitoring.${ENV_DISPLAYNAME}

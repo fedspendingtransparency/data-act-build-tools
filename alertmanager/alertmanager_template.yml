@@ -1,0 +1,74 @@
+global:
+  smtp_smarthost: '166.123.212.214:2125'
+  smtp_from: 'Grafana <noreply@fiscaldata.treasury.gov>'
+  smtp_auth_username: '${SMTP_USERNAME}'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+
+templates:
+  - '/etc/alertmanager/template/*.tmpl'
+
+route:
+  group_by: ['alertname', 'application', 'service']
+  group_wait: 1m
+  group_interval: 5m
+  repeat_interval: 3h
+
+  receiver: 'fallback'
+  routes:
+    - matchers:
+        - severity =~ "critical"
+      receiver: 'ops-critical-incident'
+    - matchers:
+        - severity =~ "high"
+      receiver: 'ops-high-priority'
+    - matchers:
+        - severity =~ "low"
+      receiver: 'ops-low-priority'
+    - matchers:
+        - service =~ "test"
+      receiver: 'test'
+
+inhibit_rules:
+  - source_matchers: [severity="critical"]
+    target_matchers: [severity="high"]
+    equal: [alertname, application, service]
+
+receivers:
+  - name: 'ops-critical-incident'
+    sns_configs:
+      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+        subject: '{{ template "sns.default.subject" . }}'
+        message: '{{ template "sns.default.message" . }}'
+        send_resolved: true
+  - name: 'ops-high-priority'
+    sns_configs:
+      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+        subject: '{{ template "sns.default.subject" . }}'
+        message: '{{ template "sns.default.message" . }}'
+        send_resolved: true
+  - name: 'ops-low-priority'
+    sns_configs:
+      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+        subject: '{{ template "sns.default.subject" . }}'
+        message: '{{ template "sns.default.message" . }}'
+        send_resolved: true
+  - name: 'fallback'
+    email_configs:
+      - to: 'KC.ADS.AppOps.FIR1@kc.frb.org'
+        headers:
+          subject: '{{ template "email.default.subject" . }}'
+        html: '{{ template "email.default.html" . }}'
+        send_resolved: true
+        tls_config:
+          insecure_skip_verify: true
+    sns_configs:
+      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+        subject: '{{ template "sns.default.subject" . }}'
+        message: '{{ template "sns.default.message" . }}'
+        send_resolved: true
+  - name: 'test'
+    sns_configs:
+      - topic_arn: '${EVERBRIDGE_SNS_ARN}'
+        subject: '{{ template "sns.default.subject" . }}'
+        message: '{{ template "sns.default.message" . }}'
+        send_resolved: true
