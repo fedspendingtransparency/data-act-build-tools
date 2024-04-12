@@ -49,7 +49,7 @@ modules:
         password: feder@lspending!1
     prober: http
     timeout: 15s
-  cdz:
+  caia:
     http:
       fail_if_not_ssl: false
       ip_protocol_fallback: false

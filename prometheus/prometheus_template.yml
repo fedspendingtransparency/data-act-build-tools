@@ -215,7 +215,7 @@ scrape_configs:
       - labels:
           severity: critical
           environment: prod
-          application: cdz
+          application: caia
           tier: application
           metric: status_code
         targets:
@@ -239,7 +239,7 @@ scrape_configs:
       - labels:
           severity: low
           environment: nonprod
-          application: cdz
+          application: caia
           tier: application
           metric: status_code
         targets:
