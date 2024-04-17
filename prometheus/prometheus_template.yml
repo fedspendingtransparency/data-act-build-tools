@@ -29,7 +29,7 @@ scrape_configs:
           tier: tooling
           metric: application_metrics
       - targets:
-          - 'jenkins-master-8ca0e1e199b2c8fc.elb.us-gov-west-1.amazonaws.com'
+          - 'jenkins-master-8ca0e1e199b2c8fc.elb.us-gov-west-1.amazonaws.com:8443'
 
   # - job_name: 'production_tooling_probe'
   #   metrics_path: /probe
