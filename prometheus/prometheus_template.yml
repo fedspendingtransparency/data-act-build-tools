@@ -96,8 +96,8 @@ scrape_configs:
           tier: application
           metric: status_code
         targets:
-          - http://https://www.usaspending.gov/
-          - https://https://www.usaspending.gov/
+          - http://www.usaspending.gov/
+          - https://www.usaspending.gov/
           - https://api.usaspending.gov/
           - https://broker-api.usaspending.gov/
     relabel_configs:
