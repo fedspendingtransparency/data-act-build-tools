@@ -10,7 +10,7 @@ export HTTP_PROXY=${proxy}
 if $FEATURE_BRANCH; then
   export ENV_DISPLAYNAME=`echo -n $BRANCH_NAME | sha1sum | cut -c1-8`
 else
-  export ENV_DISPLAYNAME=$BRANCH_NAME
+  export ENV_DISPLAYNAME="admin"
 fi
 
 rm -f prometheus.yml temp.yml
