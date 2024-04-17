@@ -6,14 +6,12 @@ common:
       endpoint: s3.us-gov-west-1.amazonaws.com
       region: us-gov-west-1
 
-
 blocks_storage:
   s3:
     bucket_name: ${BUCKET_NAME}
     storage_prefix: mimirblocks
     sse:
       type: "SSE-S3"
-
 
 ruler_storage:
   s3:
@@ -40,7 +38,6 @@ ingester:
     kvstore:
       store: memberlist
     replication_factor: 1
-
 
 server:
   http_listen_port: 9009
