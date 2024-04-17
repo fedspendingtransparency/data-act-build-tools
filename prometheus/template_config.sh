@@ -1,7 +1,7 @@
 #!/bin/bash
 
 proxy=${1}
-BRANCH_NAME=${1}
+BRANCH_NAME=${2}
 FEATURE_BRANCH=${3:-false}
 TEMPLATE=${4:-'prometheus_template.yml'}
 
