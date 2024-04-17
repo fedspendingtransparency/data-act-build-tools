@@ -10,4 +10,4 @@ RUN chown -R 10001:10001 /mimir
 WORKDIR /mimir
 
 COPY /config/mimir.yaml /mimir/config.yaml
-CMD ["--config.file=/mimir/config.yaml","--validation.max-length-label-value=14000"]
+CMD ["--config.file=/mimir/config.yaml","--validation.max-length-label-value=14000", "-config.expand-env=true"]
