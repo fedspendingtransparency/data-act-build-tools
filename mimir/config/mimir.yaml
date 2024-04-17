@@ -7,16 +7,16 @@ common:
       region: us-gov-west-1
 
 blocks_storage:
+  storage_prefix: mimirblocks
   s3:
     bucket_name: ${BUCKET_NAME}
-    storage_prefix: mimirblocks
     sse:
       type: "SSE-S3"
 
 ruler_storage:
+  storage_prefix: mimirruler
   s3:
     bucket_name: ${BUCKET_NAME}
-    storage_prefix: mimirruler
     sse:
       type: "SSE-S3"
 
