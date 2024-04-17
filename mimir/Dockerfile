@@ -1,4 +1,4 @@
-FROM grafana/mimir:2.8.0
+FROM grafana/mimir:2.10.3
 
 ARG HTTP_PROXY
 ARG HTTPS_PROXY

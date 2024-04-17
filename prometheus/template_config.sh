@@ -1,8 +1,9 @@
 #!/bin/bash
 
 proxy=${1}
-FEATURE_BRANCH=${2:-false}
-TEMPLATE=${3:-'prometheus_template.yml'}
+BRANCH_NAME=${1}
+FEATURE_BRANCH=${3:-false}
+TEMPLATE=${4:-'prometheus_template.yml'}
 
 export HTTP_PROXY=${proxy}
 
