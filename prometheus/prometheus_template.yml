@@ -2,12 +2,12 @@ global:
   scrape_interval: 15s
   evaluation_interval: 1m
 
-#remote_write:
+remote_write:
 #- url: '${WRITE_URL}'
-#  - url: https://mimir.monitoring.${ENV_DISPLAYNAME}/api/v1/push
-#    tls_config:
-# https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config
-#      insecure_skip_verify: true
+  - url: https://mimir.monitoring.${ENV_DISPLAYNAME}/api/v1/push
+    tls_config:
+    #https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config
+      insecure_skip_verify: true
 
 # rule_files:
 #   - "/etc/prometheus/alerts/*.yml"
