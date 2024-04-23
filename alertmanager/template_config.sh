@@ -9,7 +9,7 @@ TEMPLATE=${3:-'alertmanager_template.yml'}
 if $FEATURE_BRANCH; then
   export ENV_DISPLAYNAME=`echo -n $BRANCH_NAME | sha1sum | cut -c1-8`
 else
-  export ENV_DISPLAYNAME=$BRANCH_NAME
+  export ENV_DISPLAYNAME="admin"
 fi
 
 #if [ "$BRANCH_NAME" = "prod" ]; then
