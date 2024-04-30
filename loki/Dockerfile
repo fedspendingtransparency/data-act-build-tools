@@ -7,6 +7,10 @@ RUN chown -R 10001:10001 /loki
 WORKDIR /loki
 
 COPY ./loki.yaml /loki/config.yaml
-RUN mkdir -p /loki/etc/loki/ssl/
+COPY pca_root_cert.pem /etc/ssl/certs/pca_root_cert.pem
 
-EXPOSE 3100
+USER root
+RUN cat /etc/ssl/certs/pca_root_cert.pem >> /etc/ssl/certs/ca-certificates.crt && \
+    chmod a+wrx /etc/ssl/certs/ca-certificates.crt
+
+USER loki

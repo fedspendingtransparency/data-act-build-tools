@@ -2,3 +2,7 @@ grafana-piechart-panel
 grafana-worldmap-panel
 marcusolsson-json-datasource
 grafana-simple-json-datasource
+grafana-x-ray-datasource
+grafana-polystat-panel
+marcusolsson-csv-datasource
+marcusolsson-treemap-panel

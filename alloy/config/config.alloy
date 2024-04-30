@@ -1,4 +1,4 @@
-prometheus.exporter.blackbox "example" {
+prometheus.exporter.blackbox "modules" {
   config_file = "/config/blackbox.yml"
 }
 discovery.relabel "usas_production_ui_probe" {

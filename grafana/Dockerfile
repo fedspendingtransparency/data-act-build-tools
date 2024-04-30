@@ -1,16 +1,15 @@
 FROM grafana/grafana:10.2.0-ubuntu
 
+ARG NO_PROXY
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
-ARG NO_PROXY
 
-COPY --chown=472:472 provisioning /etc/grafana/provisioning
+COPY pca_root_cert.pem /etc/ssl/certs/pca_root_cert.pem
+
 COPY plugins.txt /etc/grafana/
+COPY data_files /etc/grafana/resources
+COPY provisioning /etc/grafana/provisioning
 
-RUN while read p; do grafana-cli --insecure plugins install $p; done < /etc/grafana/plugins.txt
+RUN while read p; do grafana cli plugins install $p; done < /etc/grafana/plugins.txt
 
 EXPOSE 3000
-
-USER root
-#RUN apt update
-#RUN apk add aws-cli
