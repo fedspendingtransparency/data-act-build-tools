@@ -1,0 +1,698 @@
+prometheus.exporter.blackbox "example" {
+  config_file = "/config/blackbox.yml"
+}
+discovery.relabel "usas_production_ui_probe" {
+	targets = concat(
+		[{
+			__address__ = "http://www.usaspending.gov/",
+			application = "usas",
+			environment = "prod",
+			metric      = "status_code",
+			severity    = "critical",
+			tier        = "application",
+		}],
+		[{
+			__address__ = "https://www.usaspending.gov/",
+			application = "usas",
+			environment = "prod",
+			metric      = "status_code",
+			severity    = "critical",
+			tier        = "application",
+		}],
+		[{
+			__address__ = "https://api.usaspending.gov/",
+			application = "usas",
+			environment = "prod",
+			metric      = "status_code",
+			severity    = "critical",
+			tier        = "application",
+		}],
+		[{
+			__address__ = "https://broker-api.usaspending.gov/",
+			application = "usas",
+			environment = "prod",
+			metric      = "status_code",
+			severity    = "critical",
+			tier        = "application",
+		}],
+	)
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "usas_staging_ui_probe" {
+	targets = [{
+		__address__ = "https://staging.usaspending.gov",
+		application = "usas",
+		environment = "stg",
+		metric      = "status_code",
+		severity    = "high",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "usas_staging_api_probe" {
+	targets = [{
+		__address__ = "https://staging-api.usaspending.gov/",
+		application = "usas",
+		environment = "stg",
+		metric      = "status_code",
+		severity    = "high",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "usas_qat_ui_probe" {
+	targets = [{
+		__address__ = "https://qat.usaspending.gov",
+		application = "usas",
+		environment = "qat",
+		metric      = "status_code",
+		severity    = "high",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "usas_qat_api_probe" {
+	targets = [{
+		__address__ = "https://qat-api.usaspending.gov/",
+		application = "usas",
+		environment = "qat",
+		metric      = "status_code",
+		severity    = "high",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "caia_probe_prod" {
+	targets = [{
+		__address__ = "https://caia.treasury.gov/.well-known/openid-configuration",
+		application = "caia",
+		environment = "caia",
+		metric      = "status_code",
+		severity    = "critical",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "caia_probe_nonprod" {
+	targets = concat(
+		[{
+			__address__ = "https://caia-sandbox.treasury.gov/.well-known/openid-configuration",
+			application = "caia",
+			environment = "caia",
+			metric      = "status_code",
+			severity    = "low",
+			tier        = "application",
+		}],
+		[{
+			__address__ = "https://caia-acc.treasury.gov/.well-known/openid-configuration",
+			application = "caia",
+			environment = "caia",
+			metric      = "status_code",
+			severity    = "low",
+			tier        = "application",
+		}],
+	)
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "usas_sandbox_ui_probe" {
+	targets = [{
+		__address__ = "https://sandbox.usaspending.gov",
+		application = "usas",
+		environment = "sandbox",
+		metric      = "status_code",
+		severity    = "high",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "usas_sandbox_api_probe" {
+	targets = [{
+		__address__ = "https://sandbox-api.usaspending.gov",
+		application = "usas",
+		environment = "sandbox",
+		metric      = "status_code",
+		severity    = "high",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "broker_sandbox_probe" {
+	targets = [{
+		__address__ = "https://broker-staging.usaspending.gov",
+		application = "usas",
+		environment = "stg",
+		metric      = "status_code",
+		severity    = "high",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "broker_qat_probe" {
+	targets = [{
+		__address__ = "https://broker-qat.usaspending.gov",
+		application = "usas",
+		environment = "qat",
+		metric      = "status_code",
+		severity    = "high",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+discovery.relabel "broker_staging_probe" {
+	targets = [{
+		__address__ = "https://broker-staging.usaspending.gov",
+		application = "usas",
+		environment = "stg",
+		metric      = "status_code",
+		severity    = "high",
+		tier        = "application",
+	}]
+
+	rule {
+		source_labels = ["__address__"]
+		target_label  = "__param_target"
+	}
+
+	rule {
+		source_labels = ["__param_target"]
+		target_label  = "uri"
+	}
+
+	rule {
+		target_label = "__address__"
+		replacement  = "blackbox.monitoring.${ENV_DISPLAYNAME}"
+	}
+}
+
+prometheus.scrape "jenkins_probe" {
+	targets = [{
+		__address__ = "jenkins-master-8ca0e1e199b2c8fc.elb.us-gov-west-1.amazonaws.com:8443",
+	}]
+	forward_to      = [prometheus.remote_write.default.receiver]
+	job_name        = "jenkins_probe"
+	scrape_interval = "15s"
+	metrics_path    = "/prometheus"
+	scheme          = "https"
+
+	basic_auth {
+		username      = "serviceuser"
+		password_file = "/etc/prometheus/auth/jenkins.txt"
+	}
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "usas_production_ui_probe" {
+	targets    = discovery.relabel.usas_production_ui_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "usas_production_ui_probe"
+	params     = {
+		module = ["http_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "usas_staging_ui_probe" {
+	targets    = discovery.relabel.usas_staging_ui_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "usas_staging_ui_probe"
+	params     = {
+		module = ["usas_nonprod_ui_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "usas_staging_api_probe" {
+	targets    = discovery.relabel.usas_staging_api_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "usas_staging_api_probe"
+	params     = {
+		module = ["http_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "usas_qat_ui_probe" {
+	targets    = discovery.relabel.usas_qat_ui_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "usas_qat_ui_probe"
+	params     = {
+		module = ["usas_nonprod_ui_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "usas_qat_api_probe" {
+	targets    = discovery.relabel.usas_qat_api_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "usas_qat_api_probe"
+	params     = {
+		module = ["http_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "caia_probe_prod" {
+	targets    = discovery.relabel.caia_probe_prod.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "caia_probe_prod"
+	params     = {
+		module = ["http_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "caia_probe_nonprod" {
+	targets    = discovery.relabel.caia_probe_nonprod.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "caia_probe_nonprod"
+	params     = {
+		module = ["http_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "usas_sandbox_ui_probe" {
+	targets    = discovery.relabel.usas_sandbox_ui_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "usas_sandbox_ui_probe"
+	params     = {
+		module = ["usas_nonprod_ui_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "usas_sandbox_api_probe" {
+	targets    = discovery.relabel.usas_sandbox_api_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "usas_sandbox_api_probe"
+	params     = {
+		module = ["usas_sandbox_api_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "broker_sandbox_probe" {
+	targets    = discovery.relabel.broker_sandbox_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "broker_sandbox_probe"
+	params     = {
+		module = ["broker_nonprod_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "broker_qat_probe" {
+	targets    = discovery.relabel.broker_qat_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "broker_qat_probe"
+	params     = {
+		module = ["broker_nonprod_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.scrape "broker_staging_probe" {
+	targets    = discovery.relabel.broker_staging_probe.output
+	forward_to = [prometheus.remote_write.default.receiver]
+	job_name   = "broker_staging_probe"
+	params     = {
+		module = ["broker_nonprod_2xx"],
+	}
+	scrape_interval = "15s"
+	metrics_path    = "/probe"
+	scheme          = "https"
+
+	tls_config {
+		insecure_skip_verify = true
+	}
+}
+
+prometheus.remote_write "default" {
+	endpoint {
+		url = "https://mimir.monitoring.${ENV_DISPLAYNAME}/api/v1/push"
+
+		tls_config {
+			ca_file = "/etc/ssl/certs/pca_root_cert.pem"
+		}
+
+		queue_config { }
+
+		metadata_config { }
+	}
+}
+
+loki.write "local" {
+    endpoint {
+        url = "https://loki.monitoring.${ENV_DISPLAYNAME}/api/v1/push"
+        basic_auth {
+            username = "<your username>"
+            password_file = "<your password file>"
+        }
+    }
+}
+
+loki.source.api "loki_push_api" {
+  http {
+    listen_address = "0.0.0.0"
+    listen_port = 8888
+  }
+  forward_to = [loki.process.processor.receiver]
+    forward_to = [
+        loki.write.local.receiver,
+    ]
+    labels = {
+        forwarded = "true",
+    }
+}
+
+loki.process "processor" {
+  stage.template {
+    source   = "stream"
+    template = "{{ default \"other\" .Value }}"
+  }
+
+  forward_to = [module.file.ecs_pipeline.exports.input]
+}
+
+argument "write_to" {
+  optional = false
+}
+
+loki.process "lambda" {
+    stage.match {
+        selector = "{ lambda_function_name=~\".+\" }"
+
+        stage.match {
+            selector = "{ otelTraceID=~\".{2,}\" }"
+            
+            stage.template {
+                source = "log"
+                template = "{{ .log }} (otelTraceID: {{ .otelTraceID }})"
+            }
+        }
+    }
+
+    forward_to = argument.write_to.value
+}
+
+export "input" {
+  value = loki.process.lambda.receiver
+}
+
+local.file "packing_list" {
+  filename = "/etc/agent/loki_packing_list.txt"
+}
+
+loki.process "format" {
+  stage.template {
+    source   = "level"
+    template = "{{ default \"INFO\" .Value }}"
+  }
+
+  stage.pack {
+    ingest_timestamp = false
+    labels = split(replace(local.file.packing_list.content, "\r", ""), ",\n")
+  }
+
+  stage.label_keep {
+    values = [
+      "stream",
+    ]
+  }
+
+  stage.metrics {
+    metric.counter {
+      name        = "log_lines_total"
+      description = "total number of log lines"
+      prefix      = "loki_processed_"
+
+      match_all         = true
+      action            = "inc"
+      max_idle_duration = "72h"
+    }
+  }
+
+  forward_to = [loki.write.loki.receiver]
+}
+
+loki.write "loki" {
+  max_streams = 50
+
+  endpoint {
+    url = "https://loki.monitoring.${ENV_DISPLAYNAME}/api/v1/push"
+    tls_config {
+      ca_file = "/etc/ssl/certs/pca_root_cert.pem"
+    }
+  }
+
+  wal {
+    enabled = true
+  }
+}
+
+otelcol.exporter.otlp "loki" {
+  client {
+    endpoint = env("LOKI_ENDPOINT")
+    tls {
+      insecure_skip_verify = true
+    } 
+  }
+}
+
+otelcol.exporter.prometheus "default" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}
