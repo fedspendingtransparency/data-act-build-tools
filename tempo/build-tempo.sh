@@ -10,5 +10,5 @@ else
   export ENV_DISPLAYNAME="latest"
 fi
 
-docker build -t $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/blackbox:$ENV_DISPLAYNAME -f Dockerfile .
-docker push $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/blackbox:$ENV_DISPLAYNAME
+docker build -t $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/tempo:$ENV_DISPLAYNAME -f Dockerfile .
+docker push $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/tempo:$ENV_DISPLAYNAME

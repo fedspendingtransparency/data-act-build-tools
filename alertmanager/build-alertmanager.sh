@@ -5,5 +5,11 @@ ACCOUNT=${1}
 
 ./template_config.sh feature_template.yml
 
-docker build -t $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/alertmanager:latest -f Dockerfile .
-docker push $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/alertmanager:latest
+if $FEATURE_BRANCH; then
+  export ENV_DISPLAYNAME=`echo -n $BRANCH_NAME | sha1sum | cut -c1-8`
+else
+  export ENV_DISPLAYNAME="latest"
+fi
+
+docker build -t $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/alertmanager:$ENV_DISPLAYNAME -f Dockerfile .
+docker push $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/alertmanager:$ENV_DISPLAYNAME

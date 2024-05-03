@@ -3,8 +3,8 @@
 proxy=${1}
 BRANCH_NAME=${2}
 FEATURE_BRANCH=${3:-false}
-TEMPLATE=${4:-'blackbox_template.yml'}
-TEMPLATE=${5:-'prometheus_template.yml'}
+TEMPLATE=${4:-'/config/blackbox_template.yml'}
+TEMPLATE=${5:-'/config/config.alloy'}
 
 export HTTP_PROXY=${proxy}
 

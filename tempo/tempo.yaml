@@ -1,0 +1,82 @@
+server:
+  http_listen_port: 3200
+  grpc_listen_port: 9095
+
+memberlist:
+  join_members:
+    - "http://tempo.${SERVICE_DISCOVERY_NAMESPACE}:7946"
+  advertise_port: 7946
+  bind_port: 7945
+  cluster_label: tempo
+  cluster_label_verification_disabled: false
+
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: memberlist
+      heartbeat_timeout: 5m0s
+      replication_factor: 3
+
+distributor:
+  ring:
+    kvstore:
+      store: memberlist
+  receivers:
+    otlp:
+      protocols:
+        http:
+
+compactor:
+  ring:
+    kvstore:
+      store: ""
+    heartbeat_timeout: 1m0s
+
+metrics_generator:
+  ring:
+    kvstore:
+      store: memberlist
+    heartbeat_timeout: 10m0s
+  processor:
+    span_metrics:
+        dimensions:
+          - http.method
+          - http.target
+          - http.status_code
+          - service.version
+    service_graphs:
+        dimensions:
+          - http.method
+          - http.target
+          - http.status_code
+          - service.version
+  storage:
+    path: /tmp/tempo/generator/wal
+    remote_write:
+      - url: https://mimir.${SERVICE_DISCOVERY_NAMESPACE}/api/v1/push
+        send_exemplars: true
+  registry:
+    collection_interval: 15s
+    external_labels:
+      source: tempo
+
+storage:
+  trace:
+    backend: s3
+    s3:
+      bucket: ${BUCKET_NAME}
+      endpoint: s3.us-gov-west-1.amazonaws.com
+      region: us-gov-west-1
+      insecure: false
+      forcepathstyle: true
+    wal:
+      path: /tmp/tempo/wal # where to store the the wal locally
+
+# Global override configuration.
+# overrides:
+#   metrics_generator_processors: ['service-graphs', 'span-metrics'] # The types of metrics generation to enable for each tenant.
+#   max_bytes_per_trace: 10000000 # default is 5MB
+
+usage_report:
+  reporting_enabled: false
