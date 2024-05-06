@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BRANCH=${GIT_BRANCH:-"$(git branch --show-current)"}
+BRANCH_NAME=${GIT_BRANCH:-"$(git branch --show-current)"}
 ACCOUNT=${1}
 proxy=${2}
 FEATURE_BRANCH=${3:-false}

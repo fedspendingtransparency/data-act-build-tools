@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BRANCH=${GIT_BRANCH:-"$(git branch --show-current)"}
+BRANCH_NAME=${GIT_BRANCH:-"$(git branch --show-current)"}
 ACCOUNT=${1}
 FEATURE_BRANCH=${2:-false}
 TOKEN=`aws ssm get-parameter --name /jenkins/service/api-token --with-decryption --output text --query Parameter.Value --region us-gov-west-1`
