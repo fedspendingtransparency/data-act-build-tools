@@ -1,9 +1,7 @@
 FROM grafana/alloy
 ARG auth_dir=/etc/prometheus/auth
 
-RUN apt update -y && \
-    apt install jq curl unzip geoipupdate -y && \
-    geoipupdate -f /etc/geoip.conf
+RUN apt update -y 
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
