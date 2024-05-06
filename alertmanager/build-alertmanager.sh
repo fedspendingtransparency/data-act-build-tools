@@ -2,6 +2,7 @@
 
 BRANCH=${GIT_BRANCH:-"$(git branch --show-current)"}
 ACCOUNT=${1}
+FEATURE_BRANCH=${2:-false}
 
 ./template_config.sh feature_template.yml
 
