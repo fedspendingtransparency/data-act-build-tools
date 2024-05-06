@@ -12,8 +12,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 
 RUN mkdir -p ${auth_dir} && \
     echo ${token} > "${auth_dir}/jenkins.txt"    
-RUN mkdir -p /agent
-WORKDIR /agent
+RUN mkdir -p /etc/alloy
+WORKDIR /etc/alloy
 
 COPY ./config/ /etc/alloy/
 COPY entry_script.sh /entry_script.sh
