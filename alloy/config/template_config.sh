@@ -15,15 +15,15 @@ else
 fi
 
 rm -f blackbox.yml temp.yml
-( echo "cat <<EOF >config/blackbox.yml";
-  cat config/blackbox_template.yml;
+( echo "cat <<EOF >blackbox.yml";
+  cat blackbox_template.yml;
   echo "EOF";
 ) >temp.yml
 . temp.yml
 
 rm -f config.alloy temp.alloy
 ( echo "cat <<EOF >config.alloy";
-  cat config/alloy-temp.alloy;
+  cat template.alloy;
   echo "EOF";
 ) >temp.alloy
 . temp.alloy
