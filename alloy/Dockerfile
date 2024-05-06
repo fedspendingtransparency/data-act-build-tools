@@ -2,7 +2,7 @@ FROM grafana/alloy
 ARG auth_dir=/etc/prometheus/auth
 
 RUN apt update -y && \
-    apt-get -y install curl
+    apt-get -y install curl unzip jq
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
