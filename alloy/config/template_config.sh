@@ -20,12 +20,3 @@ rm -f blackbox.yml temp.yml
   echo "EOF";
 ) >temp.yml
 . temp.yml
-
-rm -f alloy.config temp.config
-( echo "cat <<EOF >config/alloy.config";
-  cat config/template.config;
-  echo "EOF";
-) >temp.config
-. temp.config
-
-rm -f temp.alloy
