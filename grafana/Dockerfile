@@ -7,7 +7,6 @@ ARG HTTPS_PROXY
 COPY pca_root_cert.pem /etc/ssl/certs/pca_root_cert.pem
 
 COPY plugins.txt /etc/grafana/
-COPY data_files /etc/grafana/resources
 COPY provisioning /etc/grafana/provisioning
 
 RUN while read p; do grafana cli plugins install $p; done < /etc/grafana/plugins.txt
