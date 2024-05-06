@@ -361,7 +361,7 @@ prometheus.scrape "jenkins_probe" {
 
 	basic_auth {
 		username      = "serviceuser"
-		password_file = "/etc/prometheus/auth/jenkins.txt"
+		password_file = "/etc/alloy/auth/jenkins.txt"
 	}
 
 	tls_config {

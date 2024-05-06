@@ -1,5 +1,7 @@
 FROM grafana/alloy
-ARG auth_dir=/etc/prometheus/auth
+
+ARG token
+ARG auth_dir=/etc/alloy/auth
 
 RUN apt update -y && \
     apt-get -y install curl unzip jq
