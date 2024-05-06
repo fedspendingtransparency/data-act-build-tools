@@ -8,4 +8,6 @@ RUN mkdir -p ${auth_dir} && \
 COPY prometheus.yml /etc/prometheus/prometheus.yml
 COPY alerts/ /etc/prometheus/alerts/
 
+COPY pca_root_cert.pem /etc/ssl/certs/pca_root_cert.pem
+
 CMD ["--config.file=/etc/prometheus/prometheus.yml", "--web.enable-lifecycle", "--web.enable-admin-api"]
