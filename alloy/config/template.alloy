@@ -576,9 +576,11 @@ prometheus.remote_write "default" {
 }
 
 loki.source.api "loki_push_api" {
-  http {
-    listen_address = "0.0.0.0"
-    listen_port = 8888
+  endpoint {
+    url = env("LOKI_PUSH_ENDPOINT")
+    tls_config {
+      ca_file = "/etc/ssl/certs/pca_root_cert.pem"
+    }
   }
   forward_to = [loki.process.processor.receiver]
     forward_to = [
