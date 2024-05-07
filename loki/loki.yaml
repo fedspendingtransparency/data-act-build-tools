@@ -9,6 +9,13 @@ common:
       store: inmemory
   path_prefix: /loki
 
+memberlist:
+  join_members:
+    - "loki.${SERVICE_DISCOVERY_NAMESPACE}"
+  advertise_port: 7946
+  bind_port: 7945
+  rejoin_interval: 15s
+  
 ingester:
   lifecycler:
     ring:
