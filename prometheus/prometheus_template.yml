@@ -7,7 +7,13 @@ remote_write:
   - url: https://mimir.monitoring.${ENV_DISPLAYNAME}/api/v1/push
     tls_config:
     #https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config
-      insecure_skip_verify: true
+      ca_file: /etc/ssl/certs/pca_root_cert.pem
+    queue_config:
+      batch_send_deadline: 2m
+    write_relabel_configs:
+    - source_labels: [__name__]
+      target_label: __name__
+      regex: "(.*)"
 
 # rule_files:
 #   - "/etc/prometheus/alerts/*.yml"
