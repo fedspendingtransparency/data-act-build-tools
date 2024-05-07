@@ -37,7 +37,7 @@ ingester:
     instance_addr: 127.0.0.1
     kvstore:
       store: memberlist
-    replication_factor: 2
+    replication_factor: 1
     zone_awareness_enabled: true
 
 server:
@@ -47,3 +47,4 @@ server:
 store_gateway:
   sharding_ring:
     replication_factor: 1
+    zone_awareness_enabled: true
