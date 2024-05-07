@@ -12,7 +12,7 @@ common:
       store: memberlist
     heartbeat_timeout: 10m0s
     zone_awareness_enabled: true
-  replication_factor: 3
+  replication_factor: 2
   path_prefix: /loki
 
 memberlist:

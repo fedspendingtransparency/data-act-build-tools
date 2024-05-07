@@ -38,6 +38,7 @@ ingester:
     kvstore:
       store: memberlist
     replication_factor: 1
+    zone_awareness_enabled: true
 
 server:
   http_listen_port: 9009
