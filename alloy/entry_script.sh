@@ -10,4 +10,4 @@ exec alloy run \
   --cluster.enabled=true \
   --cluster.rejoin-interval="30s" \
   --cluster.discover-peers="provider=aws service=ecs ecs_cluster=usas-monitoring-$ENV_DISPLAYNAME addr_type=private_v4 region=us-gov-west-1 tag_key=cluster_id tag_value=$ENV_DISPLAYNAME"\
-  /etc/alloy/alloy.config
+  /etc/alloy/config.alloy
