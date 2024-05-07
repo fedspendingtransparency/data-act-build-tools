@@ -18,7 +18,9 @@ WORKDIR /etc/alloy
 COPY ./config/ /etc/alloy/
 COPY entry_script.sh /entry_script.sh
 COPY pca_root_cert.pem /etc/ssl/certs/pca_root_cert.pem
-
+RUN cat /etc/ssl/certs/pca_root_cert.pem >> /etc/ssl/certs/ca-certificates.crt && \
+    chmod a+wrx /etc/ssl/certs/ca-certificates.crt
+    
 EXPOSE 4317
 EXPOSE 4318
 
