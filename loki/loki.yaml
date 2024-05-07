@@ -2,19 +2,65 @@ auth_enabled: false
 
 server:
   http_listen_port: 3100
+  grpc_listen_port: 9096
+  log_level: debug
+  log_source_ips_enabled: true
 
 common:
   ring:
     kvstore:
-      store: inmemory
+      store: memberlist
+    heartbeat_timeout: 10m0s
+    zone_awareness_enabled: true
+  replication_factor: 3
   path_prefix: /loki
+
+memberlist:
+  join_members:
+    - "loki.${SERVICE_DISCOVERY_NAMESPACE}"
+  advertise_port: 7946
+  bind_port: 7945
+  rejoin_interval: 15s
 
 ingester:
   lifecycler:
     ring:
       kvstore:
-        store: inmemory
-      replication_factor: 1
+        store: memberlist
+      heartbeat_timeout: 10m0s
+    join_after: 30s
+    min_ready_duration: 30s
+    observe_period: 10s
+    readiness_check_ring_health: false
+  autoforget_unhealthy: true
+  chunk_idle_period: 1h
+  chunk_target_size: 1572864
+  chunk_encoding: snappy
+  max_chunk_age: 2h
+  wal:
+    enabled: true
+    dir: /loki/wal
+    replay_memory_ceiling: 6GB
+
+distributor:
+  ring:
+    kvstore:
+      store: memberlist
+    heartbeat_period: 30s
+    heartbeat_timeout: 3m
+
+compactor:
+  compactor_ring:
+    kvstore:
+      store: memberlist
+    heartbeat_period: 30s
+    heartbeat_timeout: 3m
+
+querier:
+  max_concurrent: 2048
+
+query_scheduler:
+  max_outstanding_requests_per_tenant: 10000
 
 query_range:
   results_cache:
@@ -45,18 +91,5 @@ storage_config:
     sse:
       type: SSE-S3
 
-# ruler:
-#   alertmanager_url: http://alertmanager:9093
-
-# By default, Loki will send anonymous, but uniquely-identifiable usage and configuration
-# analytics to Grafana Labs. These statistics are sent to https://stats.grafana.org/
-#
-# Statistics help us better understand how Loki is used, and they show us performance
-# levels for most users. This helps us prioritize features and documentation.
-# For more information on what's sent, look at
-# https://github.com/grafana/loki/blob/main/pkg/usagestats/stats.go
-# Refer to the buildReport method to see what goes into a report.
-#
-# If you would like to disable reporting, uncomment the following lines:
 analytics:
  reporting_enabled: false
