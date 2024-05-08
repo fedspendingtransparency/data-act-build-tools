@@ -1,0 +1,150 @@
+argument "write_to" {
+  optional = false
+}
+
+loki.process "ecs" {
+    stage.match {
+        selector = "{ container_name=~\".+\" }"
+
+        // Public web request parsing w/ geoip
+        stage.match {
+            selector = "{ stream=~\"dti-public-web|dti-cdz-web\" }"
+            
+            stage.regex {
+                expression = "^(?P<http_x_forwarded_for_1>[0-9.]+) [-] (?P<remote_user>[A-Za-z0-9-]+) [\\[](?P<timestamp>[\\S]+ [\\S]+)[\\]] [\"](?P<http_method>[\\S]+) (?P<http_request>[\\S]+) (?P<http_version>[\\S]+)[\"] (?P<http_status>[\\d]+) (?P<body_bytes_sent>[\\d]+) [\"](?P<http_referrer>[\\S]+)[\"] [\"](?P<http_user_agent>[\\S\\s]+)[\"] [\"](?P<remote_addr>[0-9.]+), (?P<http_x_forwarded_for_2>[\\S\\s]+)[\"]"
+            }
+        }
+
+        // Public API request parsing
+        stage.match {
+            selector = "{ stream=~\"usas-public-api\" }"
+
+            stage.json {
+                expressions = {
+                    "log" = "message",
+                }
+            }
+
+            stage.regex {
+                source = "log"
+                expression = "^(?P<http_request>[\\S]+) took response_time=(?P<http_response_time_ms>[0-9]+) response_code=(?P<http_status>[0-9]+)"
+            }
+
+            stage.regex {
+                source = "http_request"
+                expression = "^(?P<api_endpoint>[A-Za-z0-9\\/_\\-]+)(?:.*fields=(?P<api_fields>[A-Za-z0-9_:,\\-\\%]+))?(?:.*filter=(?P<api_filter>[A-Za-z0-9_:,\\-\\%\\(\\)]+))?(?:.*sort=(?P<api_sort>[A-Za-z0-9_:\\-,]+))?(?:.*format=(?P<api_format>[A-Za-z]+))?(?:.*limit=(?P<api_limit>[0-9]+))?(?:.*(?:page\\[size\\]|page\\%5[Bb]size\\%5[Dd])=(?P<api_page_size>[0-9]+))?(?:.*(?:page\\%5[Bb]number\\%5[Dd]|page\\[number\\])=(?P<api_page_number>[0-9]+))?"
+            }
+
+            stage.regex {
+                source = "api_endpoint"
+                expression = "^(?:\\/services\\/api\\/(?P<api_org>[A-Z-a-z0-9_]+)\\/(?P<api_version>[A-Z-a-z0-9_]+)\\/(?P<api_subject_area>[A-Z-a-z0-9_]+)\\/(?P<api_topic>[A-Z-a-z0-9_]+))?(?:\\/(?P<api_subtopic>[A-Z-a-z0-9_]+))?"
+            }
+        }
+
+        // all other proxy parsing -- should be last among nginx parsers
+        stage.regex {
+            expression = "^(?P<http_x_forwarded_for_1>[0-9.]+) [-] (?P<remote_user>[A-Za-z0-9-]+) [\\[](?P<timestamp>[\\S]+ [\\S]+)[\\]] [\"](?P<http_method>[\\S]+) (?P<http_request>[\\S]+) (?P<http_version>[\\S]+)[\"] (?P<http_status>[\\d]+) (?P<body_bytes_sent>[\\d]+) [\"](?P<http_referrer>[\\S]+)[\"] [\"](?P<http_user_agent>[\\S\\s]+)[\"] [\"](?P<http_x_forwarded_for_2>[\\S\\s]+)[\"]"
+        }
+
+        stage.json {
+            expressions = {
+                "log" = "message",
+                "name" = "",
+                "level" = "levelname",
+                "otelTraceID" = "",
+            }
+        }
+
+        stage.match {
+            selector = "{ otelTraceID=~\".{2,}\" }"
+            
+            stage.template {
+                source = "log"
+                template = "{{ .log }} (otelTraceID: {{ .otelTraceID }})"
+            }
+        }
+
+        stage.output {
+            source = "log"
+        }
+
+        stage.labels {
+            values = {
+                stream = "",
+                method_name = "name",
+                level = "level",
+                TraceId = "otelTraceID",
+                SpanId = "otelSpanID",
+                TraceSampled = "otelTraceSampled",
+                ServiceName = "otelServiceName",
+                host = "",
+                env = "",
+                filename = "",
+                api_endpoint = "",
+                api_org = "",
+                api_param = "",
+                api_subject_area = "",
+                api_subtopic = "",
+                api_topic = "",
+                api_version = "",
+                api_fields = "",
+                api_filter = "",
+                api_sort = "",
+                api_format = "",
+                api_limit = "",
+                api_page_size = "",
+                api_page_number = "",
+                http_remote_addr = "remote_addr",
+                http_status = "",
+                http_method = "",
+                http_request = "",
+                http_referrer = "",
+                http_response_time_ms = "",
+                http_user_agent = "",
+                http_version = "",
+                http_x_forwarded_for = "",
+                geoip_city_name = "",
+                geoip_country_name       = "",
+                geoip_continet_name      = "",
+                geoip_continent_code     = "",
+                geoip_location_latitude  = "",
+                geoip_location_longitude = "",
+                geoip_postal_code        = "",
+                geoip_timezone           = "",
+                geoip_subdivision_name   = "",
+                geoip_subdivision_code   = "",
+            }
+        }
+
+        stage.match {
+            selector = "{http_user_agent=~\".*Blackbox.*|ELB-HealthChecker.*|Pingdom.com_bot_.*\"} |~ \".*Blackbox.*|ELB-HealthChecker.*|Pingdom.com_bot_.*\" "
+            action   = "drop"
+        }
+
+        stage.match {
+            selector = "{http_request=~\".*actuator.*|/contact/contact.*\"}"
+            action   = "drop"
+        }
+
+        stage.match {
+            selector = "{http_user_agent=~\"Prometheus.*\",http_request=\"/api/v1/push\"}"
+            action   = "drop"
+        }
+
+        stage.match {
+            selector = "{http_request=~\".*health.*\",http_referrer=\"-\",http_status=\"201\"}"
+            action   = "drop"
+        }
+
+        stage.match {
+            selector = "{stream=\"usas-public-api\"} |~ \".*/services/healthcheck.*|.*/metadata/summary.*\""
+            action   = "drop"
+        }
+    }
+
+    forward_to = argument.write_to.value
+}
+
+export "input" {
+  value = loki.process.ecs.receiver
+}

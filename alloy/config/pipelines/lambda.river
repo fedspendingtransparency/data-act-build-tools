@@ -1,0 +1,24 @@
+argument "write_to" {
+  optional = false
+}
+
+loki.process "lambda" {
+    stage.match {
+        selector = "{ lambda_function_name=~\".+\" }"
+
+        stage.match {
+            selector = "{ otelTraceID=~\".{2,}\" }"
+            
+            stage.template {
+                source = "log"
+                template = "{{ .log }} (otelTraceID: {{ .otelTraceID }})"
+            }
+        }
+    }
+
+    forward_to = argument.write_to.value
+}
+
+export "input" {
+  value = loki.process.lambda.receiver
+}

@@ -1,0 +1,83 @@
+loki.source.api "server" {
+  http {
+    listen_address = "0.0.0.0"
+    listen_port = 8888
+  }
+  forward_to = [loki.process.processor.receiver]
+}
+
+loki.process "processor" {
+  stage.template {
+    source   = "stream"
+    template = "{{ default \"other\" .Value }}"
+  }
+
+  forward_to = [import.file.ecs_pipeline.exports.input]
+}
+
+import.file "ecs_pipeline" {
+  filename = "/etc/alloy/pipelines/ecs.river"
+
+  arguments {
+    write_to = [import.file.lambda_pipeline.exports.input]
+  }
+}
+
+import.file "lambda_pipeline" {
+  filename = "/etc/alloy/pipelines/lambda.river"
+
+  arguments {
+    write_to = [loki.process.format.receiver]
+  }
+}
+
+local.file "packing_list" {
+  filename = "/etc/agent/loki_packing_list.txt"
+}
+
+loki.process "format" {
+  stage.template {
+    source   = "level"
+    template = "{{ default \"INFO\" .Value }}"
+  }
+
+  stage.pack {
+    ingest_timestamp = false
+    labels = split(replace(local.file.packing_list.content, "\r", ""), ",\n")
+  }
+
+  stage.label_keep {
+    values = [
+      "stream",
+    ]
+  }
+
+  stage.metrics {
+    metric.counter {
+      name        = "log_lines_total"
+      description = "total number of log lines"
+      prefix      = "loki_processed_"
+
+      match_all         = true
+      action            = "inc"
+      max_idle_duration = "72h"
+    }
+  }
+
+  forward_to = [loki.write.loki.receiver]
+}
+
+loki.write "loki" {
+  max_streams = 50
+
+  endpoint {
+    url = env("LOKI_PUSH_ENDPOINT")
+    tls_config {
+      ca_file = "/etc/ssl/certs/pca_root_cert.pem"
+    }
+  }
+
+  wal {
+    enabled = true
+  }
+}

@@ -1,0 +1,23 @@
+prometheus.scrape "agent_metrics" {
+  targets = [
+    {"__address__" = "127.0.0.1:12345"},
+  ]
+
+  clustering {
+    enabled = true
+  }
+
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  scrape_interval = "10s"
+  metrics_path    = "/metrics"
+}
+
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = env("MIMIR_PUSH_ENDPOINT")
+    tls_config {
+      ca_file = "/etc/ssl/certs/pca_root_cert.pem"
+    }
+  }
+}

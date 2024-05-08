@@ -1,0 +1,49 @@
+otelcol.exporter.otlphttp "tempo" {
+  client {
+    endpoint = env("TEMPO_ENDPOINT")
+    tls {
+      insecure_skip_verify = true
+   } 
+  }
+}
+
+
+otelcol.exporter.otlp "loki" {
+  client {
+    endpoint = env("LOKI_ENDPOINT")
+    tls {
+      insecure_skip_verify = true
+    } 
+  }
+}
+
+otelcol.exporter.prometheus "default" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}
+
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = env("MIMIR_PUSH_ENDPOINT")
+    tls_config {
+      insecure_skip_verify = true
+    } 
+  }
+}
+
+otelcol.receiver.otlp "agent" {
+  grpc {
+    endpoint = "127.0.0.1:4317"
+  }
+
+  http {
+    endpoint = "127.0.0.1:4318"
+  }
+
+  output {
+    metrics = [otelcol.exporter.prometheus.default.input]
+    logs    = [otelcol.exporter.otlp.loki.input]
+    traces  = [otelcol.exporter.otlphttp.tempo.input]
+  }
+}
+
+// https://grafana.com/docs/agent/latest/flow/getting-started/collect-opentelemetry-data/

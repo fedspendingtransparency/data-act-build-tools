@@ -1,0 +1,16 @@
+logging {
+  level  = "debug"
+  format = "logfmt"
+}
+
+import.file "logs" {
+  filename = "/etc/agent/logs.river"
+}
+
+import.file "otel" {
+  filename = "/etc/agent/otel.river"
+}
+
+import.file "metrics" {
+  filename = "/etc/agent/metrics.river"
+}
