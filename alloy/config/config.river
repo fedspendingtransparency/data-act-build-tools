@@ -4,13 +4,13 @@ logging {
 }
 
 import.file "logs" {
-  filename = "/etc/agent/logs.river"
+  filename = "/etc/alloy/logs.river"
 }
 
 import.file "otel" {
-  filename = "/etc/agent/otel.river"
+  filename = "/etc/alloy/otel.river"
 }
 
 import.file "metrics" {
-  filename = "/etc/agent/metrics.river"
+  filename = "/etc/alloy/metrics.river"
 }

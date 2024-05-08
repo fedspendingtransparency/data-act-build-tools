@@ -30,7 +30,7 @@ prometheus.remote_write "mimir" {
   }
 }
 
-otelcol.receiver.otlp "agent" {
+otelcol.receiver.otlp "alloy" {
   grpc {
     endpoint = "127.0.0.1:4317"
   }
@@ -46,4 +46,4 @@ otelcol.receiver.otlp "agent" {
   }
 }
 
-// https://grafana.com/docs/agent/latest/flow/getting-started/collect-opentelemetry-data/
+// https://grafana.com/docs/alloy/latest/flow/getting-started/collect-opentelemetry-data/

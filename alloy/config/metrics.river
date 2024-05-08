@@ -1,4 +1,4 @@
-prometheus.scrape "agent_metrics" {
+prometheus.scrape "alloy_metrics" {
   targets = [
     {"__address__" = "127.0.0.1:12345"},
   ]

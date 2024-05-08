@@ -32,7 +32,7 @@ import.file "lambda_pipeline" {
 }
 
 local.file "packing_list" {
-  filename = "/etc/agent/loki_packing_list.txt"
+  filename = "/etc/alloy/loki_packing_list.txt"
 }
 
 loki.process "format" {
