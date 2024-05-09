@@ -3,7 +3,7 @@
 # At runtime, determine the IP address assigned to this ECS Task.
 ECS_IPV4=$(curl -s $ECS_CONTAINER_METADATA_URI_V4 | jq -r '.Networks[0].IPv4Addresses[0]')
 
-exec FROM grafana/agent:v0.40.3 run \
+exec /bin/grafana-agent run \
   --disable-reporting \
   --server.http.listen-addr=0.0.0.0:12345 \
   --cluster.advertise-address="$ECS_IPV4" \
