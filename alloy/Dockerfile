@@ -1,8 +1,5 @@
 FROM grafana/alloy
 
-ARG token
-ARG auth_dir=/etc/alloy/auth
-
 RUN apt update -y && \
     apt-get -y install curl unzip jq
 
@@ -10,8 +7,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip awscliv2.zip && \
     ./aws/install
 
-RUN mkdir -p ${auth_dir} && \
-    echo ${token} > "${auth_dir}/jenkins.txt"    
+  
 RUN mkdir -p /etc/alloy
 WORKDIR /etc/alloy
 
