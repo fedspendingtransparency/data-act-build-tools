@@ -3,14 +3,14 @@ logging {
   format = "logfmt"
 }
 
-import.file "logs" {
+module.file "logs" {
   filename = "/etc/agent/logs.river"
 }
 
-import.file "otel" {
+module.file "otel" {
   filename = "/etc/agent/otel.river"
 }
 
-import.file "metrics" {
+module.file "metrics" {
   filename = "/etc/agent/metrics.river"
 }

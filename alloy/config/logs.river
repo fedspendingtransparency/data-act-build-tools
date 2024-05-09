@@ -12,18 +12,18 @@ loki.process "processor" {
     template = "{{ default \"other\" .Value }}"
   }
 
-  forward_to = [import.file.ecs_pipeline.exports.input]
+  forward_to = [module.file.ecs_pipeline.exports.input]
 }
 
-import.file "ecs_pipeline" {
+module.file "ecs_pipeline" {
   filename = "/etc/agent/pipelines/ecs.river"
 
   arguments {
-    write_to = [import.file.lambda_pipeline.exports.input]
+    write_to = [module.file.lambda_pipeline.exports.input]
   }
 }
 
-import.file "lambda_pipeline" {
+module.file "lambda_pipeline" {
   filename = "/etc/agent/pipelines/lambda.river"
 
   arguments {
