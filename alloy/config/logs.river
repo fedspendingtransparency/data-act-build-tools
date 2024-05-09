@@ -16,7 +16,7 @@ loki.process "processor" {
 }
 
 import.file "ecs_pipeline" {
-  filename = "/etc/alloy/pipelines/ecs.river"
+  filename = "/etc/agent/pipelines/ecs.river"
 
   arguments {
     write_to = [import.file.lambda_pipeline.exports.input]
@@ -24,7 +24,7 @@ import.file "ecs_pipeline" {
 }
 
 import.file "lambda_pipeline" {
-  filename = "/etc/alloy/pipelines/lambda.river"
+  filename = "/etc/agent/pipelines/lambda.river"
 
   arguments {
     write_to = [loki.process.format.receiver]
@@ -32,7 +32,7 @@ import.file "lambda_pipeline" {
 }
 
 local.file "packing_list" {
-  filename = "/etc/alloy/loki_packing_list.txt"
+  filename = "/etc/agent/loki_packing_list.txt"
 }
 
 loki.process "format" {

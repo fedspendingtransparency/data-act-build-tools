@@ -1,22 +1,19 @@
-FROM grafana/alloy
+FROM grafana/agent:v0.40.3
 
 RUN apt update -y && \
     apt-get -y install curl unzip jq
 
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
     ./aws/install
 
-  
-RUN mkdir -p /etc/alloy
-WORKDIR /etc/alloy
+RUN mkdir -p /agent
+WORKDIR /agent
 
-COPY ./config/ /etc/alloy/
+COPY ./config/ /etc/agent/
 COPY entry_script.sh /entry_script.sh
 COPY pca_root_cert.pem /etc/ssl/certs/pca_root_cert.pem
-RUN cat /etc/ssl/certs/pca_root_cert.pem >> /etc/ssl/certs/ca-certificates.crt && \
-    chmod a+wrx /etc/ssl/certs/ca-certificates.crt
-    
+
 EXPOSE 4317
 EXPOSE 4318
 

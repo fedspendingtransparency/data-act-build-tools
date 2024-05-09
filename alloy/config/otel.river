@@ -30,7 +30,7 @@ prometheus.remote_write "mimir" {
   }
 }
 
-otelcol.receiver.otlp "alloy" {
+otelcol.receiver.otlp "agent" {
   grpc {
     endpoint = "127.0.0.1:4317"
   }
