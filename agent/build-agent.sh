@@ -12,5 +12,5 @@ else
   export ENV_DISPLAYNAME="latest"
 fi
 
-docker build -t $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/alloy:$ENV_DISPLAYNAME --build-arg token=$TOKEN -f Dockerfile .
-docker push $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/alloy:$ENV_DISPLAYNAME
+docker build -t $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/agent:$ENV_DISPLAYNAME --build-arg token=$TOKEN -f Dockerfile .
+docker push $ACCOUNT.dkr.ecr.us-gov-west-1.amazonaws.com/agent:$ENV_DISPLAYNAME

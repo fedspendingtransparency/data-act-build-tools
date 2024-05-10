@@ -46,4 +46,4 @@ otelcol.receiver.otlp "agent" {
   }
 }
 
-// https://grafana.com/docs/alloy/latest/flow/getting-started/collect-opentelemetry-data/
+// https://grafana.com/docs/agent/latest/flow/getting-started/collect-opentelemetry-data/
