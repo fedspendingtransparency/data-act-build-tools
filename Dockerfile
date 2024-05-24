@@ -54,11 +54,11 @@ RUN wget https://github.com/wata727/packer-post-processor-amazon-ami-management/
 RUN cd ~/.packer.d/plugins
 RUN unzip -j /tmp/packer-post-processor-amazon-ami-management_${AMI_MANAGER_VERSION}_linux_amd64.zip -d ~/.packer.d/plugins
 
-# Adding this step to update SSL certificates
-RUN yum update -y ca-certificates && yum install -y ca-certificates
+# # Adding this step to update SSL certificates
+# RUN yum update -y ca-certificates && yum install -y ca-certificates
 
 # Install pinned pip w/ pip3 symlink
-RUN pip3.6 install --no-cache-dir --upgrade pip==${PYTHON_PIP_VERSION}
+RUN pip3.6 install --no-cache-dir --trusted-host pypi.python.org --trusted-host files.pythonhosted.org --trusted-host pypi.org --upgrade pip==${PYTHON_PIP_VERSION}
 
 # install ansible
 RUN pip3 install ansible==${ANSIBLE_VERSION}
