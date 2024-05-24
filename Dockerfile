@@ -71,6 +71,9 @@ RUN mkdir -p /opt/terragrunt && mv terragrunt_linux_amd64 /opt/terragrunt/terrag
 RUN chmod +x /opt/terragrunt/terragrunt
 RUN ln -s /opt/terragrunt/terragrunt /usr/local/bin/terragrunt
 
+# Adding this step to update SSL certificates
+RUN yum update -y ca-certificates && yum install -y ca-certificates
+
 # install pip packages
 RUN pip3 install boto3 sh argparse awscli pytz botocore
 
