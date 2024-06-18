@@ -2,7 +2,7 @@
 
 FROM rockylinux:8
 
-ARG packer_version_arg=1.6.1
+ARG packer_version_arg=1.11.0
 ARG ansible_version_arg=6.0.0
 ARG ansible_core_version_arg=2.13.13
 ARG terraform_version_arg=1.4.5
